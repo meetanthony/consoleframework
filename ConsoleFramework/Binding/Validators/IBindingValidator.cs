@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Binding.Validators
+namespace ConsoleFramework.Binding.Validators
 {
     /// <summary>
     /// Defines the interface that objects that participate binding validation must implement.

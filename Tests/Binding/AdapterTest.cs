@@ -1,10 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using Binding;
-using Binding.Adapters;
+using ConsoleFramework.Binding;
+using ConsoleFramework.Binding.Adapters;
 using Xunit;
 
-namespace TestProject1.Binding
+namespace Tests.Binding
 {
     /// <summary>
     /// Sample to show how write adapter for class that doesn't implement

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Xaml
+namespace ConsoleFramework.Xaml
 {
     /// <summary>
     /// Marker of fixup token - object can be returned from

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Binding.Observables;
+using ConsoleFramework.Binding.Observables;
 using ConsoleFramework.Core;
 using ConsoleFramework.Events;
 using ConsoleFramework.Native;
 using ConsoleFramework.Rendering;
-using Xaml;
+using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls
 {

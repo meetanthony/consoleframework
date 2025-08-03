@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Binding.Observables
+namespace ConsoleFramework.Binding.Observables
 {
     /// <summary>
     /// Generic implementation of <see cref="IObservableList"/>.

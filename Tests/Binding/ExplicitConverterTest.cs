@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using Binding;
-using Binding.Converters;
+using ConsoleFramework.Binding;
+using ConsoleFramework.Binding.Converters;
 using Xunit;
 
-namespace TestProject1.Binding
+namespace Tests.Binding
 {
     public class ExplicitConverterTest
     {

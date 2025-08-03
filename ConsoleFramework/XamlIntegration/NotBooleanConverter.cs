@@ -1,7 +1,7 @@
 ﻿using System;
-using Binding.Converters;
+using ConsoleFramework.Binding.Converters;
 
-namespace ConsoleFramework.Xaml
+namespace ConsoleFramework.XamlIntegration
 {
     public class NotBooleanConverter : IBindingConverter
     {

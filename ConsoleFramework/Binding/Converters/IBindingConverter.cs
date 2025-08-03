@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Binding.Converters
+namespace ConsoleFramework.Binding.Converters
 {
     /// <summary>
     /// Provides value conversion logic from first class to second and back.

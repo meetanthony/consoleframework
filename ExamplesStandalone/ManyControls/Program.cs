@@ -3,16 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using ConsoleFramework;
 using ConsoleFramework.Controls;
 using ConsoleFramework.Core;
 using ConsoleFramework.Xaml;
-using Xaml;
 
-namespace Examples
+namespace ManyControls
 {
     public class Program
     {

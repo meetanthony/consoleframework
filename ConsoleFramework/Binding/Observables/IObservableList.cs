@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Binding.Observables {
+namespace ConsoleFramework.Binding.Observables {
 
     /// <summary>
     /// Marks the IList or IList&lt;T&gt; with notifications support.

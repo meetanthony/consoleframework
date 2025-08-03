@@ -1,7 +1,7 @@
 ﻿using ConsoleFramework;
 using ConsoleFramework.Controls;
 
-namespace Examples.TextEditor
+namespace TextEditor
 {
     public class Program
     {

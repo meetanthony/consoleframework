@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using Binding.Adapters;
-using Binding.Converters;
+using ConsoleFramework.Binding.Adapters;
+using ConsoleFramework.Binding.Converters;
 
-namespace Binding
+namespace ConsoleFramework.Binding
 {
     /// <summary>
     /// Contains converters, validators and adapters.

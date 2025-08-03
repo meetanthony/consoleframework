@@ -13,11 +13,11 @@ using ConsoleFramework.Core;
 using ConsoleFramework.Events;
 using ConsoleFramework.Native;
 using ConsoleFramework.Rendering;
+using ConsoleFramework.Xaml;
 #if MONO
 using Mono.Unix;
 using Mono.Unix.Native;
 #endif
-using Xaml;
 
 namespace ConsoleFramework
 {

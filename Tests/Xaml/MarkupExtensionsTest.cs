@@ -1,5 +1,5 @@
 ﻿using System;
-using Xaml;
+using ConsoleFramework.Xaml;
 using Xunit;
 
 namespace Tests.Xaml

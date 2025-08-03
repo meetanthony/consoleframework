@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using Binding.Observables;
+using ConsoleFramework.Binding.Observables;
 using ConsoleFramework.Core;
 using ConsoleFramework.Events;
-using Xaml;
-using ListChangedEventArgs = Binding.Observables.ListChangedEventArgs;
+using ConsoleFramework.Xaml;
+using ListChangedEventArgs = ConsoleFramework.Binding.Observables.ListChangedEventArgs;
 
 namespace ConsoleFramework.Controls
 {

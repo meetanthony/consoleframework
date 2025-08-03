@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Reflection;
-using Binding.Converters;
-using Xaml;
+using ConsoleFramework.Binding.Converters;
+using ConsoleFramework.Xaml;
 
-namespace ConsoleFramework.Xaml
+namespace ConsoleFramework.XamlIntegration
 {
     /// <summary>
     /// Converts Value to property type using specified converter.

@@ -1,11 +1,11 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Collections.Generic;
-using Binding;
-using Binding.Observables;
+using System.ComponentModel;
+using ConsoleFramework.Binding;
+using ConsoleFramework.Binding.Observables;
 using Xunit;
 
-namespace TestProject1.Binding
+namespace Tests.Binding
 {
     public class CollectionRebindTest
     {

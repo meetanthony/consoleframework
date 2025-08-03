@@ -1,4 +1,4 @@
-﻿namespace Binding
+﻿namespace ConsoleFramework.Binding
 {
     /// <summary>
     /// Determines how data will flow - from Source to Target,

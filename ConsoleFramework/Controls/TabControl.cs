@@ -5,7 +5,7 @@ using ConsoleFramework.Core;
 using ConsoleFramework.Events;
 using ConsoleFramework.Native;
 using ConsoleFramework.Rendering;
-using Xaml;
+using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls
 {

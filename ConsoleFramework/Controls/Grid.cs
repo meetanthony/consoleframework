@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ConsoleFramework.Core;
 using ConsoleFramework.Rendering;
-using Xaml;
+using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls
 {

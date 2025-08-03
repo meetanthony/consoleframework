@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Binding.Observables;
-using Xaml;
+using ConsoleFramework.Binding.Observables;
+using ConsoleFramework.Xaml;
 using Xunit;
 
 namespace Tests.Xaml

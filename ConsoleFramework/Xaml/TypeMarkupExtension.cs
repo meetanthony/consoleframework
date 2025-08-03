@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xaml
+namespace ConsoleFramework.Xaml
 {
     /// <summary>
     /// Позволяет получить тип по имени. Имя может содержать аргументы-типы, например

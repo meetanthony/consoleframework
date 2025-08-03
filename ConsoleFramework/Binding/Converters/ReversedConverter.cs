@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Binding.Converters
+namespace ConsoleFramework.Binding.Converters
 {
     public class ReversedConverter : IBindingConverter {
         readonly IBindingConverter converter;

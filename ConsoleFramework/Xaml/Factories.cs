@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Xaml
+namespace ConsoleFramework.Xaml
 {
     /// <summary>
     /// Примитивные типы, такие как строки, целые числа, - могут быть заданы в XAML

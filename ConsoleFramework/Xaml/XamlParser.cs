@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml;
 
-namespace Xaml {
+namespace ConsoleFramework.Xaml {
     /// <summary>
     /// Provides XAML parsing and simultaneous object graph creation.
     /// </summary>

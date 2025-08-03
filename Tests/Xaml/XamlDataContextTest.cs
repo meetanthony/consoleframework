@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
-using Xaml;
+using ConsoleFramework.Xaml;
 using Xunit;
 
 namespace Tests.Xaml {

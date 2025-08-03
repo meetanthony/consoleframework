@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Binding.Converters
+namespace ConsoleFramework.Binding.Converters
 {
     /// <summary>
     /// Represents value conversion result.

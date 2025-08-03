@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Binding.Validators
+namespace ConsoleFramework.Binding.Validators
 {
     /// <summary>
     /// Validator checks the value is not null or empty (if value string).

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Globalization;
 
-namespace Binding.Converters
+namespace ConsoleFramework.Binding.Converters
 {
     /// <summary>
     /// Converter between String and Integer.

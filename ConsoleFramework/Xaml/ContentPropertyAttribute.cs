@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xaml {
+namespace ConsoleFramework.Xaml {
     /// <summary>
     /// Attribute to specify name of content property of any type to be created
     /// and configured using XAML if that type supports content abstraction.

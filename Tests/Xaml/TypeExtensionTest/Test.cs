@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using Xaml;
+using ConsoleFramework.Xaml;
 using Xunit;
 
 namespace Tests.Xaml.TypeExtensionTest

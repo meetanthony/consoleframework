@@ -2,13 +2,13 @@
 using System.Collections;
 using System.ComponentModel;
 using System.Reflection;
-using Binding.Adapters;
-using Binding.Converters;
-using Binding.Observables;
-using Binding.Validators;
-using ListChangedEventArgs = Binding.Observables.ListChangedEventArgs;
+using ConsoleFramework.Binding.Adapters;
+using ConsoleFramework.Binding.Converters;
+using ConsoleFramework.Binding.Observables;
+using ConsoleFramework.Binding.Validators;
+using ListChangedEventArgs = ConsoleFramework.Binding.Observables.ListChangedEventArgs;
 
-namespace Binding
+namespace ConsoleFramework.Binding
 {
     /// <summary>
     /// Handler of binding operation when data is transferred from Target to Source.

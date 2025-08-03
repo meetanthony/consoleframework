@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Xaml
+namespace ConsoleFramework.Xaml
 {
     /// <summary>
     /// Provides a unified way of converting types of values to other types,

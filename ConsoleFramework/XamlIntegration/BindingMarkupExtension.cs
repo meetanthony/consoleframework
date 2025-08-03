@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Reflection;
 using System.ComponentModel;
-using Binding;
-using Binding.Converters;
-using Xaml;
+using System.Reflection;
+using ConsoleFramework.Binding;
+using ConsoleFramework.Binding.Converters;
+using ConsoleFramework.Xaml;
 
-namespace ConsoleFramework.Xaml
+namespace ConsoleFramework.XamlIntegration
 {
     [MarkupExtension("Binding")]
     class BindingMarkupExtension : IMarkupExtension

@@ -1,6 +1,6 @@
 ﻿using System;
 using ConsoleFramework.Native;
-using Xaml;
+using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Core {
     /// <summary>

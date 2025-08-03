@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Binding
+namespace ConsoleFramework.Binding
 {
     /// <summary>
     /// Represents result of one synchronization operation from Target to Source.

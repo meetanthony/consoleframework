@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 
-namespace Binding.Adapters
+namespace ConsoleFramework.Binding.Adapters
 {
     /// <summary>
     /// Adapter allows use third-party objects (that don't implement INotifyPropertyChange directly)
