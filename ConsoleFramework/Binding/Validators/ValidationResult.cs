@@ -7,27 +7,18 @@ namespace ConsoleFramework.Binding.Validators;
 /// </summary>
 public class ValidationResult
 {
-    private readonly bool valid;
-    private readonly String message;
+    public bool Valid { get; }
 
-    public bool Valid
-    {
-        get { return valid; }
-    }
-
-    public string Message
-    {
-        get { return message; }
-    }
+    public string? Message { get; }
 
     public ValidationResult(bool valid)
     {
-        this.valid = valid;
+        Valid = valid;
     }
 
     public ValidationResult(bool valid, String message)
     {
-        this.valid = valid;
-        this.message = message;
+        Valid = valid;
+        Message = message;
     }
 }
