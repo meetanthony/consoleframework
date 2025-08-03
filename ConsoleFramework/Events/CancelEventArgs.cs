@@ -1,23 +1,22 @@
-﻿namespace ConsoleFramework.Events
+﻿namespace ConsoleFramework.Events;
+
+public delegate void CancelEventHandler(object sender, CancelEventArgs e);
+
+public class CancelEventArgs : RoutedEventArgs
 {
-    public delegate void CancelEventHandler(object sender, CancelEventArgs e);
+    private bool _cancel;
 
-    public class CancelEventArgs : RoutedEventArgs
+    public CancelEventArgs(object source, RoutedEvent routedEvent) : base(source, routedEvent)
     {
-        private bool _cancel;
 
-        public CancelEventArgs(object source, RoutedEvent routedEvent) : base(source, routedEvent)
-        {
+    }
 
+    public bool Cancel {
+        get {
+            return _cancel;
         }
-
-        public bool Cancel {
-            get {
-                return _cancel;
-            }
-            set {
-                _cancel = value;
-            }
+        set {
+            _cancel = value;
         }
     }
 }

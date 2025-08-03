@@ -1,16 +1,15 @@
 ﻿using ConsoleFramework;
 using ConsoleFramework.Controls;
 
-namespace TextEditor
+namespace TextEditor;
+
+public class Program
 {
-    public class Program
+    public static void Main(string[] args)
     {
-        public static void Main(string[] args)
-        {
-            WindowsHost windowsHost = new WindowsHost();
-            Window mainWindow = (Window)ConsoleApplication.LoadFromXaml("TextEditor.main.xml", null);
-            windowsHost.Show(mainWindow);
-            ConsoleApplication.Instance.Run(windowsHost);
-        }
+        WindowsHost windowsHost = new WindowsHost();
+        Window mainWindow = (Window)ConsoleApplication.LoadFromXaml("TextEditor.main.xml", null);
+        windowsHost.Show(mainWindow);
+        ConsoleApplication.Instance.Run(windowsHost);
     }
 }

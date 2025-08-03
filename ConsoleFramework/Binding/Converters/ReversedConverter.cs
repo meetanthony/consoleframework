@@ -1,28 +1,27 @@
 ﻿using System;
 
-namespace ConsoleFramework.Binding.Converters
-{
-    public class ReversedConverter : IBindingConverter {
-        readonly IBindingConverter converter;
+namespace ConsoleFramework.Binding.Converters;
 
-        public ReversedConverter(IBindingConverter converter) {
-            this.converter = converter;
-        }
+public class ReversedConverter : IBindingConverter {
+    readonly IBindingConverter converter;
 
-        public Type FirstType {
-            get { return converter.SecondType; }
-        }
+    public ReversedConverter(IBindingConverter converter) {
+        this.converter = converter;
+    }
 
-        public Type SecondType {
-            get { return converter.FirstType; }
-        }
+    public Type FirstType {
+        get { return converter.SecondType; }
+    }
 
-        public ConversionResult Convert(object tFirst) {
-            return converter.ConvertBack(tFirst);
-        }
+    public Type SecondType {
+        get { return converter.FirstType; }
+    }
 
-        public ConversionResult ConvertBack(object tSecond) {
-            return converter.Convert(tSecond);
-        }
+    public ConversionResult Convert(object tFirst) {
+        return converter.ConvertBack(tFirst);
+    }
+
+    public ConversionResult ConvertBack(object tSecond) {
+        return converter.Convert(tSecond);
     }
 }

@@ -1,25 +1,24 @@
 ﻿using System;
 
-namespace ConsoleFramework.Xaml
+namespace ConsoleFramework.Xaml;
+
+/// <summary>
+/// Позволяет получить тип по имени. Имя может содержать аргументы-типы, например
+/// ConsoleFramework.Xaml.TestClass`1[System.String]
+/// </summary>
+[MarkupExtension("Type")]
+class TypeMarkupExtension : IMarkupExtension
 {
-    /// <summary>
-    /// Позволяет получить тип по имени. Имя может содержать аргументы-типы, например
-    /// ConsoleFramework.Xaml.TestClass`1[System.String]
-    /// </summary>
-    [MarkupExtension("Type")]
-    class TypeMarkupExtension : IMarkupExtension
-    {
-        public TypeMarkupExtension( ) {
-        }
+    public TypeMarkupExtension( ) {
+    }
 
-        public TypeMarkupExtension( string name ) {
-            Name = name;
-        }
+    public TypeMarkupExtension( string name ) {
+        Name = name;
+    }
 
-        public String Name { get; set; }
+    public String Name { get; set; }
 
-        public object ProvideValue( IMarkupExtensionContext context ) {
-            return Type.GetType( Name );
-        }
+    public object ProvideValue( IMarkupExtensionContext context ) {
+        return Type.GetType( Name );
     }
 }
