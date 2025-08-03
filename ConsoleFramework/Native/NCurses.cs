@@ -10,7 +10,7 @@ namespace ConsoleFramework.Native
     /// </summary>
     public static class NCurses
     {
-        private const string NCursesLibDllFileName = "libncursesw.so.5"; 
+        private const string NCursesLibDllFileName = "libncursesw.so.6"; 
         
         /// <summary>
         /// Returns pointer to the WINDOW struct.
