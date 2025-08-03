@@ -224,7 +224,7 @@ public class MenuItem : MenuItemBase, ICommandSource
 
     private void onPopupClosed(object sender, EventArgs eventArgs)
     {
-        assert(expanded);
+        Assert(expanded);
         expanded = false;
     }
 
@@ -474,7 +474,7 @@ public class MenuItem : MenuItemBase, ICommandSource
             }
         }
 
-        protected override void initialize()
+        protected override void Initialize()
         {
             AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown), true);
         }
@@ -559,7 +559,7 @@ public class MenuItem : MenuItemBase, ICommandSource
 
     internal void Close()
     {
-        assert(expanded);
+        Assert(expanded);
         popup.Close();
     }
 
@@ -841,7 +841,7 @@ public class Menu : Control
     {
         if (Parent != null)
         {
-            assert(Parent is WindowsHost);
+            Assert(Parent is WindowsHost);
 
             // Вешаем на WindowsHost обработчик события MenuItem.ClickEvent,
             // чтобы ловить момент выбора пункта меню в одном из модальных всплывающих окошек

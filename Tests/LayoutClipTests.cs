@@ -38,7 +38,7 @@ public class LayoutClipTests
             VerticalAlignment = verticalAlignment
         };
         Size inkSize = new Size(inkWidth, inkHeight);
-        Vector offset = control.computeAlignmentOffsetCore(new Size(10, 10), inkSize);
+        Vector offset = control.ComputeAlignmentOffsetCore(new Size(10, 10), inkSize);
         Assert.Equal(new Vector(expectedX, expectedY), offset);
     }
 
@@ -49,12 +49,12 @@ public class LayoutClipTests
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             MaxWidth = 3,
-            layoutInfo = new LayoutInfo
+            LayoutInfo = new LayoutInfo
             {
-                renderSize = new Size(10, 1)
+                RenderSize = new Size(10, 1)
             }
         };
-        Rect layoutClip = control.applyMaxConstraints(new Rect(-10, -10, 20, 20));
+        Rect layoutClip = control.ApplyMaxConstraints(new Rect(-10, -10, 20, 20));
         // If Max constraint is present, the layoutClip will be clipped to
         // visualLayoutClip: a rect starting from (0, 0) and with size of (MaxWidth, MaxHeight)
         Assert.Equal(new Rect(0, 0, 3, 1), layoutClip);

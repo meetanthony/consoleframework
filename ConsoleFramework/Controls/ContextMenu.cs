@@ -12,23 +12,19 @@ namespace ConsoleFramework.Controls;
 [ContentProperty("Items")]
 public class ContextMenu
 {
-    private readonly ObservableList<MenuItemBase> items = new ObservableList<MenuItemBase>(
-        new List<MenuItemBase>());
+    private readonly ObservableList<MenuItemBase> _items = new(new List<MenuItemBase>());
 
-    public IList<MenuItemBase> Items
-    {
-        get { return items; }
-    }
+    public IList<MenuItemBase> Items => _items;
 
-    private MenuItem.Popup popup;
-    private bool expanded;
+    private MenuItem.Popup? _popup;
+    private bool _expanded;
 
-    private bool popupShadow = true;
+    private bool _popupShadow = true;
 
     public bool PopupShadow
     {
-        get { return popupShadow; }
-        set { popupShadow = value; }
+        get => _popupShadow;
+        set => _popupShadow = value;
     }
 
     /// <summary>
@@ -37,13 +33,13 @@ public class ContextMenu
     public void CloseAllSubmenus()
     {
         List<MenuItem> expandedSubmenus = new List<MenuItem>();
-        MenuItem currentItem =
-            (MenuItem)this.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
+        MenuItem? currentItem =
+            (MenuItem?)Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
         while (null != currentItem)
         {
             expandedSubmenus.Add(currentItem);
             currentItem =
-                (MenuItem)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
+                (MenuItem?)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
         }
 
         expandedSubmenus.Reverse();
@@ -53,13 +49,13 @@ public class ContextMenu
         }
     }
 
-    private WindowsHost windowsHost;
-    private RoutedEventHandler windowsHostClick;
-    private KeyEventHandler windowsHostControlKeyPressed;
+    private WindowsHost? _windowsHost;
+    private RoutedEventHandler? _windowsHostClick;
+    private KeyEventHandler? _windowsHostControlKeyPressed;
 
     public void OpenMenu(WindowsHost windowsHost, Point point)
     {
-        if (expanded) return;
+        if (_expanded) return;
 
         // Вешаем на WindowsHost обработчик события MenuItem.ClickEvent,
         // чтобы ловить момент выбора пункта меню в одном из модальных всплывающих окошек
@@ -69,14 +65,14 @@ public class ContextMenu
         // в WindowsHost, но не в Menu. А нам нужно повесить обработчик, который закроет
         // все показанные попапы.
         EventManager.AddHandler(windowsHost, MenuItem.ClickEvent,
-            windowsHostClick = (sender, args) =>
+            _windowsHostClick = (sender, args) =>
             {
                 CloseAllSubmenus();
-                popup.Close();
+                _popup?.Close();
             }, true);
 
         EventManager.AddHandler(windowsHost, MenuItem.Popup.ControlKeyPressedEvent,
-            windowsHostControlKeyPressed = (sender, args) =>
+            _windowsHostControlKeyPressed = (sender, args) =>
             {
                 CloseAllSubmenus();
                 //
@@ -85,29 +81,34 @@ public class ContextMenu
                     ConsoleApplication.Instance.FocusManager.MoveFocusNext();
                 else if (args.wVirtualKeyCode == VirtualKeys.Left)
                     ConsoleApplication.Instance.FocusManager.MoveFocusPrev();
-                MenuItem focusedItem = (MenuItem)this.Items.SingleOrDefault(item => item is MenuItem && item.HasFocus);
-                focusedItem.Expand();
+                MenuItem? focusedItem = (MenuItem?)Items.SingleOrDefault(item => item is MenuItem && item.HasFocus);
+                focusedItem?.Expand();
             });
 
-        if (null == popup)
+        if (null == _popup)
         {
-            popup = new MenuItem.Popup(this.Items, this.popupShadow, 0);
-            popup.AddHandler(Window.ClosedEvent, new EventHandler(onPopupClosed));
+            _popup = new MenuItem.Popup(Items, _popupShadow, 0);
+            _popup.AddHandler(Window.ClosedEvent, new EventHandler(OnPopupClosed));
         }
 
-        popup.X = point.X;
-        popup.Y = point.Y;
-        windowsHost.ShowModal(popup, true);
-        expanded = true;
-        this.windowsHost = windowsHost;
+        _popup.X = point.X;
+        _popup.Y = point.Y;
+        windowsHost.ShowModal(_popup, true);
+        _expanded = true;
+        _windowsHost = windowsHost;
     }
 
-    private void onPopupClosed(object sender, EventArgs eventArgs)
+    private void OnPopupClosed(object? sender, EventArgs eventArgs)
     {
-        if (!expanded) throw new InvalidOperationException("This shouldn't happen");
-        expanded = false;
-        EventManager.RemoveHandler(windowsHost, MenuItem.ClickEvent, windowsHostClick);
-        EventManager.RemoveHandler(windowsHost, MenuItem.Popup.ControlKeyPressedEvent,
-            windowsHostControlKeyPressed);
+        if (!_expanded) throw new InvalidOperationException("This shouldn't happen");
+        _expanded = false;
+        if (_windowsHost != null)
+        {
+            if (_windowsHostClick != null)
+                EventManager.RemoveHandler(_windowsHost, MenuItem.ClickEvent, _windowsHostClick);
+            if (_windowsHostControlKeyPressed != null)
+                EventManager.RemoveHandler(_windowsHost, MenuItem.Popup.ControlKeyPressedEvent,
+                    _windowsHostControlKeyPressed);
+        }
     }
 }

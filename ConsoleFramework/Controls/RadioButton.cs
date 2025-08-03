@@ -85,9 +85,9 @@ public class RadioButton : CheckBox
 
         buffer.SetOpacityRect(0, 0, ActualWidth, ActualHeight, 3);
 
-        buffer.SetPixel(0, 0, pressed ? '<' : '(', buttonAttrs);
+        buffer.SetPixel(0, 0, Pressed ? '<' : '(', buttonAttrs);
         buffer.SetPixel(1, 0, Checked ? 'X' : ' ', buttonAttrs);
-        buffer.SetPixel(2, 0, pressed ? '>' : ')', buttonAttrs);
+        buffer.SetPixel(2, 0, Pressed ? '>' : ')', buttonAttrs);
         buffer.SetPixel(3, 0, ' ', buttonAttrs);
         if (null != Caption)
             RenderString(Caption, buffer, 4, 0, ActualWidth - 4, captionAttrs);

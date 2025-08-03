@@ -215,7 +215,7 @@ public class TreeView : Control
     {
         for (int i = 0; i < treeItemsFlat.Count; i++)
         {
-            assert(treeItemsFlat[i].Position == i);
+            Assert(treeItemsFlat[i].Position == i);
         }
     }
 

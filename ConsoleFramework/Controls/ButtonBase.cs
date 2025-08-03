@@ -12,30 +12,30 @@ public abstract class ButtonBase : Control, ICommandSource
     /// <summary>
     /// Is button in clicking mode (when mouse pressed but not released yet).
     /// </summary>
-    private bool clicking;
+    private bool _clicking;
 
     /// <summary>
     /// Is button pressed using mouse now.
     /// </summary>
-    protected bool pressed;
+    protected bool Pressed;
 
     /// <summary>
     /// True in some time after user has pressed button using keyboard
     /// (~ 0.5 second) - just for animate pressing
     /// </summary>
-    protected bool pressedUsingKeyboard;
+    protected bool PressedUsingKeyboard;
 
-    private bool disabled;
+    private bool _disabled;
 
     public bool Disabled
     {
-        get { return disabled; }
+        get => _disabled;
         set
         {
-            if (disabled != value)
+            if (_disabled != value)
             {
-                disabled = value;
-                Focusable = !disabled;
+                _disabled = value;
+                Focusable = !_disabled;
                 Invalidate();
             }
         }
@@ -46,8 +46,8 @@ public abstract class ButtonBase : Control, ICommandSource
 
     public event RoutedEventHandler OnClick
     {
-        add { AddHandler(ClickEvent, value); }
-        remove { RemoveHandler(ClickEvent, value); }
+        add => AddHandler(ClickEvent, value);
+        remove => RemoveHandler(ClickEvent, value);
     }
 
     protected ButtonBase()
@@ -68,16 +68,16 @@ public abstract class ButtonBase : Control, ICommandSource
             || args.wVirtualKeyCode == VirtualKeys.Return)
         {
             RaiseEvent(ClickEvent, new RoutedEventArgs(this, ClickEvent));
-            if (command != null && command.CanExecute(CommandParameter))
+            if (_command != null && _command.CanExecute(CommandParameter))
             {
-                command.Execute(CommandParameter);
+                _command.Execute(CommandParameter);
             }
 
-            pressedUsingKeyboard = true;
+            PressedUsingKeyboard = true;
             Invalidate();
             ConsoleApplication.Instance.Post(() =>
             {
-                pressedUsingKeyboard = false;
+                PressedUsingKeyboard = false;
                 Invalidate();
             }, TimeSpan.FromMilliseconds(300));
             args.Handled = true;
@@ -86,11 +86,11 @@ public abstract class ButtonBase : Control, ICommandSource
 
     private void Button_MouseEnter(object sender, MouseEventArgs args)
     {
-        if (clicking)
+        if (_clicking)
         {
-            if (!pressed)
+            if (!Pressed)
             {
-                pressed = true;
+                Pressed = true;
                 Invalidate();
             }
         }
@@ -98,11 +98,11 @@ public abstract class ButtonBase : Control, ICommandSource
 
     private void Button_MouseLeave(object sender, MouseEventArgs args)
     {
-        if (clicking)
+        if (_clicking)
         {
-            if (pressed)
+            if (Pressed)
             {
-                pressed = false;
+                Pressed = false;
                 Invalidate();
             }
         }
@@ -110,33 +110,33 @@ public abstract class ButtonBase : Control, ICommandSource
 
     private void Button_OnMouseDown(object sender, MouseButtonEventArgs args)
     {
-        if (!clicking && !Disabled)
+        if (!_clicking && !Disabled)
         {
-            clicking = true;
-            pressed = true;
+            _clicking = true;
+            Pressed = true;
             ConsoleApplication.Instance.BeginCaptureInput(this);
-            this.Invalidate();
+            Invalidate();
             args.Handled = true;
         }
     }
 
     private void Button_OnMouseUp(object sender, MouseButtonEventArgs args)
     {
-        if (clicking && !Disabled)
+        if (_clicking && !Disabled)
         {
-            clicking = false;
-            if (pressed)
+            _clicking = false;
+            if (Pressed)
             {
-                pressed = false;
-                this.Invalidate();
+                Pressed = false;
+                Invalidate();
             }
 
             if (HitTest(args.RawPosition))
             {
                 RaiseEvent(ClickEvent, new RoutedEventArgs(this, ClickEvent));
-                if (command != null && command.CanExecute(CommandParameter))
+                if (_command != null && _command.CanExecute(CommandParameter))
                 {
-                    command.Execute(CommandParameter);
+                    _command.Execute(CommandParameter);
                 }
             }
 
@@ -145,43 +145,44 @@ public abstract class ButtonBase : Control, ICommandSource
         }
     }
 
-    private ICommand command;
+    private ICommand? _command;
 
-    public ICommand Command
+    public ICommand? Command
     {
-        get { return command; }
+        get => _command;
         set
         {
-            if (command != value)
+            if (_command != value)
             {
-                if (command != null)
+                if (_command != null)
                 {
-                    command.CanExecuteChanged -= onCommandCanExecuteChanged;
+                    _command.CanExecuteChanged -= OnCommandCanExecuteChanged;
                 }
 
-                command = value;
-                command.CanExecuteChanged += onCommandCanExecuteChanged;
+                _command = value;
+                if (_command != null)
+                    _command.CanExecuteChanged += OnCommandCanExecuteChanged;
 
-                refreshCanExecute();
+                RefreshCanExecute();
             }
         }
     }
 
-    private void onCommandCanExecuteChanged(object sender, EventArgs args)
+    private void OnCommandCanExecuteChanged(object? sender, EventArgs args)
     {
-        refreshCanExecute();
+        RefreshCanExecute();
     }
 
-    private void refreshCanExecute()
+    private void RefreshCanExecute()
     {
-        if (command == null)
+        if (_command == null)
         {
-            this.Disabled = false;
+            Disabled = false;
             return;
         }
 
-        this.Disabled = !command.CanExecute(CommandParameter);
+        Disabled = !_command.CanExecute(CommandParameter);
     }
 
-    public object CommandParameter { get; set; }
+    public object? CommandParameter { get; set; }
 }

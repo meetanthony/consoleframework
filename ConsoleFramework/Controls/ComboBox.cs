@@ -19,7 +19,7 @@ namespace ConsoleFramework.Controls;
 /// </summary>
 public class ComboBox : Control
 {
-    private readonly bool shadow;
+    private readonly bool _shadow;
 
     public ComboBox() : this(true)
     {
@@ -31,7 +31,7 @@ public class ComboBox : Control
     /// <param name="shadow">Display shadow or not</param>
     public ComboBox(bool shadow)
     {
-        this.shadow = shadow;
+        _shadow = shadow;
         Focusable = true;
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(OnMouseDown));
         AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown));
@@ -40,33 +40,33 @@ public class ComboBox : Control
     private class PopupWindow : Window
     {
         public int? IndexSelected;
-        private readonly bool shadow;
-        private readonly ListBox listbox;
-        private readonly ScrollViewer scrollViewer;
+        private readonly bool _shadow;
+        private readonly ListBox _listbox;
+        private readonly ScrollViewer _scrollViewer;
 
         public PopupWindow(IEnumerable<string> items,
             int selectedItemIndex, bool shadow,
             int? shownItemsCount)
         {
-            this.shadow = shadow;
-            scrollViewer = new ScrollViewer();
-            listbox = new ListBox();
-            foreach (string item in items) listbox.Items.Add(item);
+            _shadow = shadow;
+            _scrollViewer = new ScrollViewer();
+            _listbox = new ListBox();
+            foreach (string item in items) _listbox.Items.Add(item);
 //                listbox.Items.AddRange( items );
-            listbox.SelectedItemIndex = selectedItemIndex;
+            _listbox.SelectedItemIndex = selectedItemIndex;
             if (shownItemsCount != null)
-                listbox.PageSize = shownItemsCount.Value;
+                _listbox.PageSize = shownItemsCount.Value;
             IndexSelected = selectedItemIndex;
-            listbox.HorizontalAlignment = HorizontalAlignment.Stretch;
-            scrollViewer.HorizontalScrollEnabled = false;
-            scrollViewer.HorizontalAlignment = HorizontalAlignment.Stretch;
-            scrollViewer.Content = listbox;
-            Content = scrollViewer;
+            _listbox.HorizontalAlignment = HorizontalAlignment.Stretch;
+            _scrollViewer.HorizontalScrollEnabled = false;
+            _scrollViewer.HorizontalAlignment = HorizontalAlignment.Stretch;
+            _scrollViewer.Content = _listbox;
+            Content = _scrollViewer;
 
             // If click on the transparent header, close the popup
             AddHandler(MouseDownEvent, new MouseButtonEventHandler((sender, args) =>
             {
-                if (!scrollViewer.RenderSlotRect.Contains(args.GetPosition(this)))
+                if (!_scrollViewer.RenderSlotRect.Contains(args.GetPosition(this)))
                 {
                     Close();
                     args.Handled = true;
@@ -74,39 +74,39 @@ public class ComboBox : Control
             }));
 
             // If listbox item has been selected
-            EventManager.AddHandler(listbox, MouseUpEvent, new MouseButtonEventHandler((sender, args) =>
+            EventManager.AddHandler(_listbox, MouseUpEvent, new MouseButtonEventHandler((sender, args) =>
             {
-                IndexSelected = listbox.SelectedItemIndex;
+                IndexSelected = _listbox.SelectedItemIndex;
                 Close();
             }), true);
-            EventManager.AddHandler(listbox, KeyDownEvent, new KeyEventHandler((sender, args) =>
+            EventManager.AddHandler(_listbox, KeyDownEvent, new KeyEventHandler((sender, args) =>
             {
                 if (args.wVirtualKeyCode == VirtualKeys.Return)
                 {
-                    IndexSelected = listbox.SelectedItemIndex;
+                    IndexSelected = _listbox.SelectedItemIndex;
                     Close();
                 }
             }), true);
             // todo : cleanup event handlers after popup closing
         }
 
-        private void initListBoxScrollingPos()
+        private void InitListBoxScrollingPos()
         {
-            int itemIndex = listbox.SelectedItemIndex ?? 0;
-            int firstVisibleItemIndex = scrollViewer.DeltaY;
-            int lastVisibleItemIndex = firstVisibleItemIndex + scrollViewer.ActualHeight -
-                                       (scrollViewer.HorizontalScrollVisible ? 1 : 0) - 1;
+            int itemIndex = _listbox.SelectedItemIndex ?? 0;
+            int firstVisibleItemIndex = _scrollViewer.DeltaY;
+            int lastVisibleItemIndex = firstVisibleItemIndex + _scrollViewer.ActualHeight -
+                                       (_scrollViewer.HorizontalScrollVisible ? 1 : 0) - 1;
             if (itemIndex > lastVisibleItemIndex)
             {
-                scrollViewer.ScrollContent(ScrollViewer.Direction.Up, itemIndex - lastVisibleItemIndex);
+                _scrollViewer.ScrollContent(ScrollViewer.Direction.Up, itemIndex - lastVisibleItemIndex);
             }
             else if (itemIndex < firstVisibleItemIndex)
             {
-                scrollViewer.ScrollContent(ScrollViewer.Direction.Down, firstVisibleItemIndex - itemIndex);
+                _scrollViewer.ScrollContent(ScrollViewer.Direction.Down, firstVisibleItemIndex - itemIndex);
             }
         }
 
-        protected override void initialize()
+        protected override void Initialize()
         {
             AddHandler(ActivatedEvent, new EventHandler(OnActivated));
             AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), true);
@@ -121,7 +121,7 @@ public class ComboBox : Control
             else base.OnPreviewKeyDown(sender, args);
         }
 
-        private void OnActivated(object sender, EventArgs eventArgs)
+        private void OnActivated(object? sender, EventArgs eventArgs)
         {
         }
 
@@ -130,13 +130,13 @@ public class ComboBox : Control
             Attr borderAttrs = Colors.Blend(Color.Black, Color.DarkCyan);
 
             // Background
-            buffer.FillRectangle(1, 1, this.ActualWidth - 1, this.ActualHeight - 1, ' ', borderAttrs);
+            buffer.FillRectangle(1, 1, ActualWidth - 1, ActualHeight - 1, ' ', borderAttrs);
 
             // First row and first column are transparent
             // Column is also transparent for mouse events
             buffer.SetOpacityRect(0, 0, ActualWidth, 1, 2);
             buffer.SetOpacityRect(0, 1, 1, ActualHeight - 1, 6);
-            if (shadow)
+            if (_shadow)
             {
                 buffer.SetOpacity(1, ActualHeight - 1, 2 + 4);
                 buffer.SetOpacity(ActualWidth - 1, 0, 2 + 4);
@@ -151,7 +151,7 @@ public class ComboBox : Control
         protected override Size MeasureOverride(Size availableSize)
         {
             if (Content == null) return new Size(0, 0);
-            if (shadow)
+            if (_shadow)
             {
                 // 1 row and 1 column - reserved for transparent space, remaining - for ListBox
                 Content.Measure(new Size(availableSize.Width - 2, availableSize.Height - 2));
@@ -169,7 +169,7 @@ public class ComboBox : Control
         {
             if (Content != null)
             {
-                if (shadow)
+                if (_shadow)
                 {
                     Content.Arrange(new Rect(new Point(1, 1),
                         new Size(finalSize.Width - 2, finalSize.Height - 2)));
@@ -183,7 +183,7 @@ public class ComboBox : Control
                 // When initializing we need to correctly assign offsets to ScrollViewer for
                 // currently selected item. Because ScrollViewer depends of ActualWidth / ActualHeight
                 // of Content, we need to do this after arrangement has finished.
-                initListBoxScrollingPos();
+                InitListBoxScrollingPos();
             }
 
             return finalSize;
@@ -195,35 +195,35 @@ public class ComboBox : Control
         }
     }
 
-    private bool opened
+    private bool Opened
     {
-        get { return m_opened; }
+        get => _mOpened;
         set
         {
-            m_opened = value;
+            _mOpened = value;
             Invalidate();
         }
     }
 
     public int? ShownItemsCount { get; set; }
 
-    private void openPopup()
+    private void OpenPopup()
     {
-        if (opened) throw new InvalidOperationException("Assertion failed.");
-        Window popup = new PopupWindow(Items, SelectedItemIndex ?? 0, shadow,
-            ShownItemsCount != null ? ShownItemsCount.Value - 1 : (int?)null);
+        if (Opened) throw new InvalidOperationException("Assertion failed.");
+        Window popup = new PopupWindow(Items, SelectedItemIndex ?? 0, _shadow,
+            ShownItemsCount != null ? ShownItemsCount.Value - 1 : null);
         Point popupCoord = TranslatePoint(this, new Point(0, 0),
             VisualTreeHelper.FindClosestParent<WindowsHost>(this));
         popup.X = popupCoord.X;
         popup.Y = popupCoord.Y;
-        popup.Width = shadow ? ActualWidth + 1 : ActualWidth;
+        popup.Width = _shadow ? ActualWidth + 1 : ActualWidth;
         if (Items.Count != 0)
             popup.Height = (ShownItemsCount != null ? ShownItemsCount.Value : Items.Count)
-                           + (shadow ? 2 : 1); // 1 row for transparent "header"
-        else popup.Height = shadow ? 3 : 2;
+                           + (_shadow ? 2 : 1); // 1 row for transparent "header"
+        else popup.Height = _shadow ? 3 : 2;
         WindowsHost windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
         windowsHost.ShowModal(popup, true);
-        opened = true;
+        Opened = true;
         EventManager.AddHandler(popup, Window.ClosedEvent, new EventHandler(OnPopupClosed));
     }
 
@@ -231,54 +231,53 @@ public class ComboBox : Control
     {
         if (args.wVirtualKeyCode == VirtualKeys.Return)
         {
-            openPopup();
+            OpenPopup();
         }
     }
 
     private void OnMouseDown(object sender, MouseButtonEventArgs mouseButtonEventArgs)
     {
-        if (!opened)
-            openPopup();
+        if (!Opened)
+            OpenPopup();
     }
 
-    private void OnPopupClosed(object o, EventArgs args)
+    private void OnPopupClosed(object? o, EventArgs args)
     {
-        if (!opened) throw new InvalidOperationException("Assertion failed.");
-        opened = false;
-        this.SelectedItemIndex = ((PopupWindow)o).IndexSelected;
-        EventManager.RemoveHandler(o, Window.ClosedEvent, new EventHandler(OnPopupClosed));
+        if (!Opened) throw new InvalidOperationException("Assertion failed.");
+        Opened = false;
+        if (o != null)
+        {
+            SelectedItemIndex = ((PopupWindow)o).IndexSelected;
+            EventManager.RemoveHandler(o, Window.ClosedEvent, new EventHandler(OnPopupClosed));
+        }
     }
 
-    private readonly List<String> items = new List<string>();
+    private readonly List<String> _items = new List<string>();
 
-    public List<String> Items
-    {
-        get { return items; }
-    }
-
+    public List<String> Items => _items;
 
     public int? SelectedItemIndex
     {
-        get { return selectedItemIndex; }
+        get => _selectedItemIndex;
         set
         {
-            if (selectedItemIndex != value)
+            if (_selectedItemIndex != value)
             {
-                selectedItemIndex = value;
+                _selectedItemIndex = value;
                 Invalidate();
                 RaisePropertyChanged("SelectedItemIndex");
             }
         }
     }
 
-    private bool m_opened;
-    private int? selectedItemIndex;
+    private bool _mOpened;
+    private int? _selectedItemIndex;
 
-    public static Size EMPTY_SIZE = new Size(3, 1);
+    public static Size EmptySize = new Size(3, 1);
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        if (Items.Count == 0) return EMPTY_SIZE;
+        if (Items.Count == 0) return EmptySize;
         int maxLen = Items.Max(s => s.Length);
         // 1 pixel from left, 1 from right, then arrow and 1 more empty pixel
         Size size = new Size(Math.Min(maxLen + 4, availableSize.Width), 1);
@@ -287,12 +286,9 @@ public class ComboBox : Control
 
     public override void Render(RenderingBuffer buffer)
     {
-        Attr attrs;
-        if (HasFocus)
-        {
-            attrs = Colors.Blend(Color.White, Color.DarkGreen);
-        }
-        else attrs = Colors.Blend(Color.Black, Color.DarkCyan);
+        var attrs = HasFocus
+            ? Colors.Blend(Color.White, Color.DarkGreen)
+            : Colors.Blend(Color.Black, Color.DarkCyan);
 
         buffer.SetPixel(0, 0, ' ', attrs);
         int usedForCurrentItem = 0;
@@ -304,7 +300,7 @@ public class ComboBox : Control
         buffer.FillRectangle(1 + usedForCurrentItem, 0, ActualWidth - (usedForCurrentItem + 1), 1, ' ', attrs);
         if (ActualWidth > 2)
         {
-            buffer.SetPixel(ActualWidth - 2, 0, opened ? '^' : 'v', attrs);
+            buffer.SetPixel(ActualWidth - 2, 0, Opened ? '^' : 'v', attrs);
         }
     }
 }

@@ -361,7 +361,7 @@ public sealed class Renderer
 
     private bool checkDesiredSizeNotChangedRecursively(Control control)
     {
-        if (control.lastLayoutInfo.unclippedDesiredSize != control.layoutInfo.unclippedDesiredSize)
+        if (control.LastLayoutInfo.UnclippedDesiredSize != control.LayoutInfo.UnclippedDesiredSize)
         {
             return false;
         }
@@ -377,7 +377,7 @@ public sealed class Renderer
 
     private void updateLayout(Control control, List<Control> revalidatedControls)
     {
-        LayoutInfo lastLayoutInfo = control.lastLayoutInfo;
+        LayoutInfo lastLayoutInfo = control.LastLayoutInfo;
         // работаем с родительским элементом управления
         if (control.Parent != null)
         {
@@ -386,9 +386,9 @@ public sealed class Renderer
             // вверх по дереву элементов, и мы переходим к работе с дочерними элементами
             // в противном случае мы добавляем родительский элемент в конец очереди ревалидации, и
             // возвращаем управление
-            if (lastLayoutInfo.validity != LayoutValidity.Nothing)
+            if (lastLayoutInfo.Validity != LayoutValidity.Nothing)
             {
-                control.Measure(lastLayoutInfo.measureArgument);
+                control.Measure(lastLayoutInfo.MeasureArgument);
 //                    if (lastLayoutInfo.unclippedDesiredSize == control.layoutInfo.unclippedDesiredSize) {
                 if (checkDesiredSizeNotChangedRecursively(control))
                 {
@@ -408,7 +408,7 @@ public sealed class Renderer
 
         // работаем с дочерними элементами управления
         // вызываем для текущего контрола Measure&Arrange с последними значениями аргументов
-        if (lastLayoutInfo.validity == LayoutValidity.Nothing && control.Parent != null)
+        if (lastLayoutInfo.Validity == LayoutValidity.Nothing && control.Parent != null)
         {
             throw new InvalidOperationException("Assertion failed.");
         }
@@ -426,19 +426,19 @@ public sealed class Renderer
         }
         else
         {
-            control.Measure(lastLayoutInfo.measureArgument);
-            control.Arrange(lastLayoutInfo.renderSlotRect);
+            control.Measure(lastLayoutInfo.MeasureArgument);
+            control.Arrange(lastLayoutInfo.RenderSlotRect);
         }
 
         // update render buffers of current control and its children
         RenderingBuffer buffer = getOrCreateBufferForControl(control);
         RenderingBuffer fullBuffer = getOrCreateFullBufferForControl(control);
         // replace buffers if control has grown
-        LayoutInfo layoutInfo = control.layoutInfo;
-        if (layoutInfo.renderSize.width > buffer.Width || layoutInfo.renderSize.height > buffer.Height)
+        LayoutInfo layoutInfo = control.LayoutInfo;
+        if (layoutInfo.RenderSize.width > buffer.Width || layoutInfo.RenderSize.height > buffer.Height)
         {
-            buffer = new RenderingBuffer(layoutInfo.renderSize.width, layoutInfo.renderSize.height);
-            fullBuffer = new RenderingBuffer(layoutInfo.renderSize.width, layoutInfo.renderSize.height);
+            buffer = new RenderingBuffer(layoutInfo.RenderSize.width, layoutInfo.RenderSize.height);
+            fullBuffer = new RenderingBuffer(layoutInfo.RenderSize.width, layoutInfo.RenderSize.height);
             buffers[control] = buffer;
             fullBuffers[control] = fullBuffer;
         }
@@ -490,8 +490,8 @@ public sealed class Renderer
 
     private bool checkRenderingWasNotChangedRecursively(Control control)
     {
-        if (!control.lastLayoutInfo.Equals(control.layoutInfo)
-            || control.lastLayoutInfo.validity != LayoutValidity.Render) return false;
+        if (!control.LastLayoutInfo.Equals(control.LayoutInfo)
+            || control.LastLayoutInfo.Validity != LayoutValidity.Render) return false;
         foreach (Control child in control.Children)
         {
             if (!checkRenderingWasNotChangedRecursively(child)) return false;
@@ -505,11 +505,11 @@ public sealed class Renderer
         RenderingBuffer buffer = getOrCreateBufferForControl(control);
         RenderingBuffer fullBuffer = getOrCreateFullBufferForControl(control);
         //
-        LayoutInfo lastLayoutInfo = control.lastLayoutInfo;
-        LayoutInfo layoutInfo = control.layoutInfo;
+        LayoutInfo lastLayoutInfo = control.LastLayoutInfo;
+        LayoutInfo layoutInfo = control.LayoutInfo;
         //
-        control.Measure(lastLayoutInfo.measureArgument);
-        control.Arrange(lastLayoutInfo.renderSlotRect);
+        control.Measure(lastLayoutInfo.MeasureArgument);
+        control.Arrange(lastLayoutInfo.RenderSlotRect);
         // if lastLayoutInfo eq layoutInfo we can use last rendered buffer
         if (checkRenderingWasNotChangedRecursively(control))
         {
@@ -522,10 +522,10 @@ public sealed class Renderer
         }
 
         // replace buffers if control has grown
-        if (layoutInfo.renderSize.width > buffer.Width || layoutInfo.renderSize.height > buffer.Height)
+        if (layoutInfo.RenderSize.width > buffer.Width || layoutInfo.RenderSize.height > buffer.Height)
         {
-            buffer = new RenderingBuffer(layoutInfo.renderSize.width, layoutInfo.renderSize.height);
-            fullBuffer = new RenderingBuffer(layoutInfo.renderSize.width, layoutInfo.renderSize.height);
+            buffer = new RenderingBuffer(layoutInfo.RenderSize.width, layoutInfo.RenderSize.height);
+            fullBuffer = new RenderingBuffer(layoutInfo.RenderSize.width, layoutInfo.RenderSize.height);
             buffers[control] = buffer;
             fullBuffers[control] = fullBuffer;
         }

@@ -20,31 +20,31 @@ public class CheckBox : ButtonBase
         Checked = !Checked;
     }
 
-    private string caption;
+    private string? _caption;
 
-    public string Caption
+    public string? Caption
     {
-        get { return caption; }
+        get => _caption;
         set
         {
-            if (caption != value)
+            if (_caption != value)
             {
-                caption = value;
+                _caption = value;
                 Invalidate();
             }
         }
     }
 
-    private bool isChecked;
+    private bool _isChecked;
 
     public bool Checked
     {
-        get { return isChecked; }
+        get => _isChecked;
         set
         {
-            if (isChecked != value)
+            if (_isChecked != value)
             {
-                isChecked = value;
+                _isChecked = value;
                 RaisePropertyChanged("Checked");
                 Invalidate();
             }
@@ -53,12 +53,13 @@ public class CheckBox : ButtonBase
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        if (!string.IsNullOrEmpty(caption))
+        if (!string.IsNullOrEmpty(_caption))
         {
-            Size minButtonSize = new Size(caption.Length + 4, 1);
+            Size minButtonSize = new Size(_caption.Length + 4, 1);
             return minButtonSize;
         }
-        else return new Size(8, 1);
+
+        return new Size(8, 1);
     }
 
     public override void Render(RenderingBuffer buffer)
@@ -75,11 +76,11 @@ public class CheckBox : ButtonBase
 
         buffer.SetOpacityRect(0, 0, ActualWidth, ActualHeight, 3);
 
-        buffer.SetPixel(0, 0, pressed ? '<' : '[', buttonAttrs);
+        buffer.SetPixel(0, 0, Pressed ? '<' : '[', buttonAttrs);
         buffer.SetPixel(1, 0, Checked ? 'X' : ' ', buttonAttrs);
-        buffer.SetPixel(2, 0, pressed ? '>' : ']', buttonAttrs);
+        buffer.SetPixel(2, 0, Pressed ? '>' : ']', buttonAttrs);
         buffer.SetPixel(3, 0, ' ', buttonAttrs);
-        if (null != caption)
-            RenderString(caption, buffer, 4, 0, ActualWidth - 4, captionAttrs);
+        if (null != _caption)
+            RenderString(_caption, buffer, 4, 0, ActualWidth - 4, captionAttrs);
     }
 }

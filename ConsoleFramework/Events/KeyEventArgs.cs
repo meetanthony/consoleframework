@@ -6,7 +6,7 @@ public delegate void KeyEventHandler(object sender, KeyEventArgs args);
 
 public class KeyEventArgs : RoutedEventArgs
 {
-    public KeyEventArgs(object source, RoutedEvent routedEvent) : base(source, routedEvent)
+    public KeyEventArgs(object? source, RoutedEvent routedEvent) : base(source, routedEvent)
     {
     }
 

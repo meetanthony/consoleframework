@@ -32,10 +32,10 @@ public class Window : Control
     {
         this.IsFocusScope = true;
         AddHandler(PreviewMouseDownEvent, new MouseButtonEventHandler(Window_OnPreviewMouseDown));
-        initialize();
+        Initialize();
     }
 
-    protected virtual void initialize()
+    protected virtual void Initialize()
     {
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(Window_OnMouseDown));
         AddHandler(MouseUpEvent, new MouseButtonEventHandler(Window_OnMouseUp));
@@ -70,9 +70,9 @@ public class Window : Control
 
     public int? Y { get; set; }
 
-    public Control Content
+    public Control? Content
     {
-        get { return Children.Count != 0 ? Children[0] : null; }
+        get => Children.Count != 0 ? Children[0] : null;
         set
         {
             if (Children.Count != 0)
@@ -84,54 +84,54 @@ public class Window : Control
         }
     }
 
-    private string title;
+    private string _title;
 
     public string Title
     {
-        get { return title; }
+        get => _title;
         set
         {
-            if (title != value)
+            if (_title != value)
             {
-                title = value;
+                _title = value;
                 Invalidate();
                 RaisePropertyChanged("Title");
             }
         }
     }
 
-    private ColorPair activeBorderColors;
+    private ColorPair _activeBorderColors;
 
     /// <summary>
     /// Special colors for active window. Not set by default.
     /// </summary>
     public ColorPair ActiveBorderColors
     {
-        get => activeBorderColors;
+        get => _activeBorderColors;
         set
         {
-            if (!Equals(activeBorderColors, value))
+            if (!Equals(_activeBorderColors, value))
             {
-                activeBorderColors = value;
+                _activeBorderColors = value;
                 Invalidate();
             }
         }
     }
 
-    protected WindowsHost getWindowsHost()
+    protected WindowsHost GetWindowsHost()
     {
         return (WindowsHost)Parent;
     }
 
-    public static Size EMPTY_WINDOW_SIZE = new Size(12, 3);
+    public static Size EmptyWindowSize = new Size(12, 3);
 
     protected override Size MeasureOverride(Size availableSize)
     {
         if (Content == null)
         {
             return new Size(
-                Math.Min(availableSize.Width, EMPTY_WINDOW_SIZE.Width + 4),
-                Math.Min(availableSize.Height, EMPTY_WINDOW_SIZE.Height + 3)
+                Math.Min(availableSize.Width, EmptyWindowSize.Width + 4),
+                Math.Min(availableSize.Height, EmptyWindowSize.Height + 3)
             );
         }
 
@@ -192,12 +192,12 @@ public class Window : Control
 
     public bool IsActiveWindow()
     {
-        return getWindowsHost().TopWindow == this;
+        return GetWindowsHost().TopWindow == this;
     }
 
     public override void Render(RenderingBuffer buffer)
     {
-        Attr borderAttrs = moving ? Colors.Blend(Color.Green, Color.Gray) : Colors.Blend(Color.White, Color.Gray);
+        Attr borderAttrs = _moving ? Colors.Blend(Color.Green, Color.Gray) : Colors.Blend(Color.White, Color.Gray);
         if (ActiveBorderColors != null && IsActiveWindow())
         {
             borderAttrs = Colors.Blend(ActiveBorderColors.ForegroundColor, ActiveBorderColors.BackgroundColor);
@@ -207,9 +207,9 @@ public class Window : Control
         buffer.FillRectangle(0, 0, this.ActualWidth, this.ActualHeight, ' ', borderAttrs);
         // Borders
         Point bottomRight = new Point(ActualWidth - 3, ActualHeight - 2);
-        RenderBorders(buffer, new Point(0, 0), bottomRight, this.moving || this.resizing, borderAttrs);
+        RenderBorders(buffer, new Point(0, 0), bottomRight, this._moving || this._resizing, borderAttrs);
         // Additional green right bottom corner if resizing
-        if (resizing)
+        if (_resizing)
         {
             buffer.SetPixel(bottomRight.X, bottomRight.Y, UnicodeTable.SingleFrameBottomRightCorner,
                 Colors.Blend(Color.Green, Color.Gray));
@@ -220,7 +220,7 @@ public class Window : Control
         {
             buffer.SetPixel(2, 0, '[');
             buffer.SetPixel(3, 0,
-                showClosingGlyph ? UnicodeTable.WindowClosePressedSymbol : UnicodeTable.WindowCloseSymbol,
+                _showClosingGlyph ? UnicodeTable.WindowClosePressedSymbol : UnicodeTable.WindowCloseSymbol,
                 Colors.Blend(Color.Green, Color.Gray));
             buffer.SetPixel(4, 0, ']');
         }
@@ -276,30 +276,30 @@ public class Window : Control
         }
     }
 
-    private bool closing = false;
-    private bool showClosingGlyph = false;
+    private bool _closing = false;
+    private bool _showClosingGlyph = false;
 
-    private bool moving = false;
-    private int movingStartX;
-    private int movingStartY;
-    private Point movingStartPoint;
+    private bool _moving = false;
+    private int _movingStartX;
+    private int _movingStartY;
+    private Point _movingStartPoint;
 
-    private bool resizing = false;
-    private int resizingStartWidth;
-    private int resizingStartHeight;
-    private Point resizingStartPoint;
+    private bool _resizing = false;
+    private int _resizingStartWidth;
+    private int _resizingStartHeight;
+    private Point _resizingStartPoint;
 
     public void Window_OnMouseDown(object sender, MouseButtonEventArgs args)
     {
         // Moving is enabled only when windows is not resizing, and vice versa
-        if (!moving && !resizing && !closing)
+        if (!_moving && !_resizing && !_closing)
         {
             Point point = args.GetPosition(this);
-            Point parentPoint = args.GetPosition(getWindowsHost());
+            Point parentPoint = args.GetPosition(GetWindowsHost());
             if (point.y == 0 && point.x == 3)
             {
-                closing = true;
-                showClosingGlyph = true;
+                _closing = true;
+                _showClosingGlyph = true;
                 ConsoleApplication.Instance.BeginCaptureInput(this);
                 // closing is started, we should redraw the border
                 Invalidate();
@@ -307,10 +307,10 @@ public class Window : Control
             }
             else if (point.y == 0)
             {
-                moving = true;
-                movingStartPoint = parentPoint;
-                movingStartX = RenderSlotRect.TopLeft.X;
-                movingStartY = RenderSlotRect.TopLeft.Y;
+                _moving = true;
+                _movingStartPoint = parentPoint;
+                _movingStartX = RenderSlotRect.TopLeft.X;
+                _movingStartY = RenderSlotRect.TopLeft.Y;
                 ConsoleApplication.Instance.BeginCaptureInput(this);
                 // moving is started, we should redraw the border
                 Invalidate();
@@ -318,10 +318,10 @@ public class Window : Control
             }
             else if (point.x == ActualWidth - 3 && point.y == ActualHeight - 2)
             {
-                resizing = true;
-                resizingStartPoint = parentPoint;
-                resizingStartWidth = ActualWidth;
-                resizingStartHeight = ActualHeight;
+                _resizing = true;
+                _resizingStartPoint = parentPoint;
+                _resizingStartWidth = ActualWidth;
+                _resizingStartHeight = ActualHeight;
                 ConsoleApplication.Instance.BeginCaptureInput(this);
                 // resizing is started, we should redraw the border
                 Invalidate();
@@ -343,13 +343,13 @@ public class Window : Control
 
         if (!args.Cancel)
         {
-            getWindowsHost().CloseWindow(this);
+            GetWindowsHost().CloseWindow(this);
         }
     }
 
     public void Window_OnMouseUp(object sender, MouseButtonEventArgs args)
     {
-        if (closing)
+        if (_closing)
         {
             Point point = args.GetPosition(this);
             if (point.x == 3 && point.y == 0)
@@ -357,24 +357,24 @@ public class Window : Control
                 this.HandleClosing();
             }
 
-            closing = false;
-            showClosingGlyph = false;
+            _closing = false;
+            _showClosingGlyph = false;
             ConsoleApplication.Instance.EndCaptureInput(this);
             Invalidate();
             args.Handled = true;
         }
 
-        if (moving)
+        if (_moving)
         {
-            moving = false;
+            _moving = false;
             ConsoleApplication.Instance.EndCaptureInput(this);
             Invalidate();
             args.Handled = true;
         }
 
-        if (resizing)
+        if (_resizing)
         {
-            resizing = false;
+            _resizing = false;
             ConsoleApplication.Instance.EndCaptureInput(this);
             Invalidate();
             args.Handled = true;
@@ -383,23 +383,23 @@ public class Window : Control
 
     public void Window_OnMouseMove(object sender, MouseEventArgs args)
     {
-        if (closing)
+        if (_closing)
         {
             Point point = args.GetPosition(this);
             bool anyChanged = false;
             if (point.x == 3 && point.y == 0)
             {
-                if (!showClosingGlyph)
+                if (!_showClosingGlyph)
                 {
-                    showClosingGlyph = true;
+                    _showClosingGlyph = true;
                     anyChanged = true;
                 }
             }
             else
             {
-                if (showClosingGlyph)
+                if (_showClosingGlyph)
                 {
-                    showClosingGlyph = false;
+                    _showClosingGlyph = false;
                     anyChanged = true;
                 }
             }
@@ -409,23 +409,23 @@ public class Window : Control
             args.Handled = true;
         }
 
-        if (moving)
+        if (_moving)
         {
-            Point parentPoint = args.GetPosition(getWindowsHost());
-            Vector vector = new Vector(parentPoint.X - movingStartPoint.x, parentPoint.Y - movingStartPoint.y);
-            X = movingStartX + vector.X;
-            Y = movingStartY + vector.Y;
-            getWindowsHost().Invalidate();
+            Point parentPoint = args.GetPosition(GetWindowsHost());
+            Vector vector = new Vector(parentPoint.X - _movingStartPoint.x, parentPoint.Y - _movingStartPoint.y);
+            X = _movingStartX + vector.X;
+            Y = _movingStartY + vector.Y;
+            GetWindowsHost().Invalidate();
             args.Handled = true;
         }
 
-        if (resizing)
+        if (_resizing)
         {
-            Point parentPoint = args.GetPosition(getWindowsHost());
-            int deltaWidth = parentPoint.X - resizingStartPoint.x;
-            int deltaHeight = parentPoint.Y - resizingStartPoint.y;
-            int width = resizingStartWidth + deltaWidth;
-            int height = resizingStartHeight + deltaHeight;
+            Point parentPoint = args.GetPosition(GetWindowsHost());
+            int deltaWidth = parentPoint.X - _resizingStartPoint.x;
+            int deltaHeight = parentPoint.Y - _resizingStartPoint.y;
+            int width = _resizingStartWidth + deltaWidth;
+            int height = _resizingStartHeight + deltaHeight;
             bool anyChanged = false;
             if (width >= 4)
             {

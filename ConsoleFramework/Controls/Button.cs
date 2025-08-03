@@ -8,26 +8,27 @@ namespace ConsoleFramework.Controls;
 [ContentProperty("Caption")]
 public class Button : ButtonBase
 {
-    private string caption;
+    private string? _caption;
 
-    public string Caption
+    public string? Caption
     {
-        get { return caption; }
+        get => _caption;
         set
         {
-            caption = value;
+            _caption = value;
             Invalidate();
         }
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        if (!string.IsNullOrEmpty(caption))
+        if (!string.IsNullOrEmpty(_caption))
         {
-            Size minButtonSize = new Size(caption.Length + 10, 2);
+            Size minButtonSize = new Size(_caption.Length + 10, 2);
             return minButtonSize;
         }
-        else return new Size(8, 2);
+
+        return new Size(8, 2);
     }
 
     public override void Render(RenderingBuffer buffer)
@@ -45,7 +46,7 @@ public class Button : ButtonBase
                 captionAttrs = Colors.Blend(Color.Black, Color.DarkGreen);
         }
 
-        if (pressed || pressedUsingKeyboard)
+        if (Pressed || PressedUsingKeyboard)
         {
             buffer.FillRectangle(1, 0, ActualWidth - 1, ActualHeight - 1, ' ', captionAttrs);
             buffer.SetOpacityRect(0, 0, 1, ActualHeight, 3);

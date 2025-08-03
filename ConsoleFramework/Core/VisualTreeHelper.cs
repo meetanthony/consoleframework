@@ -14,12 +14,12 @@ public class VisualTreeHelper
             throw new ArgumentNullException("predicate");
 
         List<Control> queue = new List<Control>();
-        findAllChildsRecoursively(queue, control, predicate);
+        FindAllChildsRecoursively(queue, control, predicate);
 
         return queue;
     }
 
-    private static void findAllChildsRecoursively(List<Control> queue,
+    private static void FindAllChildsRecoursively(List<Control> queue,
         Control control, Func<Control, bool> predicate)
     {
         foreach (Control child in control.Children)
@@ -29,7 +29,7 @@ public class VisualTreeHelper
                 queue.Add(child);
             }
 
-            findAllChildsRecoursively(queue, child, predicate);
+            FindAllChildsRecoursively(queue, child, predicate);
         }
     }
 
@@ -37,17 +37,17 @@ public class VisualTreeHelper
     /// Рекурсивно ищёт дочерний элемент по указанному Name.
     /// Если в результате поиска подходящий элемент не был найден, возвращается null.
     /// </summary>
-    public static Control FindChildByName(Control control, string childName)
+    public static Control? FindChildByName(Control control, string childName)
     {
         if (null == control)
             throw new ArgumentNullException("control");
         if (string.IsNullOrEmpty(childName))
             throw new ArgumentException("String is null or empty", "childName");
         //
-        return findChildByNameRecoursively(control, childName);
+        return FindChildByNameRecoursively(control, childName);
     }
 
-    private static Control findChildByNameRecoursively(Control control, string childName)
+    private static Control? FindChildByNameRecoursively(Control control, string childName)
     {
         IList<Control> children = control.Children;
         foreach (Control child in children)
@@ -58,7 +58,7 @@ public class VisualTreeHelper
             }
             else
             {
-                Control result = findChildByNameRecoursively(child, childName);
+                Control? result = FindChildByNameRecoursively(child, childName);
                 if (null != result)
                     return result;
             }
@@ -75,7 +75,7 @@ public class VisualTreeHelper
         }
 
         Control root = ConsoleApplication.Instance.RootControl;
-        Control current = control;
+        Control? current = control;
         while (current != null)
         {
             if (current == root)
@@ -93,9 +93,9 @@ public class VisualTreeHelper
     /// <typeparam name="T"></typeparam>
     /// <param name="control"></param>
     /// <returns></returns>
-    public static T FindClosestParent<T>(Control control) where T : Control
+    public static T? FindClosestParent<T>(Control control) where T : Control
     {
-        Control tmp = control;
+        Control? tmp = control;
         while (tmp != null && !(tmp is T))
             tmp = tmp.Parent;
         if (tmp is T) return (T)tmp;
@@ -114,7 +114,7 @@ public class VisualTreeHelper
     /// <param name="control">RootElement для проверки всего визуального дерева.</param>
     /// <returns>Элемент управления или null, если событие мыши было за границами всех контролов, или
     /// если все контролы были прозрачны для событий мыши</returns>
-    public static Control FindTopControlUnderMouse(Control control, Point localPoint)
+    public static Control? FindTopControlUnderMouse(Control control, Point localPoint)
     {
         if (null == control) throw new ArgumentNullException("control");
 
@@ -128,7 +128,7 @@ public class VisualTreeHelper
                 Control child = childrenOrderedByZIndex[i];
                 if (Control.HitTest(rawPoint, control, child))
                 {
-                    Control foundSource = FindTopControlUnderMouse(child,
+                    Control? foundSource = FindTopControlUnderMouse(child,
                         Control.TranslatePoint(control, localPoint, child));
                     if (null != foundSource) return foundSource;
                 }
@@ -140,16 +140,14 @@ public class VisualTreeHelper
         {
             return null;
         }
-        else
+
+        if (control.Visibility != Visibility.Visible)
+            return null;
+        int opacity = ConsoleApplication.Instance.Renderer
+            .getControlOpacityAt(control, localPoint.X, localPoint.Y);
+        if (opacity >= 4 && opacity <= 7)
         {
-            if (control.Visibility != Visibility.Visible)
-                return null;
-            int _opacity = ConsoleApplication.Instance.Renderer
-                .getControlOpacityAt(control, localPoint.X, localPoint.Y);
-            if (_opacity >= 4 && _opacity <= 7)
-            {
-                return null;
-            }
+            return null;
         }
 
         return control;
