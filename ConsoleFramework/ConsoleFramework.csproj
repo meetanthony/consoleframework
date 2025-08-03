@@ -18,7 +18,6 @@
     <PackageProjectUrl>https://github.com/elw00d/consoleframework</PackageProjectUrl>
     <PackageIconUrl>http://elw00d.github.io/consoleframework/favicon.png</PackageIconUrl>
     <Authors />
-    <TargetFrameworks>netstandard2.0;netstandard2.1;netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
