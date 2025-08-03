@@ -9,26 +9,26 @@ public class ValidationTest
 {
     class TargetClass : INotifyPropertyChanged
     {
-        public String TargetStr
+        public String? TargetStr
         {
-            get { return targetStr; }
+            get => _targetStr;
             set
             {
-                if (targetStr != value)
+                if (_targetStr != value)
                 {
-                    targetStr = value;
-                    raisePropertyChanged("TargetStr");
+                    _targetStr = value;
+                    RaisePropertyChanged("TargetStr");
                 }
             }
         }
 
-        private string targetStr;
+        private string? _targetStr;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void raisePropertyChanged(string propertyName)
+        protected virtual void RaisePropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            PropertyChangedEventHandler? handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
@@ -37,24 +37,24 @@ public class ValidationTest
     {
         public int SourceInt
         {
-            get { return sourceInt; }
+            get => _sourceInt;
             set
             {
-                if (value != sourceInt)
+                if (value != _sourceInt)
                 {
-                    sourceInt = value;
-                    raisePropertyChanged("SourceInt");
+                    _sourceInt = value;
+                    RaisePropertyChanged("SourceInt");
                 }
             }
         }
 
-        private int sourceInt;
+        private int _sourceInt;
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void raisePropertyChanged(string propertyName)
+        protected virtual void RaisePropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
+            PropertyChangedEventHandler? handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
@@ -65,13 +65,13 @@ public class ValidationTest
         SourceClass source = new SourceClass();
         TargetClass target = new TargetClass();
         BindingBase binding = new BindingBase(target, "TargetStr", source, "SourceInt");
-        BindingResult lastResult = null;
+        BindingResult? lastResult = null;
         binding.OnBinding += result => { lastResult = result; };
         binding.Bind();
         target.TargetStr = "5";
         Assert.True(source.SourceInt == 5);
         target.TargetStr = "invalid int";
         Assert.True(source.SourceInt == 0);
-        Assert.True(lastResult.hasConversionError);
+        Assert.True(lastResult?.HasConversionError);
     }
 }

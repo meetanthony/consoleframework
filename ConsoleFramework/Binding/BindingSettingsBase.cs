@@ -10,22 +10,18 @@ namespace ConsoleFramework.Binding;
 /// </summary>
 public class BindingSettingsBase
 {
-    public static BindingSettingsBase DEFAULT_SETTINGS;
+    public static BindingSettingsBase DefaultSettings;
 
     static BindingSettingsBase()
     {
-        DEFAULT_SETTINGS = new BindingSettingsBase();
-        DEFAULT_SETTINGS.InitializeDefault();
+        DefaultSettings = new BindingSettingsBase();
+        DefaultSettings.InitializeDefault();
     }
 
-    private readonly Dictionary<Type, Dictionary<Type, IBindingConverter>> converters =
+    private readonly Dictionary<Type, Dictionary<Type, IBindingConverter>> _converters =
         new Dictionary<Type, Dictionary<Type, IBindingConverter>>();
 
-    private readonly Dictionary<Type, IBindingAdapter> adapters = new Dictionary<Type, IBindingAdapter>();
-
-    public BindingSettingsBase()
-    {
-    }
+    private readonly Dictionary<Type, IBindingAdapter> _adapters = new Dictionary<Type, IBindingAdapter>();
 
     /// <summary>
     /// Adds default set of converters and ui adapters.
@@ -38,14 +34,14 @@ public class BindingSettingsBase
     public void AddAdapter(IBindingAdapter adapter)
     {
         Type targetClazz = adapter.TargetType;
-        if (adapters.ContainsKey(targetClazz))
+        if (_adapters.ContainsKey(targetClazz))
             throw new Exception(String.Format("Adapter for class {0} is already registered.", targetClazz.Name));
-        adapters.Add(targetClazz, adapter);
+        _adapters.Add(targetClazz, adapter);
     }
 
     public IBindingAdapter GetAdapterFor(Type clazz)
     {
-        IBindingAdapter adapter = adapters[clazz];
+        IBindingAdapter adapter = _adapters[clazz];
         if (null == adapter) throw new Exception(String.Format("Adapter for class {0} not found.", clazz.Name));
         return adapter;
     }
@@ -60,9 +56,9 @@ public class BindingSettingsBase
     {
         Type first = converter.FirstType;
         Type second = converter.SecondType;
-        if (converters.ContainsKey(first))
+        if (_converters.ContainsKey(first))
         {
-            Dictionary<Type, IBindingConverter> firstClassConverters = converters[first];
+            Dictionary<Type, IBindingConverter> firstClassConverters = _converters[first];
             if (firstClassConverters.ContainsKey(second))
             {
                 throw new Exception(String.Format("Converter for {0} -> {1} classes is already registered.", first.Name,
@@ -75,15 +71,15 @@ public class BindingSettingsBase
         {
             Dictionary<Type, IBindingConverter> firstClassConverters = new Dictionary<Type, IBindingConverter>();
             firstClassConverters.Add(second, converter);
-            converters.Add(first, firstClassConverters);
+            _converters.Add(first, firstClassConverters);
         }
     }
 
-    public IBindingConverter GetConverterFor(Type first, Type second)
+    public IBindingConverter? GetConverterFor(Type first, Type second)
     {
-        if (!converters.ContainsKey(first))
+        if (!_converters.ContainsKey(first))
             return null;
-        Dictionary<Type, IBindingConverter> firstClassConverters = converters[first];
+        Dictionary<Type, IBindingConverter> firstClassConverters = _converters[first];
         if (!firstClassConverters.ContainsKey(second))
             return null;
         return firstClassConverters[second];

@@ -117,7 +117,7 @@ public class BindingBase
 
     public BindingBase(Object target, String targetProperty, INotifyPropertyChanged source,
         String sourceProperty, BindingMode mode) :
-        this(target, targetProperty, source, sourceProperty, mode, BindingSettingsBase.DEFAULT_SETTINGS)
+        this(target, targetProperty, source, sourceProperty, mode, BindingSettingsBase.DefaultSettings)
     {
     }
 

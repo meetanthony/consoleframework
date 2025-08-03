@@ -10,21 +10,21 @@ namespace ConsoleFramework.Binding;
 /// </summary>
 public class BindingResult
 {
-    public bool hasError;
-    public bool hasConversionError;
-    public bool hasValidationError;
-    public String message;
+    public bool HasError;
+    public bool HasConversionError;
+    public bool HasValidationError;
+    public String? Message;
 
     public BindingResult(bool hasError)
     {
-        this.hasError = hasError;
+        HasError = hasError;
     }
 
     public BindingResult(bool hasConversionError, bool hasValidationError, String message)
     {
-        this.hasConversionError = hasConversionError;
-        this.hasValidationError = hasValidationError;
-        this.hasError = hasConversionError || hasValidationError;
-        this.message = message;
+        HasConversionError = hasConversionError;
+        HasValidationError = hasValidationError;
+        HasError = hasConversionError || hasValidationError;
+        Message = message;
     }
 }
