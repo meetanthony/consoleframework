@@ -146,7 +146,12 @@ public class ObservableList<T> : IObservableList, IList<T>, IList
     object? IList.this[int index]
     {
         get => this[index];
-        set => this[index] = (T)value;
+        set
+        {
+            if (value == null)
+                throw new NullReferenceException();
+            this[index] = (T)value;
+        }
     }
 
     public T this[int index]

@@ -10,5 +10,5 @@ public interface IBindingValidator
     /// <summary>
     /// Validates value.
     /// </summary>
-    ValidationResult Validate(Object value);
+    ValidationResult Validate(Object? value);
 }

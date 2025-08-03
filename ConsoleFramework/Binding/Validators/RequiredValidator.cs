@@ -7,7 +7,7 @@ namespace ConsoleFramework.Binding.Validators;
 /// </summary>
 public class RequiredValidator : IBindingValidator
 {
-    public ValidationResult Validate(Object value)
+    public ValidationResult Validate(Object? value)
     {
         if (value == null || value is String && ((String)value).Length == 0)
             return new ValidationResult(false, "Value is required");
