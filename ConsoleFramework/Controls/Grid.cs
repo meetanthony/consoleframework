@@ -32,20 +32,20 @@ namespace ConsoleFramework.Controls
     [TypeConverter(typeof(GridLengthTypeConverter))]
     public struct GridLength
     {
-        private readonly GridUnitType gridUnitType;
-        private readonly int value;
+        private readonly GridUnitType _gridUnitType;
+        private readonly int _value;
 
         public GridLength( GridUnitType unitType, int value ) {
-            this.gridUnitType = unitType;
-            this.value = value;
+            this._gridUnitType = unitType;
+            this._value = value;
         }
 
         public GridUnitType GridUnitType {
-            get { return gridUnitType; }
+            get { return _gridUnitType; }
         }
 
         public int Value {
-            get { return value; }
+            get { return _value; }
         }
     }
 
@@ -142,24 +142,24 @@ namespace ConsoleFramework.Controls
     [ContentProperty("Controls")]
     public class Grid : Control
     {
-        private readonly List< ColumnDefinition > columnDefinitions = new List< ColumnDefinition >();
-        private readonly List< RowDefinition > rowDefinitions = new List< RowDefinition >();
-        private readonly UIElementCollection children;
-        private int[ ] columnsWidths;
-        private int[ ] rowsHeights;
+        private readonly List< ColumnDefinition > _columnDefinitions = new List< ColumnDefinition >();
+        private readonly List< RowDefinition > _rowDefinitions = new List< RowDefinition >();
+        private readonly UIElementCollection _children;
+        private int[ ] _columnsWidths;
+        private int[ ] _rowsHeights;
 
         public List< ColumnDefinition > ColumnDefinitions {
-            get { return columnDefinitions; }
+            get { return _columnDefinitions; }
         }
 
         public List< RowDefinition > RowDefinitions {
-            get { return rowDefinitions; }
+            get { return _rowDefinitions; }
         }
 
-        public UIElementCollection Controls { get { return children; } }
+        public UIElementCollection Controls { get { return _children; } }
 
         public Grid( ) {
-            children = new UIElementCollection(this);
+            _children = new UIElementCollection(this);
         }
 
         protected override Size MeasureOverride( Size availableSize ) {
@@ -214,7 +214,7 @@ namespace ConsoleFramework.Controls
             // каждой строки - максимальный Height - эти значения и станут соответственно
             // шириной и высотой ячеек, определяемых координатами строки и столбца
 
-            columnsWidths = new int[ ColumnDefinitions.Count ];
+            _columnsWidths = new int[ ColumnDefinitions.Count ];
 
             for ( int x = 0; x < ColumnDefinitions.Count; x++ ) {
                 if ( ColumnDefinitions[ x ].Width.GridUnitType != GridUnitType.Star || interpretStarAsAuto ) {
@@ -230,11 +230,11 @@ namespace ConsoleFramework.Controls
                             if ( matrix[ x, y ].DesiredSize.Width > maxWidth )
                                 maxWidth = matrix[ x, y ].DesiredSize.Width;
                     }
-                    columnsWidths[ x ] = maxWidth;
+                    _columnsWidths[ x ] = maxWidth;
                 }
             }
 
-            rowsHeights = new int[ RowDefinitions.Count ];
+            _rowsHeights = new int[ RowDefinitions.Count ];
 
             for ( int y = 0; y < RowDefinitions.Count; y++ ) {
                 if ( RowDefinitions[ y ].Height.GridUnitType != GridUnitType.Star || interpretStarAsAuto ) {
@@ -248,7 +248,7 @@ namespace ConsoleFramework.Controls
                             if ( matrix[ x, y ].DesiredSize.Height > maxHeight )
                                 maxHeight = matrix[ x, y ].DesiredSize.Height;
                     }
-                    rowsHeights[ y ] = maxHeight;
+                    _rowsHeights[ y ] = maxHeight;
                 }
             }
 
@@ -260,11 +260,11 @@ namespace ConsoleFramework.Controls
                         totalWidthStars += columnDefinition.Width.Value;
                     }
                 }
-                int remainingWidth = Math.Max( 0, availableSize.Width - columnsWidths.Sum( ) );
+                int remainingWidth = Math.Max( 0, availableSize.Width - _columnsWidths.Sum( ) );
                 for ( int x = 0; x < ColumnDefinitions.Count; x++ ) {
                     ColumnDefinition columnDefinition = ColumnDefinitions[ x ];
                     if ( columnDefinition.Width.GridUnitType == GridUnitType.Star ) {
-                        columnsWidths[ x ] = remainingWidth*columnDefinition.Width.Value/totalWidthStars;
+                        _columnsWidths[ x ] = remainingWidth*columnDefinition.Width.Value/totalWidthStars;
                     }
                 }
 
@@ -274,11 +274,11 @@ namespace ConsoleFramework.Controls
                         totalHeightStars += rowDefinition.Height.Value;
                     }
                 }
-                int remainingHeight = Math.Max( 0, availableSize.Height - rowsHeights.Sum( ) );
+                int remainingHeight = Math.Max( 0, availableSize.Height - _rowsHeights.Sum( ) );
                 for ( int y = 0; y < RowDefinitions.Count; y++ ) {
                     RowDefinition rowDefinition = RowDefinitions[ y ];
                     if ( rowDefinition.Height.GridUnitType == GridUnitType.Star ) {
-                        rowsHeights[ y ] = remainingHeight*rowDefinition.Height.Value/totalHeightStars;
+                        _rowsHeights[ y ] = remainingHeight*rowDefinition.Height.Value/totalHeightStars;
                     }
                 }
             }
@@ -286,33 +286,33 @@ namespace ConsoleFramework.Controls
             // Окончательный повторный вызов Measure для всех детей с уже определёнными размерами,
             // теми, которые будут использоваться при размещении
             for ( int x = 0; x < ColumnDefinitions.Count; x++ ) {
-                int width = columnsWidths[ x ];
+                int width = _columnsWidths[ x ];
                 for ( int y = 0; y < RowDefinitions.Count; y++ ) {
-                    int height = rowsHeights[ y ];
+                    int height = _rowsHeights[ y ];
                     if ( matrix[ x, y ] != null )
                         matrix[ x, y ].Measure( new Size( width, height ) );
                 }
             }
 
-            return new Size( columnsWidths.Sum( ), rowsHeights.Sum( ) );
+            return new Size( _columnsWidths.Sum( ), _rowsHeights.Sum( ) );
         }
 
         protected override Size ArrangeOverride( Size finalSize ) {
             int currentX = 0;
-            for ( int x = 0; x < columnsWidths.Length; x++ ) {
+            for ( int x = 0; x < _columnsWidths.Length; x++ ) {
                 int currentY = 0;
-                for ( int y = 0; y < rowsHeights.Length; y++ ) {
-                    if ( Children.Count > y*columnsWidths.Length + x ) {
-                        Children[y * columnsWidths.Length + x].Arrange( new Rect(
+                for ( int y = 0; y < _rowsHeights.Length; y++ ) {
+                    if ( Children.Count > y*_columnsWidths.Length + x ) {
+                        Children[y * _columnsWidths.Length + x].Arrange( new Rect(
                             new Point(currentX, currentY),
-                            new Size(columnsWidths[x], rowsHeights[y])
+                            new Size(_columnsWidths[x], _rowsHeights[y])
                             ) );
                     }
-                    currentY += rowsHeights[ y ];
+                    currentY += _rowsHeights[ y ];
                 }
-                currentX += columnsWidths[ x ];
+                currentX += _columnsWidths[ x ];
             }
-            return new Size(columnsWidths.Sum(), rowsHeights.Sum());
+            return new Size(_columnsWidths.Sum(), _rowsHeights.Sum());
         }
 
         public override void Render( RenderingBuffer buffer ) {
