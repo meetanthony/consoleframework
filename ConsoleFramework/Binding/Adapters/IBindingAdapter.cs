@@ -19,7 +19,7 @@ public interface IBindingAdapter
     /// </summary>
     /// <param name="targetProperty"></param>
     /// <returns></returns>
-    Type GetTargetPropertyClazz(String targetProperty);
+    Type GetTargetPropertyClass(String targetProperty);
 
     /// <summary>
     /// Sets value of target property. You should implement this method if you will use

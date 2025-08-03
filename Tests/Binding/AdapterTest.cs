@@ -69,7 +69,7 @@ public class AdapterTest
             get { return typeof(TargetClass); }
         }
 
-        public Type GetTargetPropertyClazz(string targetProperty)
+        public Type GetTargetPropertyClass(string targetProperty)
         {
             if ("S" == targetProperty) return typeof(String);
             throw new InvalidOperationException("Unsupported property");
