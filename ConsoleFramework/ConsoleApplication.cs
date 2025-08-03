@@ -41,16 +41,16 @@ namespace ConsoleFramework
     /// </summary>
     public sealed class ConsoleApplication : IDisposable
     {
-        private bool maximized;
-        private Size savedBufferSize;
-        private Rect savedWindowRect;
+        private bool _maximized;
+        private Size _savedBufferSize;
+        private Rect _savedWindowRect;
 
-        private IntPtr consoleWindowHwnd;
-        private IntPtr getConsoleWindowHwnd( ) {
-            if ( IntPtr.Zero == consoleWindowHwnd ) {
-                consoleWindowHwnd = Win32.GetConsoleWindow(  );
+        private IntPtr _consoleWindowHwnd;
+        private IntPtr GetConsoleWindowHwnd( ) {
+            if ( IntPtr.Zero == _consoleWindowHwnd ) {
+                _consoleWindowHwnd = Win32.GetConsoleWindow(  );
             }
-            return consoleWindowHwnd;
+            return _consoleWindowHwnd;
         }
 
         /// <summary>
@@ -58,16 +58,16 @@ namespace ConsoleFramework
         /// Current size is stored.
         /// </summary>
         public void Maximize( ) {
-            if ( usingLinux ) {
+            if ( UsingLinux ) {
                 // Doesn't work in Konsole
                 Console.Write ("\x1B[9;1t");
                 return;
             }
             
-            if ( maximized ) return;
+            if ( _maximized ) return;
             //
-            savedBufferSize = new Size(Console.BufferWidth, Console.BufferHeight);
-            Win32.SendMessage(getConsoleWindowHwnd(), Win32.WM_SYSCOMMAND,
+            _savedBufferSize = new Size(Console.BufferWidth, Console.BufferHeight);
+            Win32.SendMessage(GetConsoleWindowHwnd(), Win32.WM_SYSCOMMAND,
                 Win32.SC_MAXIMIZE, IntPtr.Zero);
             int maxWidth = Console.LargestWindowWidth;
             int maxHeight = Console.LargestWindowHeight;
@@ -77,25 +77,25 @@ namespace ConsoleFramework
 
             // Apply new sizes to Canvas
             CanvasSize = new Size(maxWidth, maxHeight);
-            renderer.RootElementRect = new Rect(canvas.Size);
-            renderer.UpdateLayout();
+            _renderer.RootElementRect = new Rect(_canvas.Size);
+            _renderer.UpdateLayout();
 
-            maximized = true;
+            _maximized = true;
         }
 
         /// <summary>
         /// Restores the terminal window size and terminal buffer to stored state.
         /// </summary>
         public void Restore( ) {
-            if (usingLinux) {
+            if (UsingLinux) {
                 // Doesn't work in Konsole
                 Console.Write ("\x1B[9;0t");
                 return;
             }
 
-            if ( !maximized ) return;
+            if ( !_maximized ) return;
             //
-            Win32.SendMessage(getConsoleWindowHwnd(), Win32.WM_SYSCOMMAND, 
+            Win32.SendMessage(GetConsoleWindowHwnd(), Win32.WM_SYSCOMMAND, 
                 Win32.SC_RESTORE, IntPtr.Zero);
             Console.SetWindowPosition( 0, 0 );
 
@@ -105,16 +105,16 @@ namespace ConsoleFramework
             int maxHeight = Console.LargestWindowHeight;
 
             Console.SetWindowSize(
-                Math.Min( savedWindowRect.Width, maxWidth),
-                Math.Min(savedWindowRect.Height, maxHeight));
-            Console.SetWindowPosition(savedWindowRect.Left, savedWindowRect.Top);
+                Math.Min( _savedWindowRect.Width, maxWidth),
+                Math.Min(_savedWindowRect.Height, maxHeight));
+            Console.SetWindowPosition(_savedWindowRect.Left, _savedWindowRect.Top);
 
             // Apply new sizes to Canvas
-            CanvasSize = new Size(savedWindowRect.Width, savedWindowRect.Height);
-            renderer.RootElementRect = new Rect(canvas.Size);
-            renderer.UpdateLayout();
+            CanvasSize = new Size(_savedWindowRect.Width, _savedWindowRect.Height);
+            _renderer.RootElementRect = new Rect(_canvas.Size);
+            _renderer.UpdateLayout();
 
-            maximized = false;
+            _maximized = false;
         }
 
         /// <summary>
@@ -128,16 +128,16 @@ namespace ConsoleFramework
         /// TerminalSizeChanged handler is attached.
         /// </summary>
         public void OnTerminalSizeChangedDefault( object sender, TerminalSizeChangedEventArgs args ) {
-            if (!this.userCanvasSize.IsEmpty) throw new InvalidOperationException("Assertion failed.");
-            if (!this.userRootElementRect.IsEmpty) throw new InvalidOperationException("Assertion failed.");
+            if (!this._userCanvasSize.IsEmpty) throw new InvalidOperationException("Assertion failed.");
+            if (!this._userRootElementRect.IsEmpty) throw new InvalidOperationException("Assertion failed.");
             if (this.TerminalSizeChanged != null) throw new InvalidOperationException("Assertion failed.");
 
-            canvas.Size = new Size(args.Width, args.Height);
-            renderer.RootElementRect = new Rect(canvas.Size);
-            renderer.UpdateLayout();
+            _canvas.Size = new Size(args.Width, args.Height);
+            _renderer.RootElementRect = new Rect(_canvas.Size);
+            _renderer.UpdateLayout();
         }
 
-        private Size userCanvasSize;
+        private Size _userCanvasSize;
 
         /// <summary>
         /// Gets or sets a size of canvas. Whet set, old canvas image will be
@@ -145,40 +145,40 @@ namespace ConsoleFramework
         /// </summary>
         public Size CanvasSize {
             get {
-                if ( running && userCanvasSize.IsEmpty )
-                    return canvas.Size;
-                return userCanvasSize;
+                if ( _running && _userCanvasSize.IsEmpty )
+                    return _canvas.Size;
+                return _userCanvasSize;
             }
             set {
-                if ( running && value != canvas.Size ) {
-                    canvas.Size = value;
+                if ( _running && value != _canvas.Size ) {
+                    _canvas.Size = value;
                 }
-                userCanvasSize = value;
+                _userCanvasSize = value;
             }
         }
 
-        private Rect userRootElementRect;
+        private Rect _userRootElementRect;
         /// <summary>
         /// Gets or sets the root element rect.
         /// When set, root element will be added to invalidation queue automatically.
         /// </summary>
         public Rect RootElementRect {
             get {
-                if ( running && userRootElementRect.IsEmpty ) {
-                    return renderer.RootElementRect;
+                if ( _running && _userRootElementRect.IsEmpty ) {
+                    return _renderer.RootElementRect;
                 }
-                return userRootElementRect;
+                return _userRootElementRect;
             }
             set {
-                if ( running && value != renderer.RootElementRect ) {
-                    renderer.RootElementRect = value;
+                if ( _running && value != _renderer.RootElementRect ) {
+                    _renderer.RootElementRect = value;
                 }
-                userRootElementRect = value;
+                _userRootElementRect = value;
             }
         }
 
-        private volatile bool running;
-        private PhysicalCanvas canvas;
+        private volatile bool _running;
+        private PhysicalCanvas _canvas;
 
         public static Control LoadFromXaml( string xamlResourceName, object dataContext ) {
             var assembly = Assembly.GetEntryAssembly();
@@ -201,13 +201,13 @@ namespace ConsoleFramework
             }
         }
 
-        private static readonly bool usingLinux;
-        private static readonly bool isDarwin;
+        private static readonly bool UsingLinux;
+        private static readonly bool IsDarwin;
 
         static ConsoleApplication() {
 #if DOTNETCORE
-            usingLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-            isDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+            UsingLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+            IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 #else
             switch (Environment.OSVersion.Platform)
             {
@@ -235,69 +235,69 @@ namespace ConsoleFramework
         }
         
         private ConsoleApplication() {
-            eventManager = new EventManager();
-            focusManager = new FocusManager(eventManager);
+            _eventManager = new EventManager();
+            _focusManager = new FocusManager(_eventManager);
 
-            exitWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-            invokeWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+            _exitWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+            _invokeWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         }
 
-        private static volatile ConsoleApplication instance;
-        private static readonly object syncRoot = new object();
+        private static volatile ConsoleApplication _instance;
+        private static readonly object SyncRoot = new object();
 
         /// <summary>
         /// Instance of Application object.
         /// </summary>
         public static ConsoleApplication Instance {
             get {
-                if (instance == null) {
-                    lock (syncRoot) {
-                        if (instance == null) {
-                            instance = new ConsoleApplication();
+                if (_instance == null) {
+                    lock (SyncRoot) {
+                        if (_instance == null) {
+                            _instance = new ConsoleApplication();
                         }
                     }
                 }
-                return instance;
+                return _instance;
             }
         }
 
-        private IntPtr stdInputHandle;
-        private IntPtr stdOutputHandle;
-        private readonly EventWaitHandle exitWaitHandle;
-        private readonly EventWaitHandle invokeWaitHandle;
-        private int? mainThreadId;
+        private IntPtr _stdInputHandle;
+        private IntPtr _stdOutputHandle;
+        private readonly EventWaitHandle _exitWaitHandle;
+        private readonly EventWaitHandle _invokeWaitHandle;
+        private int? _mainThreadId;
         
         private struct ActionInfo
         {
-            public readonly Action action;
-            public readonly EventWaitHandle waitHandle;
+            public readonly Action Action;
+            public readonly EventWaitHandle WaitHandle;
 
             public ActionInfo( Action action, EventWaitHandle waitHandle ) {
-                this.action = action;
-                this.waitHandle = waitHandle;
+                this.Action = action;
+                this.WaitHandle = waitHandle;
             }
         }
 
-        private readonly List<ActionInfo> actionsToBeInvoked = new List< ActionInfo >();
-        private readonly Object actionsLocker = new object(  );
+        private readonly List<ActionInfo> _actionsToBeInvoked = new List< ActionInfo >();
+        private readonly Object _actionsLocker = new object(  );
 
         /// <summary>
         /// Signals the message loop to be finished.
         /// Application shutdowns after that.
         /// </summary>
         public void Exit() {
-            if (usingLinux) {
-                int res = Libc.writeInt64(pipeFds[1], 1);
+            if (UsingLinux) {
+                int res = Libc.writeInt64(_pipeFds[1], 1);
                 if (-1 == res) throw new InvalidOperationException("Cannot write to self-pipe.");
             } else {
-                exitWaitHandle.Set();
+                _exitWaitHandle.Set();
             }
         }
 
-        private readonly Renderer renderer = new Renderer();
+        private readonly Renderer _renderer = new Renderer();
         public Renderer Renderer {
             get {
-                return renderer;
+                return _renderer;
             }
         }
 
@@ -305,29 +305,29 @@ namespace ConsoleFramework
         /// Returns the root control of the application.
         /// </summary>
         public Control RootControl {
-            get { return mainControl; }
+            get { return _mainControl; }
         }
 
-        private Control mainControl;
-        private readonly EventManager eventManager;
-        private readonly FocusManager focusManager;
+        private Control _mainControl;
+        private readonly EventManager _eventManager;
+        private readonly FocusManager _focusManager;
 
         public FocusManager FocusManager {
             get {
-                return focusManager;
+                return _focusManager;
             }
         }
 
         public EventManager EventManager {
             get {
-                return eventManager;
+                return _eventManager;
             }
         }
         
         internal void SetCursorPosition (Point position)
         {
-            if (!usingLinux) {                
-                Win32.SetConsoleCursorPosition (stdOutputHandle, new COORD ((short)position.x, (short)position.y));
+            if (!UsingLinux) {                
+                Win32.SetConsoleCursorPosition (_stdOutputHandle, new COORD ((short)position.x, (short)position.y));
             } else {
                 NCurses.move (position.y, position.x);
                 NCurses.refresh ();
@@ -349,12 +349,12 @@ namespace ConsoleFramework
         /// </summary>
         internal void ShowCursor ()
         {
-            if (!usingLinux) {
+            if (!UsingLinux) {
                 CONSOLE_CURSOR_INFO consoleCursorInfo = new CONSOLE_CURSOR_INFO {
                     Size = 5,
                     Visible = true
                 };
-                Win32.SetConsoleCursorInfo (stdOutputHandle, ref consoleCursorInfo);
+                Win32.SetConsoleCursorInfo (_stdOutputHandle, ref consoleCursorInfo);
             } else {
                 NCurses.curs_set (CursorVisibility.Visible);
             }
@@ -367,12 +367,12 @@ namespace ConsoleFramework
         /// </summary>
         internal void HideCursor ()
         {
-            if (!usingLinux) {
+            if (!UsingLinux) {
                 CONSOLE_CURSOR_INFO consoleCursorInfo = new CONSOLE_CURSOR_INFO {
                     Size = 5,
                     Visible = false
                 };
-                Win32.SetConsoleCursorInfo (stdOutputHandle, ref consoleCursorInfo);
+                Win32.SetConsoleCursorInfo (_stdOutputHandle, ref consoleCursorInfo);
             } else {
                 NCurses.curs_set (CursorVisibility.Invisible);
             }
@@ -386,20 +386,20 @@ namespace ConsoleFramework
         /// <param name="control"></param>
         public void Run(Control control) {
             try {
-                if (usingLinux) {
-                    runLinux(control);
+                if (UsingLinux) {
+                    RunLinux(control);
                 } else {
-                    runWindows(control);
+                    RunWindows(control);
                 }
             } finally {
-                this.running = false;
-                this.mainThreadId = null;
+                this._running = false;
+                this._mainThreadId = null;
             }
         }
 
         public void Run( Control control, Size canvasSize, Rect rectToUse ) {
-            userCanvasSize = canvasSize;
-            userRootElementRect = rectToUse;
+            _userCanvasSize = canvasSize;
+            _userRootElementRect = rectToUse;
             Run(control);
         }
         
@@ -407,25 +407,25 @@ namespace ConsoleFramework
         /// File descriptors for self-pipe.
         /// First descriptor is used to read from pipe, second - to write.
         /// </summary>
-        private readonly int[] pipeFds = new int[2];
-        private IntPtr termkeyHandle = IntPtr.Zero;
+        private readonly int[] _pipeFds = new int[2];
+        private IntPtr _termkeyHandle = IntPtr.Zero;
 
-        private void runLinux (Control control) {
-            this.mainControl = control;
+        private void RunLinux (Control control) {
+            this._mainControl = control;
             
-            if ( userCanvasSize.IsEmpty ) {
+            if ( _userCanvasSize.IsEmpty ) {
                 // Create physical canvas with actual terminal size
-                winsize ws = Libc.GetTerminalSize( isDarwin );
-                canvas = new PhysicalCanvas( ws.ws_col, ws.ws_row );
+                winsize ws = Libc.GetTerminalSize( IsDarwin );
+                _canvas = new PhysicalCanvas( ws.ws_col, ws.ws_row );
             } else {
-                canvas = new PhysicalCanvas( userCanvasSize.Width, userCanvasSize.Height );
+                _canvas = new PhysicalCanvas( _userCanvasSize.Width, _userCanvasSize.Height );
             }
-            renderer.Canvas = canvas;
-            renderer.RootElementRect = userRootElementRect.IsEmpty 
-                ? new Rect( canvas.Size ) : userRootElementRect;
-            renderer.RootElement = mainControl;
+            _renderer.Canvas = _canvas;
+            _renderer.RootElementRect = _userRootElementRect.IsEmpty 
+                ? new Rect( _canvas.Size ) : _userRootElementRect;
+            _renderer.RootElement = _mainControl;
             //
-            mainControl.Invalidate ();
+            _mainControl.Invalidate ();
             
             // Terminal initialization sequence
 
@@ -457,10 +457,10 @@ namespace ConsoleFramework
             
             HideCursor ();
             try {
-                renderer.UpdateLayout( );
-                renderer.FinallyApplyChangesToCanvas(  );
+                _renderer.UpdateLayout( );
+                _renderer.FinallyApplyChangesToCanvas(  );
 
-                termkeyHandle = LibTermKey.termkey_new( Libc.STDIN_FILENO, TermKeyFlag.TERMKEY_FLAG_SPACESYMBOL );
+                _termkeyHandle = LibTermKey.termkey_new( Libc.STDIN_FILENO, TermKeyFlag.TERMKEY_FLAG_SPACESYMBOL );
 
                 // Setup the input mode
                 Console.Write( "\x1B[?1002h" );
@@ -471,11 +471,11 @@ namespace ConsoleFramework
                 pollfd[ ] fds = new pollfd[ 2 ];
                 fds[ 0 ] = fd;
                 fds[ 1 ] = new pollfd( );
-                int pipeResult = Libc.pipe( pipeFds );
+                int pipeResult = Libc.pipe( _pipeFds );
                 if ( pipeResult == -1 ) {
                     throw new InvalidOperationException( "Cannot create self-pipe." );
                 }
-                fds[ 1 ].fd = pipeFds[ 0 ];
+                fds[ 1 ].fd = _pipeFds[ 0 ];
                 fds[ 1 ].events = POLL_EVENTS.POLLIN;
 
                 try {
@@ -498,13 +498,13 @@ namespace ConsoleFramework
 #elif DOTNETCORE
                     Libc.signal(28, arg =>
                     {
-                        Libc.writeInt64 (pipeFds[1], 2);
+                        Libc.writeInt64 (_pipeFds[1], 2);
                     });
 #endif
                     TermKeyKey key = new TermKeyKey( );
                     //
-                    this.running = true;
-                    this.mainThreadId = Thread.CurrentThread.ManagedThreadId;
+                    this._running = true;
+                    this._mainThreadId = Thread.CurrentThread.ManagedThreadId;
                     //
                     int nextwait = -1;
                     while ( true ) {
@@ -512,8 +512,8 @@ namespace ConsoleFramework
                         if ( pollRes == 0 ) {
                             if (nextwait == -1)
                                 throw new InvalidOperationException( "Assertion failed." );
-                            if (TermKeyResult.TERMKEY_RES_KEY == LibTermKey.termkey_getkey_force(termkeyHandle, ref key) ) {
-                                processLinuxInput( key );
+                            if (TermKeyResult.TERMKEY_RES_KEY == LibTermKey.termkey_getkey_force(_termkeyHandle, ref key) ) {
+                                ProcessLinuxInput( key );
                             }
                         }
                         if ( pollRes == -1 ) {
@@ -538,11 +538,11 @@ namespace ConsoleFramework
                                 INPUT_RECORD inputRecord = new INPUT_RECORD( );
                                 inputRecord.EventType = EventType.WINDOW_BUFFER_SIZE_EVENT;
 
-                                winsize ws = Libc.GetTerminalSize( isDarwin );
+                                winsize ws = Libc.GetTerminalSize( IsDarwin );
 
                                 inputRecord.WindowBufferSizeEvent.dwSize.X = ( short ) ws.ws_col;
                                 inputRecord.WindowBufferSizeEvent.dwSize.Y = ( short ) ws.ws_row;
-                                processInputEvent( inputRecord );
+                                ProcessInputEvent( inputRecord );
                             }
                             if (u == 3 ) {
                                 // It is signal from async actions invocation stuff
@@ -552,41 +552,41 @@ namespace ConsoleFramework
                         if ( ( fds[ 0 ].revents & POLL_EVENTS.POLLIN ) == POLL_EVENTS.POLLIN ||
                              ( fds[ 0 ].revents & POLL_EVENTS.POLLHUP ) == POLL_EVENTS.POLLHUP ||
                              ( fds[ 0 ].revents & POLL_EVENTS.POLLERR ) == POLL_EVENTS.POLLERR ) {
-                            LibTermKey.termkey_advisereadable( termkeyHandle );
+                            LibTermKey.termkey_advisereadable( _termkeyHandle );
                         }
 
-                        TermKeyResult result = ( LibTermKey.termkey_getkey( termkeyHandle, ref key ) );
+                        TermKeyResult result = ( LibTermKey.termkey_getkey( _termkeyHandle, ref key ) );
                         while (result == TermKeyResult.TERMKEY_RES_KEY ) {
-                            processLinuxInput( key );
-                            result = ( LibTermKey.termkey_getkey( termkeyHandle, ref key ) );
+                            ProcessLinuxInput( key );
+                            result = ( LibTermKey.termkey_getkey( _termkeyHandle, ref key ) );
                         }
 
                         if (result == TermKeyResult.TERMKEY_RES_AGAIN) {
-                            nextwait = LibTermKey.termkey_get_waittime(termkeyHandle);
+                            nextwait = LibTermKey.termkey_get_waittime(_termkeyHandle);
                         } else {
                             nextwait = -1;
                         }
 
                         while ( true ) {
-                            bool anyInvokeActions = isAnyInvokeActions( );
+                            bool anyInvokeActions = IsAnyInvokeActions( );
                             bool anyRoutedEvent = !EventManager.IsQueueEmpty( );
-                            bool anyLayoutToRevalidate = renderer.AnyControlInvalidated;
+                            bool anyLayoutToRevalidate = _renderer.AnyControlInvalidated;
 
                             if (!anyInvokeActions && !anyRoutedEvent && !anyLayoutToRevalidate)
                                 break;
 
                             EventManager.ProcessEvents();
-                            processInvokeActions(  );
-                            renderer.UpdateLayout(  );
+                            ProcessInvokeActions(  );
+                            _renderer.UpdateLayout(  );
                         }
 
-                        renderer.FinallyApplyChangesToCanvas( );
+                        _renderer.FinallyApplyChangesToCanvas( );
                     }
 
                 } finally {
-                    LibTermKey.termkey_destroy( termkeyHandle );
-                    Libc.close( pipeFds[ 0 ] );
-                    Libc.close( pipeFds[ 1 ] );
+                    LibTermKey.termkey_destroy( _termkeyHandle );
+                    Libc.close( _pipeFds[ 0 ] );
+                    Libc.close( _pipeFds[ 1 ] );
                     Console.Write( "\x1B[?1002l" );
                 }
             } finally {
@@ -601,10 +601,10 @@ namespace ConsoleFramework
                 }
         }
 
-            renderer.RootElement = null;
+            _renderer.RootElement = null;
         }
         
-        private void processLinuxInput (TermKeyKey key)
+        private void ProcessLinuxInput (TermKeyKey key)
         {
             // If any special button has been pressed (Tab, Enter, etc)
             // we should convert its code to INPUT_RECORD.KeyEvent
@@ -677,7 +677,7 @@ namespace ConsoleFramework
                 if ((key.modifiers & 2) == 2) {
                     inputRecord.KeyEvent.dwControlKeyState |= ControlKeyState.LEFT_ALT_PRESSED;
                 }
-                processInputEvent (inputRecord);
+                ProcessInputEvent (inputRecord);
             } else if (key.type == TermKeyType.TERMKEY_TYPE_UNICODE) {
                 byte[] data = new byte[7];
                 data[0] = key.utf8_0;
@@ -719,13 +719,13 @@ namespace ConsoleFramework
                 if (unicodeCharacter == 'd' && key.modifiers == 4) {
                     Exit ();
                 }
-                processInputEvent(inputRecord);
+                ProcessInputEvent(inputRecord);
                 //
             } else if (key.type == TermKeyType.TERMKEY_TYPE_MOUSE) {
                 TermKeyMouseEvent ev;
                 int button;
                 int line, col;
-                LibTermKey.termkey_interpret_mouse(termkeyHandle, ref key, out ev, out button, out line, out col);
+                LibTermKey.termkey_interpret_mouse(_termkeyHandle, ref key, out ev, out button, out line, out col);
                 //
                 INPUT_RECORD inputRecord = new INPUT_RECORD();
                 inputRecord.EventType = EventType.MOUSE_EVENT;
@@ -746,61 +746,63 @@ namespace ConsoleFramework
                     }
                 }
                 //
-                processInputEvent(inputRecord);
+                ProcessInputEvent(inputRecord);
             }
         }
         
-        private void runWindows(Control control) {
-            this.mainControl = control;
+        private void RunWindows(Control control) {
+            this._mainControl = control;
             //
-            stdInputHandle = Win32.GetStdHandle(StdHandleType.STD_INPUT_HANDLE);
-            stdOutputHandle = Win32.GetStdHandle(StdHandleType.STD_OUTPUT_HANDLE);
+            _stdInputHandle = Win32.GetStdHandle(StdHandleType.STD_INPUT_HANDLE);
+            _stdOutputHandle = Win32.GetStdHandle(StdHandleType.STD_OUTPUT_HANDLE);
             IntPtr[] handles = new[] {
-                exitWaitHandle.GetSafeWaitHandle().DangerousGetHandle(),
-                stdInputHandle,
-                invokeWaitHandle.GetSafeWaitHandle().DangerousGetHandle(  )
+                _exitWaitHandle.GetSafeWaitHandle().DangerousGetHandle(),
+                _stdInputHandle,
+                _invokeWaitHandle.GetSafeWaitHandle().DangerousGetHandle(  )
             };
 
             // Set console mode to enable mouse and window resizing events
+            // ReSharper disable InconsistentNaming
             const uint ENABLE_WINDOW_INPUT = 0x0008;
             const uint ENABLE_MOUSE_INPUT = 0x0010;
             const uint ENABLE_EXTENDED_FLAGS = 0x0080;
             const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
+            // ReSharper restore InconsistentNaming
             uint consoleMode;
-            Win32.GetConsoleMode( stdInputHandle, out consoleMode );
-            Win32.SetConsoleMode(stdInputHandle, 
+            Win32.GetConsoleMode( _stdInputHandle, out consoleMode );
+            Win32.SetConsoleMode(_stdInputHandle, 
                 (consoleMode | ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT | ENABLE_EXTENDED_FLAGS)
                 & ~ENABLE_QUICK_EDIT_MODE);
 
             // Get console screen buffer size
             CONSOLE_SCREEN_BUFFER_INFO screenBufferInfo;
-            Win32.GetConsoleScreenBufferInfo( stdOutputHandle, out screenBufferInfo );
+            Win32.GetConsoleScreenBufferInfo( _stdOutputHandle, out screenBufferInfo );
 
             // Set Canvas size to current console window size (not to whole buffer size)
-            savedWindowRect = new Rect( new Point( Console.WindowLeft, Console.WindowTop ),
+            _savedWindowRect = new Rect( new Point( Console.WindowLeft, Console.WindowTop ),
                                         new Size( Console.WindowWidth, Console.WindowHeight ) );
-            CanvasSize = new Size(savedWindowRect.Width, savedWindowRect.Height);
+            CanvasSize = new Size(_savedWindowRect.Width, _savedWindowRect.Height);
 
-            canvas = userCanvasSize.IsEmpty 
-                ? new PhysicalCanvas( screenBufferInfo.dwSize.X, screenBufferInfo.dwSize.Y, stdOutputHandle ) 
-                : new PhysicalCanvas( userCanvasSize.Width, userCanvasSize.Height, stdOutputHandle);
-            renderer.Canvas = canvas;
+            _canvas = _userCanvasSize.IsEmpty 
+                ? new PhysicalCanvas( screenBufferInfo.dwSize.X, screenBufferInfo.dwSize.Y, _stdOutputHandle ) 
+                : new PhysicalCanvas( _userCanvasSize.Width, _userCanvasSize.Height, _stdOutputHandle);
+            _renderer.Canvas = _canvas;
 
             // Fill the canvas by default
-            renderer.RootElementRect = userRootElementRect.IsEmpty 
-                ? new Rect( new Point(0, 0), canvas.Size ) : userRootElementRect;
-            renderer.RootElement = mainControl;
+            _renderer.RootElementRect = _userRootElementRect.IsEmpty 
+                ? new Rect( new Point(0, 0), _canvas.Size ) : _userRootElementRect;
+            _renderer.RootElement = _mainControl;
             //
-            mainControl.Invalidate();
-            renderer.UpdateLayout();
-            renderer.FinallyApplyChangesToCanvas(  );
+            _mainControl.Invalidate();
+            _renderer.UpdateLayout();
+            _renderer.FinallyApplyChangesToCanvas(  );
 
             // Initially hide the console cursor
             HideCursor();
             
             
-            this.running = true;
-            this.mainThreadId = Thread.CurrentThread.ManagedThreadId;
+            this._running = true;
+            this._mainThreadId = Thread.CurrentThread.ManagedThreadId;
             //
             while (true) {
                 // 100 ms instead of Win32.INFINITE to check console window Zoomed and Iconic
@@ -811,7 +813,7 @@ namespace ConsoleFramework
                     break;
                 }
                 if (waitResult == 1) {
-                    processInput();
+                    ProcessInput();
                 }
                 if ( waitResult == 2 ) {
                     // Do nothing special - because invokeActions will be invoked in loop anyway
@@ -820,17 +822,17 @@ namespace ConsoleFramework
                 // If we received WAIT_TIMEOUT - check window Zoomed and Iconic state
                 // and correct buffer size and console window size
                 if ( waitResult == 0x00000102 ) {
-                    IntPtr consoleWindow = getConsoleWindowHwnd( );
+                    IntPtr consoleWindow = GetConsoleWindowHwnd( );
                     bool isZoomed = Win32.IsZoomed(consoleWindow);
                     bool isIconic = Win32.IsIconic(consoleWindow);
-                    if (maximized != isZoomed && !isIconic) {
+                    if (_maximized != isZoomed && !isIconic) {
                         if (isZoomed) 
                             Maximize();
                         else
                             Restore();
                     }
-                    if ( !maximized ) {
-                        savedWindowRect = new Rect( new Point( Console.WindowLeft, Console.WindowTop ),
+                    if ( !_maximized ) {
+                        _savedWindowRect = new Rect( new Point( Console.WindowLeft, Console.WindowTop ),
                                                     new Size( Console.WindowWidth, Console.WindowHeight ) );
                     }
                 }
@@ -840,73 +842,73 @@ namespace ConsoleFramework
                 }
 
                 while ( true ) {
-                    bool anyInvokeActions = isAnyInvokeActions( );
+                    bool anyInvokeActions = IsAnyInvokeActions( );
                     bool anyRoutedEvent = !EventManager.IsQueueEmpty( );
-                    bool anyLayoutToRevalidate = renderer.AnyControlInvalidated;
+                    bool anyLayoutToRevalidate = _renderer.AnyControlInvalidated;
 
                     if (!anyInvokeActions && !anyRoutedEvent && !anyLayoutToRevalidate)
                         break;
 
                     EventManager.ProcessEvents();
-                    processInvokeActions(  );
-                    renderer.UpdateLayout(  );
+                    ProcessInvokeActions(  );
+                    _renderer.UpdateLayout(  );
                 }
 
-                renderer.FinallyApplyChangesToCanvas( );
+                _renderer.FinallyApplyChangesToCanvas( );
             }
 
             // Restore cursor visibility before exit
             ShowCursor();
 
             // Restore console mode before exit
-            Win32.SetConsoleMode( stdInputHandle, consoleMode );
+            Win32.SetConsoleMode( _stdInputHandle, consoleMode );
 
-            renderer.RootElement = null;
+            _renderer.RootElement = null;
 
             // todo : restore attributes of console output
         }
 
-        private bool isAnyInvokeActions( ) {
-            lock ( actionsLocker ) {
-                return ( actionsToBeInvoked.Count != 0 );
+        private bool IsAnyInvokeActions( ) {
+            lock ( _actionsLocker ) {
+                return ( _actionsToBeInvoked.Count != 0 );
             }
         }
 
-        private void processInvokeActions( ) {
+        private void ProcessInvokeActions( ) {
             for ( ;; ) {
                 ActionInfo top;
-                lock ( actionsLocker ) {
-                    if ( actionsToBeInvoked.Count != 0 ) {
-                        top = actionsToBeInvoked[ 0 ];
-                        actionsToBeInvoked.RemoveAt( 0 );
+                lock ( _actionsLocker ) {
+                    if ( _actionsToBeInvoked.Count != 0 ) {
+                        top = _actionsToBeInvoked[ 0 ];
+                        _actionsToBeInvoked.RemoveAt( 0 );
                     } else {
                         break;
                     }
                 }
-                top.action.Invoke(  );
-                if ( top.waitHandle != null ) {
-                    top.waitHandle.Set( );
+                top.Action.Invoke(  );
+                if ( top.WaitHandle != null ) {
+                    top.WaitHandle.Set( );
                 }
             }
         }
 
-        private void processInput() {
+        private void ProcessInput() {
             INPUT_RECORD[] buffer = new INPUT_RECORD[10];
             uint read;
-            bool bReaded = Win32.ReadConsoleInput(stdInputHandle, buffer, (uint) buffer.Length, out read);
+            bool bReaded = Win32.ReadConsoleInput(_stdInputHandle, buffer, (uint) buffer.Length, out read);
             if (!bReaded) {
                 throw new InvalidOperationException("ReadConsoleInput method failed.");
             }
             
             for (int i = 0; i < read; ++i) {
-                processInputEvent(buffer[i]);
+                ProcessInputEvent(buffer[i]);
             }
         }
 
-        private void processInputEvent(INPUT_RECORD inputRecord) {
+        private void ProcessInputEvent(INPUT_RECORD inputRecord) {
             if ( inputRecord.EventType == EventType.WINDOW_BUFFER_SIZE_EVENT ) {
 
-                if ( usingLinux ) {
+                if ( UsingLinux ) {
                     // Reinitializing ncurses to deal with new dimensions
                     // http://stackoverflow.com/questions/13707137/ncurses-resizing-glitch
                     NCurses.endwin();
@@ -921,19 +923,19 @@ namespace ConsoleFramework
                 // Invoke default handler if no custom handlers attached and
                 // userCanvasSize and userRootElementRect are not defined
                 if ( TerminalSizeChanged == null
-                     && userCanvasSize.IsEmpty
-                     && userRootElementRect.IsEmpty ) {
+                     && _userCanvasSize.IsEmpty
+                     && _userRootElementRect.IsEmpty ) {
                     OnTerminalSizeChangedDefault(this, new TerminalSizeChangedEventArgs( dwSize.X, dwSize.Y ));
                 } else if ( TerminalSizeChanged != null ) {
                     TerminalSizeChanged.Invoke(this, new TerminalSizeChangedEventArgs(dwSize.X, dwSize.Y));                    
                 }
 
                 // Refresh whole display
-                renderer.FinallyApplyChangesToCanvas( true );
+                _renderer.FinallyApplyChangesToCanvas( true );
 
                 return;
             }
-            eventManager.ParseInputEvent(inputRecord, mainControl);
+            _eventManager.ParseInputEvent(inputRecord, _mainControl);
         }
 
         /// <summary>
@@ -942,7 +944,7 @@ namespace ConsoleFramework
         /// </summary>
         /// <returns></returns>
         public bool IsUiThread( ) {
-            return Thread.CurrentThread.ManagedThreadId == this.mainThreadId;
+            return Thread.CurrentThread.ManagedThreadId == this._mainThreadId;
         }
 
         /// <summary>
@@ -952,7 +954,7 @@ namespace ConsoleFramework
         /// <param name="action"></param>
         public void RunOnUiThread( Action action ) {
             // If run loop is not started, do nothing
-            if ( !this.running ) {
+            if ( !this._running ) {
                 return;
             }
             // If current thread is UI thread, invoke action directly
@@ -961,13 +963,13 @@ namespace ConsoleFramework
                 return;
             }
             using ( EventWaitHandle waitHandle = new EventWaitHandle( false, EventResetMode.ManualReset ) ) {
-                lock ( actionsLocker ) {
-                    actionsToBeInvoked.Add( new ActionInfo( action, waitHandle ) );
+                lock ( _actionsLocker ) {
+                    _actionsToBeInvoked.Add( new ActionInfo( action, waitHandle ) );
                 }
-                if (usingLinux) {
-                    Libc.writeInt64 (pipeFds[1], 3);
+                if (UsingLinux) {
+                    Libc.writeInt64 (_pipeFds[1], 3);
                 } else {
-                    invokeWaitHandle.Set( );
+                    _invokeWaitHandle.Set( );
                 }
 
                 waitHandle.WaitOne( );
@@ -980,44 +982,44 @@ namespace ConsoleFramework
         /// </summary>
         public void Post( Action action ) {
             // If run loop is not started, nothing to do
-            if ( !this.running ) {
+            if ( !this._running ) {
                 return;
             }
-            lock ( actionsLocker ) {
-                actionsToBeInvoked.Add( new ActionInfo( action, null ) );
+            lock ( _actionsLocker ) {
+                _actionsToBeInvoked.Add( new ActionInfo( action, null ) );
             }
             if (!IsUiThread()) {
-                if (usingLinux) {
-                    Libc.writeInt64 (pipeFds[1], 3);
+                if (UsingLinux) {
+                    Libc.writeInt64 (_pipeFds[1], 3);
                 } else {
-                    invokeWaitHandle.Set();
+                    _invokeWaitHandle.Set();
                 }
             }
         }
 
-        private readonly object timersLock = new object(  );
+        private readonly object _timersLock = new object(  );
 
         /// <summary>
         /// This structure is required to avoid active timer to be collected by GC
         /// before action execution.
         /// </summary>
-        private readonly List<Timer> activeTimers = new List< Timer >();
+        private readonly List<Timer> _activeTimers = new List< Timer >();
 
         /// <summary>
         /// Invokes action in main loop thread (UI thread) asynchronously and after delay.
         /// If run loop will not start to delayed time, nothing will be done.
         /// </summary>
         public void Post( Action action, TimeSpan delay ) {
-            lock ( timersLock ) {
+            lock ( _timersLock ) {
                 Timer[] array = new Timer[1];
                 Timer timer = new Timer( state => {
                     this.Post( action );
-                    lock ( timersLock ) {
-                        activeTimers.Remove( array[ 0 ] );
+                    lock ( _timersLock ) {
+                        _activeTimers.Remove( array[ 0 ] );
                     }
                 }, null, delay, TimeSpan.FromMilliseconds( -1 ) );
                 array[ 0 ] = timer;
-                activeTimers.Add( timer );
+                _activeTimers.Add( timer );
             }
         }
 
@@ -1030,31 +1032,31 @@ namespace ConsoleFramework
         /// события приходят только в кнопку. Когда пользователь отпускает кнопку мыши, захват прекращается.
         /// </summary>
         public void BeginCaptureInput(Control control) {
-            eventManager.BeginCaptureInput(control);
+            _eventManager.BeginCaptureInput(control);
         }
 
         /// <summary>
         /// Завершает захват мыши и маршрутизируемых событий.
         /// </summary>
         public void EndCaptureInput(Control control) {
-            eventManager.EndCaptureInput(control);
+            _eventManager.EndCaptureInput(control);
         }
 
-        private void dispose(bool isDisposing) {
+        private void Dispose(bool isDisposing) {
             if (isDisposing) {
-                if (exitWaitHandle != null) {
-                    exitWaitHandle.Dispose();
+                if (_exitWaitHandle != null) {
+                    _exitWaitHandle.Dispose();
                 }
             }
         }
 
         public void Dispose() {
-            dispose(true);
+            Dispose(true);
             GC.SuppressFinalize(this);
         }
 
         ~ConsoleApplication() {
-            dispose(false);
+            Dispose(false);
         }
     }
 }
