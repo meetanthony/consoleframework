@@ -9,7 +9,9 @@ namespace ConsoleFramework.Native
     /// </summary>
     public static class LibTermKey
     {
-        [DllImport( "libtermkey.so" )]
+        private const string TermKeyLibDllFileName = "libtermkey.so"; 
+        
+        [DllImport(TermKeyLibDllFileName)]
         public static extern IntPtr termkey_new( int fd, TermKeyFlag flags );
         
         public static TermKeyResult termkey_getkey(IntPtr termKey, ref TermKeyKey key) {
@@ -44,10 +46,10 @@ namespace ConsoleFramework.Native
             }
         }
         
-        [DllImport( "libtermkey.so", EntryPoint="termkey_getkey" )]
+        [DllImport( TermKeyLibDllFileName, EntryPoint="termkey_getkey" )]
         private static extern TermKeyResult termkey_getkey32( IntPtr termKey, ref TermKeyKey32 key );
         
-        [DllImport( "libtermkey.so", EntryPoint="termkey_getkey" )]
+        [DllImport( TermKeyLibDllFileName, EntryPoint="termkey_getkey" )]
         private static extern TermKeyResult termkey_getkey64( IntPtr termKey, ref TermKeyKey64 key );
 
         public static TermKeyResult termkey_getkey_force(IntPtr termKey, ref TermKeyKey key) {
@@ -82,19 +84,19 @@ namespace ConsoleFramework.Native
             }
         }
 
-        [DllImport( "libtermkey.so", EntryPoint="termkey_getkey_force" )]
+        [DllImport( TermKeyLibDllFileName, EntryPoint="termkey_getkey_force" )]
         private static extern TermKeyResult termkey_getkey_force32( IntPtr termKey, ref TermKeyKey32 key );
         
-        [DllImport( "libtermkey.so", EntryPoint="termkey_getkey_force" )]
+        [DllImport( TermKeyLibDllFileName, EntryPoint="termkey_getkey_force" )]
         private static extern TermKeyResult termkey_getkey_force64( IntPtr termKey, ref TermKeyKey64 key );
 
-        [DllImport( "libtermkey.so" )]
+        [DllImport( TermKeyLibDllFileName )]
         public static extern TermKeyResult termkey_advisereadable( IntPtr termKey );
 
-        [DllImport( "libtermkey.so" )]
+        [DllImport( TermKeyLibDllFileName )]
         public static extern int termkey_get_waittime( IntPtr termkey );
 
-        [DllImport( "libtermkey.so" )]
+        [DllImport( TermKeyLibDllFileName )]
         public static extern void termkey_destroy( IntPtr termkey );
         
         public static TermKeyResult termkey_interpret_mouse(IntPtr termKey, ref TermKeyKey key,
@@ -159,14 +161,14 @@ namespace ConsoleFramework.Native
             }
         }
         
-        [DllImport( "libtermkey.so", EntryPoint="termkey_interpret_mouse" )]
+        [DllImport( TermKeyLibDllFileName, EntryPoint="termkey_interpret_mouse" )]
         private static extern TermKeyResult termkey_interpret_mouse32( IntPtr termKey, ref TermKeyKey32 key,
                                                                     out TermKeyMouseEvent ev,
                                                                     out int button,
                                                                     out int line,
                                                                     out int col );
         
-        [DllImport( "libtermkey.so", EntryPoint="termkey_interpret_mouse" )]
+        [DllImport( TermKeyLibDllFileName, EntryPoint="termkey_interpret_mouse" )]
         private static extern TermKeyResult termkey_interpret_mouse64( IntPtr termKey, ref TermKeyKey64 key,
                                                                     out TermKeyMouseEvent ev,
                                                                     out int button,
