@@ -10,10 +10,12 @@ namespace ConsoleFramework.XamlIntegration;
 [MarkupExtension("Binding")]
 class BindingMarkupExtension : IMarkupExtension
 {
-    public BindingMarkupExtension() {
+    public BindingMarkupExtension()
+    {
     }
 
-    public BindingMarkupExtension(string path) {
+    public BindingMarkupExtension(string path)
+    {
         Path = path;
     }
 
@@ -28,31 +30,40 @@ class BindingMarkupExtension : IMarkupExtension
     /// </summary>
     public IBindingConverter Converter { get; set; }
 
-    public object ProvideValue(IMarkupExtensionContext context) {
+    public object ProvideValue(IMarkupExtensionContext context)
+    {
         Object realSource = Source ?? context.DataContext;
-        if ( null != realSource && !( realSource is INotifyPropertyChanged ) ) {
+        if (null != realSource && !(realSource is INotifyPropertyChanged))
+        {
             throw new ArgumentException("Source must be INotifyPropertyChanged to use bindings");
         }
-        if (null != realSource) {
+
+        if (null != realSource)
+        {
             BindingMode mode = BindingMode.Default;
-            if ( Path != null ) {
-                Type enumType = typeof ( BindingMode );
-                string[ ] enumNames = enumType.GetTypeInfo().GetEnumNames( );
-                for ( int i = 0, len = enumNames.Length; i < len; i++ ) {
-                    if ( enumNames[ i ] == Mode ) {
-                        mode = ( BindingMode ) Enum.ToObject( enumType, enumType.GetTypeInfo().GetEnumValues( ).GetValue( i ) );
+            if (Path != null)
+            {
+                Type enumType = typeof(BindingMode);
+                string[] enumNames = enumType.GetTypeInfo().GetEnumNames();
+                for (int i = 0, len = enumNames.Length; i < len; i++)
+                {
+                    if (enumNames[i] == Mode)
+                    {
+                        mode = (BindingMode)Enum.ToObject(enumType, enumType.GetTypeInfo().GetEnumValues().GetValue(i));
                         break;
                     }
                 }
             }
-            BindingBase binding = new BindingBase( context.Object, context.PropertyName,
-                (INotifyPropertyChanged) realSource, Path, mode);
-            if ( Converter != null )
+
+            BindingBase binding = new BindingBase(context.Object, context.PropertyName,
+                (INotifyPropertyChanged)realSource, Path, mode);
+            if (Converter != null)
                 binding.Converter = Converter;
-            binding.Bind(  );
+            binding.Bind();
             // mb return actual property value ?
             return null;
         }
+
         return null;
     }
 }

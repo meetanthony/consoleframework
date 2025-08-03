@@ -64,7 +64,7 @@ public class SimplePropertiesTest
         protected virtual void raisePropertyChanged(string propertyName)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if ( handler != null ) handler( this, new PropertyChangedEventArgs( propertyName ) );
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
@@ -76,17 +76,18 @@ public class SimplePropertiesTest
         BindingBase binding = new BindingBase(target, "Title", source, "Text", BindingMode.OneWay);
         binding.Bind();
         source.Text = "Text!";
-        Assert.Equal( target.Title, source.Text );
+        Assert.Equal(target.Title, source.Text);
     }
 
     [Fact]
-    public void TestConversion( ) {
+    public void TestConversion()
+    {
         SourceClass source = new SourceClass();
         TargetClass target = new TargetClass();
         BindingBase binding = new BindingBase(target, "TargetInt", source, "SourceStr", BindingMode.OneWay);
         BindingBase binding2 = new BindingBase(target, "TargetStr", source, "SourceInt", BindingMode.OneWay);
         binding.Bind();
-        binding2.Bind(  );
+        binding2.Bind();
         source.SourceInt = 5;
         source.SourceStr = "4";
         Assert.Equal(target.TargetInt, 4);
@@ -94,7 +95,8 @@ public class SimplePropertiesTest
     }
 
     [Fact]
-    public void TestValidation( ) {
+    public void TestValidation()
+    {
         SourceClass source = new SourceClass();
         TargetClass target = new TargetClass();
         BindingBase binding = new BindingBase(target, "TargetStr", source, "SourceInt", BindingMode.OneWay);
@@ -102,6 +104,6 @@ public class SimplePropertiesTest
         binding.Bind();
         target.TargetInt = 1;
         source.SourceStr = "invalid int";
-        Assert.True( target.TargetInt == 1 );
+        Assert.True(target.TargetInt == 1);
     }
 }

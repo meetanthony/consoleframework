@@ -6,7 +6,8 @@ using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls;
 
-public enum Orientation {
+public enum Orientation
+{
     Horizontal,
     Vertical
 }
@@ -20,24 +21,24 @@ public enum Orientation {
 /// только в рамках хоста окон).
 /// </summary>
 [ContentProperty("Children")]
-public class Panel : Control {
-    public Panel() {
+public class Panel : Control
+{
+    public Panel()
+    {
         children = new UIElementCollection(this);
     }
 
-    public Attr Background {
-        get;
-        set;
-    }
+    public Attr Background { get; set; }
 
     private Orientation orientation = Orientation.Vertical;
 
-    public Orientation Orientation {
-        get {
-            return orientation;
-        }
-        set {
-            if (orientation != value) {
+    public Orientation Orientation
+    {
+        get { return orientation; }
+        set
+        {
+            if (orientation != value)
+            {
                 orientation = value;
                 this.Invalidate();
             }
@@ -45,7 +46,9 @@ public class Panel : Control {
     }
 
     private readonly UIElementCollection children;
-    public new UIElementCollection Children {
+
+    public new UIElementCollection Children
+    {
         get { return children; }
     }
 
@@ -54,66 +57,89 @@ public class Panel : Control {
     /// </summary>
     /// <param name="availableSize"></param>
     /// <returns></returns>
-    protected override Size MeasureOverride(Size availableSize) {
-        if (orientation == Orientation.Vertical) {
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        if (orientation == Orientation.Vertical)
+        {
             int totalHeight = 0;
             int maxWidth = 0;
-            foreach (Control child in base.Children) {
+            foreach (Control child in base.Children)
+            {
                 child.Measure(availableSize);
                 totalHeight += child.DesiredSize.Height;
-                if (child.DesiredSize.Width > maxWidth) {
+                if (child.DesiredSize.Width > maxWidth)
+                {
                     maxWidth = child.DesiredSize.Width;
                 }
             }
-            foreach (Control child in base.Children) {
+
+            foreach (Control child in base.Children)
+            {
                 child.Measure(new Size(maxWidth, child.DesiredSize.Height));
             }
+
             return new Size(maxWidth, totalHeight);
-        } else {
+        }
+        else
+        {
             int totalWidth = 0;
             int maxHeight = 0;
-            foreach (Control child in base.Children) {
+            foreach (Control child in base.Children)
+            {
                 child.Measure(availableSize);
                 totalWidth += child.DesiredSize.Width;
                 if (child.DesiredSize.Height > maxHeight)
                     maxHeight = child.DesiredSize.Height;
             }
+
             foreach (Control child in base.Children)
                 child.Measure(new Size(child.DesiredSize.Width, maxHeight));
             return new Size(totalWidth, maxHeight);
         }
     }
-        
-    protected override Size ArrangeOverride(Size finalSize) {
-        if (orientation == Orientation.Vertical) {
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (orientation == Orientation.Vertical)
+        {
             int totalHeight = 0;
             int maxWidth = 0;
-            foreach (Control child in base.Children) {
+            foreach (Control child in base.Children)
+            {
                 if (child.DesiredSize.Width > maxWidth)
                     maxWidth = child.DesiredSize.Width;
             }
-            maxWidth = Math.Max( maxWidth, finalSize.Width );
-            foreach (Control child in base.Children) {
+
+            maxWidth = Math.Max(maxWidth, finalSize.Width);
+            foreach (Control child in base.Children)
+            {
                 int y = totalHeight;
                 int height = child.DesiredSize.Height;
                 child.Arrange(new Rect(0, y, maxWidth, height));
                 totalHeight += height;
             }
+
             return finalSize;
-        } else {
+        }
+        else
+        {
             int totalWidth = 0;
             int maxHeight = 0;
-            foreach (Control child in base.Children) {
+            foreach (Control child in base.Children)
+            {
                 if (child.DesiredSize.Height > maxHeight)
                     maxHeight = child.DesiredSize.Height;
             }
+
             maxHeight = Math.Max(maxHeight, finalSize.Height);
-            foreach (Control child in base.Children) {
+            foreach (Control child in base.Children)
+            {
                 int x = totalWidth;
                 int width = child.DesiredSize.Width;
                 child.Arrange(new Rect(x, 0, width, maxHeight));
                 totalWidth += width;
             }
+
             return finalSize;
         }
     }
@@ -122,13 +148,16 @@ public class Panel : Control {
     /// Рисует исключительно себя - просто фон.
     /// </summary>
     /// <param name="buffer"></param>
-    public override void Render(RenderingBuffer buffer) {
-        for (int x = 0; x < ActualWidth; ++x) {
-            for (int y = 0; y < ActualHeight; ++y) {
+    public override void Render(RenderingBuffer buffer)
+    {
+        for (int x = 0; x < ActualWidth; ++x)
+        {
+            for (int y = 0; y < ActualHeight; ++y)
+            {
                 buffer.SetPixel(x, y, ' ', Attr.BACKGROUND_BLUE |
                                            Attr.BACKGROUND_GREEN | Attr.BACKGROUND_RED | Attr.FOREGROUND_BLUE |
                                            Attr.FOREGROUND_GREEN | Attr.FOREGROUND_RED | Attr.FOREGROUND_INTENSITY);
-                buffer.SetOpacity( x, y, 4 );
+                buffer.SetOpacity(x, y, 4);
             }
         }
     }

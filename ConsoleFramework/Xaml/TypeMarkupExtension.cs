@@ -9,16 +9,19 @@ namespace ConsoleFramework.Xaml;
 [MarkupExtension("Type")]
 class TypeMarkupExtension : IMarkupExtension
 {
-    public TypeMarkupExtension( ) {
+    public TypeMarkupExtension()
+    {
     }
 
-    public TypeMarkupExtension( string name ) {
+    public TypeMarkupExtension(string name)
+    {
         Name = name;
     }
 
     public String Name { get; set; }
 
-    public object ProvideValue( IMarkupExtensionContext context ) {
-        return Type.GetType( Name );
+    public object ProvideValue(IMarkupExtensionContext context)
+    {
+        return Type.GetType(Name);
     }
 }

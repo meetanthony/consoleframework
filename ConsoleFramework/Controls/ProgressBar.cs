@@ -12,20 +12,24 @@ public class ProgressBar : Control
     /// <summary>
     /// Percent (from 0 to 100).
     /// </summary>
-    public int Percent {
+    public int Percent
+    {
         get { return percent; }
-        set {
-            if ( percent != value ) {
+        set
+        {
+            if (percent != value)
+            {
                 percent = value;
-                RaisePropertyChanged( "Percent" );
+                RaisePropertyChanged("Percent");
             }
         }
     }
 
-    public override void Render( RenderingBuffer buffer ) {
-        Attr attr = Colors.Blend( Color.DarkCyan, Color.DarkBlue );
+    public override void Render(RenderingBuffer buffer)
+    {
+        Attr attr = Colors.Blend(Color.DarkCyan, Color.DarkBlue);
         buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, UnicodeTable.MediumShade, attr);
-        int filled = ( int ) ( ActualWidth*( Percent*0.01 ) );
-        buffer.FillRectangle(0, 0, Math.Min( filled, ActualWidth ), ActualHeight, UnicodeTable.DarkShade, attr);
+        int filled = (int)(ActualWidth * (Percent * 0.01));
+        buffer.FillRectangle(0, 0, Math.Min(filled, ActualWidth), ActualHeight, UnicodeTable.DarkShade, attr);
     }
 }

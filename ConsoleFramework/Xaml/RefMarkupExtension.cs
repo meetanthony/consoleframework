@@ -10,10 +10,12 @@ namespace ConsoleFramework.Xaml;
 [MarkupExtension("Ref")]
 class RefMarkupExtension : IMarkupExtension
 {
-    public RefMarkupExtension( ) {
+    public RefMarkupExtension()
+    {
     }
 
-    public RefMarkupExtension( string @ref ) {
+    public RefMarkupExtension(string @ref)
+    {
         Ref = @ref;
     }
 
@@ -22,15 +24,20 @@ class RefMarkupExtension : IMarkupExtension
     /// </summary>
     public String Ref { get; set; }
 
-    public object ProvideValue( IMarkupExtensionContext context ) {
-        if (string.IsNullOrEmpty( Ref ))
+    public object ProvideValue(IMarkupExtensionContext context)
+    {
+        if (string.IsNullOrEmpty(Ref))
             throw new InvalidOperationException("Ref is null or empty string.");
-            
-        object obj = context.GetObjectById( Ref );
-        if ( null == obj ) {
-            if ( context.IsFixupTokenAvailable ) {
-                return context.GetFixupToken( new string[ ] { Ref } );
-            } else {
+
+        object obj = context.GetObjectById(Ref);
+        if (null == obj)
+        {
+            if (context.IsFixupTokenAvailable)
+            {
+                return context.GetFixupToken(new string[] { Ref });
+            }
+            else
+            {
                 throw new InvalidOperationException(string.Format("Object with Id={0} not found.", Ref));
             }
         }

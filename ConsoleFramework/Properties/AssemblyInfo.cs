@@ -6,7 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ConsoleFramework")]
-[assembly: AssemblyDescription("Console framework is cross-platform toolkit that allows to develop TUI applications using C# and based on WPF-like concepts.")]
+[assembly:
+    AssemblyDescription(
+        "Console framework is cross-platform toolkit that allows to develop TUI applications using C# and based on WPF-like concepts.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("ConsoleFramework")]

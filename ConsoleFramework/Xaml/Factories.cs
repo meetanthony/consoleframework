@@ -17,7 +17,7 @@ namespace ConsoleFramework.Xaml;
 /// </summary>
 public interface IFactory
 {
-    object GetObject( );
+    object GetObject();
 }
 
 /// <summary>
@@ -28,7 +28,8 @@ class Primitive<T> : IFactory
 {
     public T Content { get; set; }
 
-    public object GetObject( ) {
+    public object GetObject()
+    {
         return Content;
     }
 }
@@ -48,9 +49,12 @@ class ObjectFactory : IFactory
     /// </summary>
     public String TypeName { get; set; }
 
-    private readonly Dictionary<String,Object> parametersAndProperties = new Dictionary< string, object >();
+    private readonly Dictionary<String, Object> parametersAndProperties = new Dictionary<string, object>();
 
-    public Dictionary<String, Object> ParametersAndProperties { get { return parametersAndProperties; } }
+    public Dictionary<String, Object> ParametersAndProperties
+    {
+        get { return parametersAndProperties; }
+    }
 
     private struct CtorArg
     {
@@ -58,26 +62,30 @@ class ObjectFactory : IFactory
         public Object obj;
     }
 
-    public object GetObject( ) {
-        if (string.IsNullOrEmpty( TypeName ))
+    public object GetObject()
+    {
+        if (string.IsNullOrEmpty(TypeName))
             throw new InvalidOperationException("TypeName is not specified.");
 
-        Type type = Type.GetType( TypeName );
-        if (null == type) throw new TypeLoadException(string.Format( 
-            "Type {0} not found. Try to use assembly-qualified type name.",
-            TypeName));
+        Type type = Type.GetType(TypeName);
+        if (null == type)
+            throw new TypeLoadException(string.Format(
+                "Type {0} not found. Try to use assembly-qualified type name.",
+                TypeName));
 
         // Construct object accoring to passed ctor arguments
-        List< CtorArg > ctorArgs = new List< CtorArg >( );
-        foreach ( var pair in parametersAndProperties ) {
+        List<CtorArg> ctorArgs = new List<CtorArg>();
+        foreach (var pair in parametersAndProperties)
+        {
             string name = pair.Key;
             int result;
-            if ( int.TryParse( name, out result ) ) {
-                ctorArgs.Add( new CtorArg( )
+            if (int.TryParse(name, out result))
+            {
+                ctorArgs.Add(new CtorArg()
                 {
                     index = result,
                     obj = pair.Value
-                } );
+                });
             }
         }
 
@@ -85,22 +93,25 @@ class ObjectFactory : IFactory
         // and can reorder elements with equal keys
         ctorArgs = ctorArgs.OrderBy(arg => arg.index).ToList();
 
-        ConstructorInfo[ ] constructors = type.GetConstructors( );
-        ConstructorInfo ctorInfo = constructors.Single( ctor => ctor.GetParameters( ).Length == ctorArgs.Count );
-        object createdObject = ctorInfo.Invoke( ctorArgs.Select( arg => arg.obj ).ToArray( ) );
+        ConstructorInfo[] constructors = type.GetConstructors();
+        ConstructorInfo ctorInfo = constructors.Single(ctor => ctor.GetParameters().Length == ctorArgs.Count);
+        object createdObject = ctorInfo.Invoke(ctorArgs.Select(arg => arg.obj).ToArray());
 
         // Fill properties using XamlParser's default conversion rules
-        foreach ( var pair in parametersAndProperties ) {
+        foreach (var pair in parametersAndProperties)
+        {
             string name = pair.Key;
             int result;
-            if ( !int.TryParse( name, out result ) ) {
-                PropertyInfo propertyInfo = type.GetProperty( name );
+            if (!int.TryParse(name, out result))
+            {
+                PropertyInfo propertyInfo = type.GetProperty(name);
                 object value = pair.Value;
-                if ( null != value ) {
-                    object convertedValue = XamlParser.ConvertValueIfNeed( value.GetType( ),
+                if (null != value)
+                {
+                    object convertedValue = XamlParser.ConvertValueIfNeed(value.GetType(),
                         propertyInfo.PropertyType,
-                        value );
-                    propertyInfo.SetValue( createdObject, convertedValue, null );
+                        value);
+                    propertyInfo.SetValue(createdObject, convertedValue, null);
                 }
             }
         }

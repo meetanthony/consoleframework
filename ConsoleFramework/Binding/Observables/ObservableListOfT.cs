@@ -55,7 +55,7 @@ public class ObservableList<T> : IObservableList, IList<T>, IList
     public void Clear()
     {
         int count = _list.Count;
-        List<object?> removedItems = new ();
+        List<object?> removedItems = new();
         foreach (T item in _list)
         {
             removedItems.Add(item);

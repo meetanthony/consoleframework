@@ -28,7 +28,8 @@ namespace ConsoleFramework.Controls;
 /// 2. Apply some commands
 /// 3. Check the result state
 /// </summary>
-public class TextEditorController {
+public class TextEditorController
+{
     /// <summary>
     /// Gap shown after scrolling to the very end of document
     /// </summary>
@@ -49,9 +50,11 @@ public class TextEditorController {
     /// <summary>
     /// Logical cursor position (points to symbol in textItems, not to display coord)
     /// </summary>
-    public Point CursorPos {
+    public Point CursorPos
+    {
         get => cursorPos;
-        set {
+        set
+        {
             cursorPos = value;
             lastTextPosX = cursorPosToTextPos(cursorPos, Window).X;
         }
@@ -66,7 +69,8 @@ public class TextEditorController {
     /// <summary>
     /// Changes cursor position without changing lastCursorX value
     /// </summary>
-    private void setCursorPosLight(Point cursorPos) {
+    private void setCursorPosLight(Point cursorPos)
+    {
         this.cursorPos = cursorPos;
     }
 
@@ -82,24 +86,32 @@ public class TextEditorController {
 
     private Point cursorPos;
 
-    public void WriteToWindow(char[,] buffer) {
+    public void WriteToWindow(char[,] buffer)
+    {
         textHolder.WriteToWindow(Window.Left, Window.Top, Window.Width, Window.Height, buffer);
     }
 
     // TODO : property
     private string newLine;
 
-    public string Text {
+    public string Text
+    {
         get => textHolder.Text;
-        set {
-            if (textHolder.Text != value) {
+        set
+        {
+            if (textHolder.Text != value)
+            {
                 string newLineToUse;
-                if (newLine == null) {
+                if (newLine == null)
+                {
                     // Auto-detect newline format
                     newLineToUse = detectNewLine(value);
-                } else {
+                }
+                else
+                {
                     newLineToUse = newLine;
                 }
+
                 textHolder = new TextHolder(value, newLineToUse);
                 CursorPos = new Point();
                 Window = new Rect(new Point(), Window.Size);
@@ -113,8 +125,10 @@ public class TextEditorController {
     /// auto-detection feature according to the principle of least astonishment.
     /// Then, one xaml-file can be used in different platforms without changes.
     /// </summary>
-    private string detectNewLine(string text) {
-        if (text.Contains("\r\n")) {
+    private string detectNewLine(string text)
+    {
+        if (text.Contains("\r\n"))
+        {
             return "\r\n";
         }
 
@@ -125,16 +139,19 @@ public class TextEditorController {
     public int ColumnsCount => textHolder.ColumnsCount;
 
     public TextEditorController(string text, int width, int height) :
-        this(new TextHolder(text), new Point(), new Rect(0, 0, width, height)) {
+        this(new TextHolder(text), new Point(), new Rect(0, 0, width, height))
+    {
     }
 
-    public TextEditorController(TextHolder textHolder, Point cursorPos, Rect window) {
+    public TextEditorController(TextHolder textHolder, Point cursorPos, Rect window)
+    {
         this.textHolder = textHolder;
         this.CursorPos = cursorPos;
         this.Window = window;
     }
 
-    public interface ICommand {
+    public interface ICommand
+    {
         /// <summary>
         /// Returns true if visible content has changed during the operation
         /// (and therefore should be invalidated), false otherwise.
@@ -142,24 +159,29 @@ public class TextEditorController {
         bool Do(TextEditorController controller);
     }
 
-    static Point cursorPosToTextPos(Point cursorPos, Rect window) {
+    static Point cursorPosToTextPos(Point cursorPos, Rect window)
+    {
         cursorPos.Offset(window.X, window.Y);
         return cursorPos;
     }
 
-    static Point textPosToCursorPos(Point textPos, Rect window) {
+    static Point textPosToCursorPos(Point textPos, Rect window)
+    {
         textPos.Offset(-window.X, -window.Y);
         return textPos;
     }
 
-    public class AppendStringCmd : ICommand {
+    public class AppendStringCmd : ICommand
+    {
         private readonly string s;
 
-        public AppendStringCmd(string s) {
+        public AppendStringCmd(string s)
+        {
             this.s = s;
         }
 
-        public bool Do(TextEditorController controller) {
+        public bool Do(TextEditorController controller)
+        {
             Point textPos = cursorPosToTextPos(controller.CursorPos, controller.Window);
             Point nextCharPos =
                 controller.textHolder.Insert(textPos.Y, textPos.X, s);
@@ -176,69 +198,89 @@ public class TextEditorController {
     /// <summary>
     /// Moves window to make the cursor visible in it
     /// </summary>
-    static void moveWindowToCursor(Point cursor, TextEditorController controller, bool light = false) {
+    static void moveWindowToCursor(Point cursor, TextEditorController controller, bool light = false)
+    {
         Rect oldWindow = controller.Window;
 
         int? windowX;
         int? windowY;
 
-        if (cursor.X >= oldWindow.Width) {
+        if (cursor.X >= oldWindow.Width)
+        {
             // Move window 3px right if nextChar is outside the window after add char
             windowX = oldWindow.X + cursor.X - oldWindow.Width + COLUMNS_RIGHT_MAX_GAP;
-        } else if (cursor.X < 0) {
+        }
+        else if (cursor.X < 0)
+        {
             // Move window left if need (with 4px gap from left)
             windowX = Math.Max(0, oldWindow.X + cursor.X - COLUMNS_LEFT_GAP);
-        } else {
+        }
+        else
+        {
             windowX = null;
         }
 
         // Move window down if nextChar is outside the window
-        if (cursor.Y >= controller.Window.Height) {
+        if (cursor.Y >= controller.Window.Height)
+        {
             windowY = controller.Window.Top + cursor.Y - controller.Window.Height + 1;
-        } else if (cursor.Y < 0) {
+        }
+        else if (cursor.Y < 0)
+        {
             windowY = controller.Window.Y + cursor.Y;
-        } else {
+        }
+        else
+        {
             windowY = null;
         }
 
-        if (windowX != null || windowY != null) {
+        if (windowX != null || windowY != null)
+        {
             controller.Window = new Rect(
                 new Point(windowX ?? oldWindow.X, windowY ?? oldWindow.Y), oldWindow.Size);
         }
 
         // Actualize cursor position to new window
         Point cursorPos = textPosToCursorPos(cursorPosToTextPos(cursor, oldWindow), controller.Window);
-        if (light) {
+        if (light)
+        {
             controller.setCursorPosLight(cursorPos);
-        } else {
+        }
+        else
+        {
             controller.CursorPos = cursorPos;
         }
     }
 
-    public enum Direction {
+    public enum Direction
+    {
         Up,
         Down,
         Left,
         Right
     }
 
-    public class EndCommand : ICommand {
-        public bool Do(TextEditorController controller) {
+    public class EndCommand : ICommand
+    {
+        public bool Do(TextEditorController controller)
+        {
             Point oldCursorPos = controller.CursorPos;
             Rect oldWindow = controller.Window;
             Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
 
             string line = controller.textHolder.Lines[oldTextPos.Y];
             Point textPos = new Point(line.Length, oldTextPos.Y);
-                
+
             moveWindowToCursor(textPosToCursorPos(textPos, oldWindow), controller);
 
             return oldWindow != controller.Window || oldCursorPos != controller.CursorPos;
         }
     }
-        
-    public class HomeCommand : ICommand {
-        public bool Do(TextEditorController controller) {
+
+    public class HomeCommand : ICommand
+    {
+        public bool Do(TextEditorController controller)
+        {
             Point oldCursorPos = controller.CursorPos;
             Rect oldWindow = controller.Window;
             Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
@@ -246,11 +288,15 @@ public class TextEditorController {
             string line = controller.textHolder.Lines[oldTextPos.Y];
             int homeIndex = homeOfLine(line);
             int x;
-            if (oldTextPos.X == 0) {
+            if (oldTextPos.X == 0)
+            {
                 x = homeIndex;
-            } else {
+            }
+            else
+            {
                 x = oldTextPos.X <= homeIndex ? 0 : homeIndex;
             }
+
             Point textPos = new Point(x, oldTextPos.Y);
 
             moveWindowToCursor(textPosToCursorPos(textPos, oldWindow), controller);
@@ -261,44 +307,57 @@ public class TextEditorController {
         /// <summary>
         /// Returns index of first non-space symbol (or s.Length if there is no non-space symbols)
         /// </summary>
-        private int homeOfLine(string s) {
-            for (int i = 0; i < s.Length; i++) {
-                if (!char.IsWhiteSpace(s[i])) {
+        private int homeOfLine(string s)
+        {
+            for (int i = 0; i < s.Length; i++)
+            {
+                if (!char.IsWhiteSpace(s[i]))
+                {
                     return i;
                 }
             }
+
             return s.Length;
         }
     }
-        
-        
-        
-    public class PageUpCmd : ICommand {
-        public bool Do(TextEditorController controller) {
+
+
+    public class PageUpCmd : ICommand
+    {
+        public bool Do(TextEditorController controller)
+        {
             Point oldCursorPos = controller.CursorPos;
             Rect oldWindow = controller.Window;
             Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
 
             // Scroll window one page up
-            if (controller.Window.Y > 0) {
+            if (controller.Window.Y > 0)
+            {
                 int y = Math.Max(0, controller.Window.Y - controller.Window.Height);
                 controller.Window = new Rect(new Point(controller.Window.X, y), controller.Window.Size);
             }
-                
+
             // Move cursor up too
             Rect window = controller.Window;
             Point textPos;
-            if (oldTextPos.Y == 0) {
+            if (oldTextPos.Y == 0)
+            {
                 textPos = oldTextPos.X == 0 ? oldTextPos : new Point(0, 0);
-            } else {
+            }
+            else
+            {
                 int lineIndex = Math.Max(0, oldTextPos.Y - window.Height);
                 string line = controller.textHolder.Lines[lineIndex];
                 int x;
-                if (oldTextPos.Y - window.Height < 0) {
+                if (oldTextPos.Y - window.Height < 0)
+                {
                     x = 0;
-                } else {
+                }
+                else
+                {
                     x = Math.Min(controller.lastTextPosX, line.Length);
                 }
+
                 textPos = new Point(x, lineIndex);
             }
 
@@ -308,39 +367,52 @@ public class TextEditorController {
             return oldWindow != controller.Window || oldCursorPos != controller.CursorPos;
         }
     }
-        
-    public class PageDownCmd : ICommand {
-        public bool Do(TextEditorController controller) {
+
+    public class PageDownCmd : ICommand
+    {
+        public bool Do(TextEditorController controller)
+        {
             Point oldCursorPos = controller.CursorPos;
             Rect oldWindow = controller.Window;
             Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
 
             // Scroll window one page down
             int maxWindowY = controller.textHolder.LinesCount + LINES_BOTTOM_MAX_GAP - controller.Window.Height;
-            if (controller.Window.Y < maxWindowY) {
+            if (controller.Window.Y < maxWindowY)
+            {
                 int y = Math.Min(controller.Window.Y + controller.Window.Height, maxWindowY);
                 controller.Window = new Rect(new Point(controller.Window.X, y), controller.Window.Size);
             }
-                
+
             // Move cursor down too
             Rect window = controller.Window;
             Point textPos;
-            if (oldTextPos.Y == controller.textHolder.LinesCount - 1) {
+            if (oldTextPos.Y == controller.textHolder.LinesCount - 1)
+            {
                 string lastLine = controller.textHolder.Lines[controller.textHolder.LinesCount - 1];
-                if (oldTextPos.X == lastLine.Length) {
+                if (oldTextPos.X == lastLine.Length)
+                {
                     textPos = oldTextPos;
-                } else {
+                }
+                else
+                {
                     textPos = new Point(lastLine.Length, controller.textHolder.LinesCount - 1);
                 }
-            } else {
+            }
+            else
+            {
                 int lineIndex = Math.Min(oldTextPos.Y + window.Height, controller.LinesCount - 1);
                 string line = controller.textHolder.Lines[lineIndex];
                 int x;
-                if (oldTextPos.Y + window.Height > lineIndex) {
+                if (oldTextPos.Y + window.Height > lineIndex)
+                {
                     x = line.Length;
-                } else {
+                }
+                else
+                {
                     x = Math.Min(controller.lastTextPosX, line.Length);
                 }
+
                 textPos = new Point(x, lineIndex);
             }
 
@@ -355,15 +427,19 @@ public class TextEditorController {
     /// Command accepts coord from mouse and applies it to current text window,
     /// don't allowing to set cursor out of filled text
     /// </summary>
-    public class TrySetCursorCmd : ICommand {
+    public class TrySetCursorCmd : ICommand
+    {
         private readonly Point coord;
 
-        public TrySetCursorCmd(Point coord) {
+        public TrySetCursorCmd(Point coord)
+        {
             this.coord = coord;
         }
 
-        public bool Do(TextEditorController controller) {
-            if (!new Rect(new Point(), controller.Window.Size).Contains(coord)) {
+        public bool Do(TextEditorController controller)
+        {
+            if (!new Rect(new Point(), controller.Window.Size).Contains(coord))
+            {
                 throw new ArgumentException("coord should be inside window");
             }
 
@@ -380,16 +456,23 @@ public class TextEditorController {
     /// <summary>
     /// Initiated with BackSpace key
     /// </summary>
-    public class DeleteLeftSymbolCmd : ICommand {
-        public bool Do(TextEditorController controller) {
+    public class DeleteLeftSymbolCmd : ICommand
+    {
+        public bool Do(TextEditorController controller)
+        {
             Point toTextPos = cursorPosToTextPos(controller.CursorPos, controller.Window);
             Point fromTextPos;
-            if (toTextPos.X == 0) {
-                if (toTextPos.Y == 0) {
+            if (toTextPos.X == 0)
+            {
+                if (toTextPos.Y == 0)
+                {
                     return false;
                 }
+
                 fromTextPos = new Point(controller.textHolder.Lines[toTextPos.Y - 1].Length, toTextPos.Y - 1);
-            } else {
+            }
+            else
+            {
                 fromTextPos = new Point(toTextPos.X - 1, toTextPos.Y);
             }
 
@@ -403,17 +486,24 @@ public class TextEditorController {
     /// <summary>
     /// Initiated with Delete key
     /// </summary>
-    public class DeleteRightSymbolCmd : ICommand {
-        public bool Do(TextEditorController controller) {
+    public class DeleteRightSymbolCmd : ICommand
+    {
+        public bool Do(TextEditorController controller)
+        {
             Point fromTextPos = cursorPosToTextPos(controller.CursorPos, controller.Window);
             Point toTextPos;
             string line = controller.textHolder.Lines[fromTextPos.Y];
-            if (fromTextPos.X == line.Length) {
-                if (fromTextPos.Y == controller.textHolder.LinesCount - 1) {
+            if (fromTextPos.X == line.Length)
+            {
+                if (fromTextPos.Y == controller.textHolder.LinesCount - 1)
+                {
                     return false;
                 }
+
                 toTextPos = new Point(0, fromTextPos.Y + 1);
-            } else {
+            }
+            else
+            {
                 toTextPos = new Point(fromTextPos.X + 1, fromTextPos.Y);
             }
 
@@ -424,27 +514,36 @@ public class TextEditorController {
         }
     }
 
-    public class MoveCursorCmd : ICommand {
+    public class MoveCursorCmd : ICommand
+    {
         private readonly Direction direction;
 
-        public MoveCursorCmd(Direction direction) {
+        public MoveCursorCmd(Direction direction)
+        {
             this.direction = direction;
         }
 
-        public bool Do(TextEditorController controller) {
+        public bool Do(TextEditorController controller)
+        {
             var oldCursorPos = controller.CursorPos;
             var oldWindow = controller.Window;
-            switch (direction) {
-                case Direction.Up: {
+            switch (direction)
+            {
+                case Direction.Up:
+                {
                     Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
                     Point textPos;
-                    if (oldTextPos.Y == 0) {
-                        if (oldTextPos.X == 0) {
+                    if (oldTextPos.Y == 0)
+                    {
+                        if (oldTextPos.X == 0)
+                        {
                             break;
                         }
 
                         textPos = new Point(0, 0);
-                    } else {
+                    }
+                    else
+                    {
                         string prevLine = controller.textHolder.Lines[oldTextPos.Y - 1];
                         textPos = new Point(
                             Math.Min(controller.lastTextPosX, prevLine.Length),
@@ -455,17 +554,22 @@ public class TextEditorController {
                     moveWindowToCursor(textPosToCursorPos(textPos, oldWindow), controller, true);
                     break;
                 }
-                case Direction.Down: {
+                case Direction.Down:
+                {
                     Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
                     Point textPos;
-                    if (oldTextPos.Y == controller.textHolder.LinesCount - 1) {
+                    if (oldTextPos.Y == controller.textHolder.LinesCount - 1)
+                    {
                         string lastLine = controller.textHolder.Lines[controller.textHolder.LinesCount - 1];
-                        if (oldTextPos.X == lastLine.Length) {
+                        if (oldTextPos.X == lastLine.Length)
+                        {
                             break;
                         }
 
                         textPos = new Point(lastLine.Length, controller.textHolder.LinesCount - 1);
-                    } else {
+                    }
+                    else
+                    {
                         string nextLine = controller.textHolder.Lines[oldTextPos.Y + 1];
                         textPos = new Point(
                             Math.Min(controller.lastTextPosX, nextLine.Length),
@@ -476,38 +580,51 @@ public class TextEditorController {
                     moveWindowToCursor(textPosToCursorPos(textPos, oldWindow), controller, true);
                     break;
                 }
-                case Direction.Left: {
+                case Direction.Left:
+                {
                     Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
                     Point textPos;
-                    if (oldTextPos.X == 0) {
-                        if (oldTextPos.Y == 0) {
+                    if (oldTextPos.X == 0)
+                    {
+                        if (oldTextPos.Y == 0)
+                        {
                             break;
                         }
 
                         string prevLine = controller.textHolder.Lines[oldTextPos.Y - 1];
                         textPos = new Point(prevLine.Length, oldTextPos.Y - 1);
-                    } else {
+                    }
+                    else
+                    {
                         textPos = new Point(oldTextPos.X - 1, oldTextPos.Y);
                     }
 
                     moveWindowToCursor(textPosToCursorPos(textPos, oldWindow), controller);
                     break;
                 }
-                case Direction.Right: {
+                case Direction.Right:
+                {
                     Point oldTextPos = cursorPosToTextPos(oldCursorPos, oldWindow);
                     Point textPos;
-                    if (oldTextPos.Y == controller.textHolder.LinesCount - 1) {
+                    if (oldTextPos.Y == controller.textHolder.LinesCount - 1)
+                    {
                         string lastLine = controller.textHolder.Lines[controller.textHolder.LinesCount - 1];
-                        if (oldTextPos.X == lastLine.Length) {
+                        if (oldTextPos.X == lastLine.Length)
+                        {
                             break;
                         }
 
                         textPos = new Point(oldTextPos.X + 1, oldTextPos.Y);
-                    } else {
+                    }
+                    else
+                    {
                         string line = controller.textHolder.Lines[oldTextPos.Y];
-                        if (oldTextPos.X < line.Length) {
+                        if (oldTextPos.X < line.Length)
+                        {
                             textPos = new Point(oldTextPos.X + 1, oldTextPos.Y);
-                        } else {
+                        }
+                        else
+                        {
                             textPos = new Point(0, oldTextPos.Y + 1);
                         }
                     }
@@ -522,25 +639,30 @@ public class TextEditorController {
     }
 }
 
-public class TextHolder {
+public class TextHolder
+{
     // TODO : change to more appropriate data structure
     private List<string> lines;
     private readonly string newLine = Environment.NewLine;
 
-    public TextHolder(string text, string newLine) {
+    public TextHolder(string text, string newLine)
+    {
         this.newLine = newLine;
         setText(text);
     }
 
-    public TextHolder(string text) {
+    public TextHolder(string text)
+    {
         setText(text);
     }
 
-    private void setText(string text) {
+    private void setText(string text)
+    {
         lines = new List<string>(text.Split(new[] { newLine }, StringSplitOptions.None));
     }
 
-    public string Text {
+    public string Text
+    {
         get => string.Join(newLine, lines);
         set => setText(value);
     }
@@ -555,26 +677,32 @@ public class TextHolder {
     /// Returns the coords (col+ln) of next symbol after inserted.
     /// TODO : write unit test to check return value
     /// </summary>
-    public Point Insert(int ln, int col, string s) {
+    public Point Insert(int ln, int col, string s)
+    {
         // There are at least one empty line even if no text at all
-        if (ln >= lines.Count) {
+        if (ln >= lines.Count)
+        {
             throw new ArgumentException("ln is out of range", nameof(ln));
         }
 
         string currentLine = lines[ln];
-        if (col > currentLine.Length) {
+        if (col > currentLine.Length)
+        {
             throw new ArgumentException("col is out of range", nameof(col));
         }
 
         string leftPart = currentLine.Substring(0, col);
         string rightPart = currentLine.Substring(col);
 
-        string[] linesToInsert = s.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
+        string[] linesToInsert = s.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
 
-        if (linesToInsert.Length == 1) {
+        if (linesToInsert.Length == 1)
+        {
             lines[ln] = leftPart + linesToInsert[0] + rightPart;
             return new Point(leftPart.Length + linesToInsert[0].Length, ln);
-        } else {
+        }
+        else
+        {
             lines[ln] = leftPart + linesToInsert[0];
             lines.InsertRange(ln + 1, linesToInsert.Skip(1).Take(linesToInsert.Length - 1));
             string lastStrLeftPart = lines[ln + linesToInsert.Length - 1];
@@ -590,38 +718,49 @@ public class TextHolder {
     /// with spaces there.
     /// Window size should be equal to width/height passed.
     /// </summary>
-    public void WriteToWindow(int left, int top, int width, int height, char[,] window) {
-        if (window.GetLength(0) != height) {
+    public void WriteToWindow(int left, int top, int width, int height, char[,] window)
+    {
+        if (window.GetLength(0) != height)
+        {
             throw new ArgumentException("window height differs from viewport height");
         }
 
-        if (window.GetLength(1) != width) {
+        if (window.GetLength(1) != width)
+        {
             throw new ArgumentException("window width differs from viewport width");
         }
 
-        for (int y = top; y < 0; y++) {
-            for (int x = 0; x < width; x++) {
+        for (int y = top; y < 0; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
                 window[y - top, x] = ' ';
             }
         }
 
-        for (int y = Math.Max(0, top); y < Math.Min(top + height, lines.Count); y++) {
+        for (int y = Math.Max(0, top); y < Math.Min(top + height, lines.Count); y++)
+        {
             string line = lines[y];
-            for (int x = left; x < 0; x++) {
+            for (int x = left; x < 0; x++)
+            {
                 window[y - top, x - left] = ' ';
             }
 
-            for (int x = Math.Max(0, left); x < Math.Min(left + width, line.Length); x++) {
+            for (int x = Math.Max(0, left); x < Math.Min(left + width, line.Length); x++)
+            {
                 window[y - top, x - left] = line[x];
             }
 
-            for (int x = Math.Max(line.Length, left); x < left + width; x++) {
+            for (int x = Math.Max(line.Length, left); x < left + width; x++)
+            {
                 window[y - top, x - left] = ' ';
             }
         }
 
-        for (int y = lines.Count; y < top + height; y++) {
-            for (int x = 0; x < width; x++) {
+        for (int y = lines.Count; y < top + height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
                 window[y - top, x] = ' ';
             }
         }
@@ -630,34 +769,42 @@ public class TextHolder {
     /// <summary>
     /// Deletes text from lnFrom+colFrom to lnTo+colTo (exclusive).
     /// </summary>
-    public void Delete(int lnFrom, int colFrom, int lnTo, int colTo) {
-        if (lnFrom > lnTo) {
+    public void Delete(int lnFrom, int colFrom, int lnTo, int colTo)
+    {
+        if (lnFrom > lnTo)
+        {
             throw new ArgumentException("lnFrom should be <= lnTo");
         }
-        if (lnFrom == lnTo && colFrom >= colTo) {
+
+        if (lnFrom == lnTo && colFrom >= colTo)
+        {
             throw new ArgumentException("colFrom should be < colTo on the same line");
         }
+
         //
         lines[lnFrom] = lines[lnFrom].Substring(0, colFrom) + lines[lnTo].Substring(colTo);
         lines.RemoveRange(lnFrom + 1, lnTo - lnFrom);
     }
 }
 
-
 /// <summary>
 /// Multiline text editor.
 /// </summary>
 [ContentProperty("Text")]
-public class TextEditor : Control {
+public class TextEditor : Control
+{
     private TextEditorController controller;
     private char[,] buffer;
     private ScrollBar horizontalScrollbar;
     private ScrollBar verticalScrollbar;
 
-    public string Text {
+    public string Text
+    {
         get => controller.Text;
-        set {
-            if (value != controller.Text) {
+        set
+        {
+            if (value != controller.Text)
+            {
                 controller.Text = value;
                 CursorPosition = controller.CursorPos;
                 Invalidate();
@@ -667,18 +814,22 @@ public class TextEditor : Control {
 
     // TODO : Scrollbars always visible
 
-    private void applyCommand(TextEditorController.ICommand cmd) {
+    private void applyCommand(TextEditorController.ICommand cmd)
+    {
         var oldCursorPos = controller.CursorPos;
-        if (cmd.Do(controller)) {
+        if (cmd.Do(controller))
+        {
             Invalidate();
         }
 
-        if (oldCursorPos != controller.CursorPos) {
+        if (oldCursorPos != controller.CursorPos)
+        {
             CursorPosition = controller.CursorPos;
         }
     }
 
-    public TextEditor() {
+    public TextEditor()
+    {
         controller = new TextEditorController("", 0, 0);
         KeyDown += OnKeyDown;
         MouseDown += OnMouseDown;
@@ -686,11 +837,13 @@ public class TextEditor : Control {
         CursorPosition = new Point(0, 0);
         Focusable = true;
 
-        horizontalScrollbar = new ScrollBar {
+        horizontalScrollbar = new ScrollBar
+        {
             Orientation = Orientation.Horizontal,
             Visibility = Visibility.Hidden
         };
-        verticalScrollbar = new ScrollBar {
+        verticalScrollbar = new ScrollBar
+        {
             Orientation = Orientation.Vertical,
             Visibility = Visibility.Hidden
         };
@@ -698,35 +851,45 @@ public class TextEditor : Control {
         AddChild(verticalScrollbar);
     }
 
-    protected override Size MeasureOverride(Size availableSize) {
+    protected override Size MeasureOverride(Size availableSize)
+    {
         verticalScrollbar.Measure(new Size(1, availableSize.Height));
         horizontalScrollbar.Measure(new Size(availableSize.Width, 1));
         return new Size(0, 0);
     }
 
-    protected override Size ArrangeOverride(Size finalSize) {
-        if (controller.LinesCount > finalSize.Height) {
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        if (controller.LinesCount > finalSize.Height)
+        {
             verticalScrollbar.Visibility = Visibility.Visible;
             verticalScrollbar.MaxValue =
                 controller.LinesCount + TextEditorController.LINES_BOTTOM_MAX_GAP - controller.Window.Height;
             verticalScrollbar.Value = controller.Window.Top;
             verticalScrollbar.Invalidate();
-        } else {
+        }
+        else
+        {
             verticalScrollbar.Visibility = Visibility.Collapsed;
             verticalScrollbar.Value = 0;
             verticalScrollbar.MaxValue = 10;
         }
-        if (controller.ColumnsCount >= finalSize.Width) {
+
+        if (controller.ColumnsCount >= finalSize.Width)
+        {
             horizontalScrollbar.Visibility = Visibility.Visible;
             horizontalScrollbar.MaxValue =
                 controller.ColumnsCount + TextEditorController.COLUMNS_RIGHT_MAX_GAP - controller.Window.Width;
             horizontalScrollbar.Value = controller.Window.Left;
             horizontalScrollbar.Invalidate();
-        } else {
+        }
+        else
+        {
             horizontalScrollbar.Visibility = Visibility.Collapsed;
             horizontalScrollbar.Value = 0;
             horizontalScrollbar.MaxValue = 10;
         }
+
         horizontalScrollbar.Arrange(new Rect(
             0,
             Math.Max(0, finalSize.Height - 1),
@@ -756,27 +919,32 @@ public class TextEditor : Control {
         return finalSize;
     }
 
-    public override void Render(RenderingBuffer buffer) {
+    public override void Render(RenderingBuffer buffer)
+    {
         var attrs = Colors.Blend(Color.Green, Color.DarkBlue);
         buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', attrs);
 
         controller.WriteToWindow(this.buffer);
         Size contentSize = controller.Window.Size;
-        for (int y = 0; y < contentSize.Height; y++) {
-            for (int x = 0; x < contentSize.Width; x++) {
+        for (int y = 0; y < contentSize.Height; y++)
+        {
+            for (int x = 0; x < contentSize.Width; x++)
+            {
                 buffer.SetPixel(x, y, this.buffer[y, x]);
             }
         }
 
         if (verticalScrollbar.Visibility == Visibility.Visible
-            && horizontalScrollbar.Visibility == Visibility.Visible) {
+            && horizontalScrollbar.Visibility == Visibility.Visible)
+        {
             buffer.SetPixel(buffer.Width - 1, buffer.Height - 1,
                 UnicodeTable.SingleFrameBottomRightCorner,
                 Colors.Blend(Color.DarkCyan, Color.DarkBlue));
         }
     }
 
-    private void OnMouseDown(object sender, MouseButtonEventArgs mouseButtonEventArgs) {
+    private void OnMouseDown(object sender, MouseButtonEventArgs mouseButtonEventArgs)
+    {
         Point position = mouseButtonEventArgs.GetPosition(this);
         Point constrained = new Point(
             Math.Max(0, Math.Min(controller.Window.Size.Width - 1, position.X)),
@@ -786,20 +954,23 @@ public class TextEditor : Control {
         mouseButtonEventArgs.Handled = true;
     }
 
-    private void OnKeyDown(object sender, KeyEventArgs args) {
+    private void OnKeyDown(object sender, KeyEventArgs args)
+    {
         ConsoleKeyInfo keyInfo = new ConsoleKeyInfo(args.UnicodeChar,
-            (ConsoleKey) args.wVirtualKeyCode,
+            (ConsoleKey)args.wVirtualKeyCode,
             (args.dwControlKeyState & ControlKeyState.SHIFT_PRESSED) == ControlKeyState.SHIFT_PRESSED,
             (args.dwControlKeyState & ControlKeyState.LEFT_ALT_PRESSED) == ControlKeyState.LEFT_ALT_PRESSED
             || (args.dwControlKeyState & ControlKeyState.RIGHT_ALT_PRESSED) == ControlKeyState.RIGHT_ALT_PRESSED,
             (args.dwControlKeyState & ControlKeyState.LEFT_CTRL_PRESSED) == ControlKeyState.LEFT_CTRL_PRESSED
             || (args.dwControlKeyState & ControlKeyState.RIGHT_CTRL_PRESSED) == ControlKeyState.RIGHT_CTRL_PRESSED
         );
-        if (!char.IsControl(keyInfo.KeyChar)) {
+        if (!char.IsControl(keyInfo.KeyChar))
+        {
             applyCommand(new TextEditorController.AppendStringCmd(new string(keyInfo.KeyChar, 1)));
         }
 
-        switch (keyInfo.Key) {
+        switch (keyInfo.Key)
+        {
             case ConsoleKey.Enter:
                 applyCommand(new TextEditorController.AppendStringCmd(Environment.NewLine));
                 break;

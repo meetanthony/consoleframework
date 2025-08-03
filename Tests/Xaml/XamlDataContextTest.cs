@@ -5,7 +5,8 @@ using Xunit;
 
 namespace Tests.Xaml;
 
-public class TestModel : INotifyPropertyChanged {
+public class TestModel : INotifyPropertyChanged
+{
     public string Title { get; set; }
 
     public TestModel SubModel { get; set; }
@@ -15,18 +16,23 @@ public class TestModel : INotifyPropertyChanged {
 
 [ContentProperty("Content")]
 [DataContextProperty("CustomDataContext")]
-public class TestObject {
+public class TestObject
+{
     public object CustomDataContext { get; set; }
 
     public object Content { get; set; }
 }
 
-public class XamlDataContextTest {
+public class XamlDataContextTest
+{
     [Fact]
-    public void TestNestedDataContext() {
-        TestModel rootContext = new TestModel() {
+    public void TestNestedDataContext()
+    {
+        TestModel rootContext = new TestModel()
+        {
             Title = "Root",
-            SubModel = new TestModel() {
+            SubModel = new TestModel()
+            {
                 Title = "Nested"
             }
         };
@@ -39,11 +45,12 @@ public class XamlDataContextTest {
 </test:TestObject>
 ",
             rootContext,
-            new List<string> {
+            new List<string>
+            {
                 "clr-namespace:Xaml;assembly=ConsoleFramework",
                 "clr-namespace:ConsoleFramework.Xaml;assembly=ConsoleFramework"
             });
         // Value is bound from parent data context instead of root context
-        Assert.Equal("Nested", ((TestObject) obj.Content).Content);
+        Assert.Equal("Nested", ((TestObject)obj.Content).Content);
     }
 }

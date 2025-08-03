@@ -12,42 +12,52 @@ namespace ConsoleFramework.Events;
 /// Central point of events management routine.
 /// Provides events routing.
 /// </summary>
-public sealed class EventManager {
+public sealed class EventManager
+{
     private readonly Stack<Control> inputCaptureStack = new Stack<Control>();
 
-    private class DelegateInfo {
+    private class DelegateInfo
+    {
         public readonly Delegate @delegate;
         public readonly bool handledEventsToo;
 
-        public DelegateInfo(Delegate @delegate, bool handledEventsToo) {
+        public DelegateInfo(Delegate @delegate, bool handledEventsToo)
+        {
             this.@delegate = @delegate;
             this.handledEventsToo = handledEventsToo;
         }
     }
 
-    private class RoutedEventTargetInfo {
+    private class RoutedEventTargetInfo
+    {
         public readonly object target;
         public List<DelegateInfo> handlersList;
 
-        public RoutedEventTargetInfo(object target) {
+        public RoutedEventTargetInfo(object target)
+        {
             if (null == target)
                 throw new ArgumentNullException("target");
             this.target = target;
         }
     }
 
-    private class RoutedEventInfo {
+    private class RoutedEventInfo
+    {
         public List<RoutedEventTargetInfo> targetsList;
 
-        public RoutedEventInfo(RoutedEvent routedEvent) {
+        public RoutedEventInfo(RoutedEvent routedEvent)
+        {
             if (null == routedEvent)
                 throw new ArgumentNullException("routedEvent");
         }
     }
 
-    private static readonly Dictionary<RoutedEventKey, RoutedEventInfo> routedEvents = new Dictionary<RoutedEventKey, RoutedEventInfo>();
+    private static readonly Dictionary<RoutedEventKey, RoutedEventInfo> routedEvents =
+        new Dictionary<RoutedEventKey, RoutedEventInfo>();
 
-    public static RoutedEvent RegisterRoutedEvent(string name, RoutingStrategy routingStrategy, Type handlerType, Type ownerType) {
+    public static RoutedEvent RegisterRoutedEvent(string name, RoutingStrategy routingStrategy, Type handlerType,
+        Type ownerType)
+    {
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("name");
         if (null == handlerType)
@@ -56,20 +66,24 @@ public sealed class EventManager {
             throw new ArgumentNullException("ownerType");
         //
         RoutedEventKey key = new RoutedEventKey(name, ownerType);
-        if (routedEvents.ContainsKey(key)) {
+        if (routedEvents.ContainsKey(key))
+        {
             throw new InvalidOperationException("This routed event is already registered.");
         }
+
         RoutedEvent routedEvent = new RoutedEvent(handlerType, name, ownerType, routingStrategy);
         RoutedEventInfo routedEventInfo = new RoutedEventInfo(routedEvent);
         routedEvents.Add(key, routedEventInfo);
         return routedEvent;
     }
 
-    public static void AddHandler(object target, RoutedEvent routedEvent, Delegate handler) {
+    public static void AddHandler(object target, RoutedEvent routedEvent, Delegate handler)
+    {
         AddHandler(target, routedEvent, handler, false);
     }
 
-    public static void AddHandler(object target, RoutedEvent routedEvent, Delegate handler, bool handledEventsToo) {
+    public static void AddHandler(object target, RoutedEvent routedEvent, Delegate handler, bool handledEventsToo)
+    {
         if (null == target)
             throw new ArgumentNullException("target");
         if (null == routedEvent)
@@ -82,16 +96,21 @@ public sealed class EventManager {
             throw new ArgumentException("Specified routed event is not registered.", "routedEvent");
         RoutedEventInfo routedEventInfo = routedEvents[key];
         bool needAddTarget = true;
-        if (routedEventInfo.targetsList != null) {
-            RoutedEventTargetInfo targetInfo = routedEventInfo.targetsList.FirstOrDefault(info => info.target == target);
-            if (null != targetInfo) {
+        if (routedEventInfo.targetsList != null)
+        {
+            RoutedEventTargetInfo targetInfo =
+                routedEventInfo.targetsList.FirstOrDefault(info => info.target == target);
+            if (null != targetInfo)
+            {
                 if (targetInfo.handlersList == null)
                     targetInfo.handlersList = new List<DelegateInfo>();
                 targetInfo.handlersList.Add(new DelegateInfo(handler, handledEventsToo));
                 needAddTarget = false;
             }
         }
-        if (needAddTarget) {
+
+        if (needAddTarget)
+        {
             RoutedEventTargetInfo targetInfo = new RoutedEventTargetInfo(target);
             targetInfo.handlersList = new List<DelegateInfo>();
             targetInfo.handlersList.Add(new DelegateInfo(handler, handledEventsToo));
@@ -101,7 +120,8 @@ public sealed class EventManager {
         }
     }
 
-    public static void RemoveHandler(object target, RoutedEvent routedEvent, Delegate handler) {
+    public static void RemoveHandler(object target, RoutedEvent routedEvent, Delegate handler)
+    {
         if (null == target)
             throw new ArgumentNullException("target");
         if (null == routedEvent)
@@ -129,7 +149,8 @@ public sealed class EventManager {
     /// <summary>
     /// Возвращает список таргетов, подписанных на указанное RoutedEvent.
     /// </summary>
-    private static List<RoutedEventTargetInfo> getTargetsSubscribedTo(RoutedEvent routedEvent) {
+    private static List<RoutedEventTargetInfo> getTargetsSubscribedTo(RoutedEvent routedEvent)
+    {
         if (null == routedEvent)
             throw new ArgumentNullException("routedEvent");
         RoutedEventKey key = routedEvent.Key;
@@ -139,43 +160,54 @@ public sealed class EventManager {
         return routedEventInfo.targetsList;
     }
 
-    public void BeginCaptureInput(Control control) {
-        if (null == control) {
+    public void BeginCaptureInput(Control control)
+    {
+        if (null == control)
+        {
             throw new ArgumentNullException("control");
         }
+
         //
         inputCaptureStack.Push(control);
     }
 
-    public void EndCaptureInput(Control control) {
-        if (null == control) {
+    public void EndCaptureInput(Control control)
+    {
+        if (null == control)
+        {
             throw new ArgumentNullException("control");
         }
+
         //
-        if (inputCaptureStack.Peek() != control) {
+        if (inputCaptureStack.Peek() != control)
+        {
             throw new InvalidOperationException(
                 "Last control captured the input differs from specified in argument.");
         }
+
         inputCaptureStack.Pop();
     }
 
     private readonly Queue<RoutedEventArgs> eventsQueue = new Queue<RoutedEventArgs>();
 
-    private MouseButtonState getLeftButtonState(MOUSE_BUTTON_STATE rawState) {
+    private MouseButtonState getLeftButtonState(MOUSE_BUTTON_STATE rawState)
+    {
         return (rawState & MOUSE_BUTTON_STATE.FROM_LEFT_1ST_BUTTON_PRESSED) ==
                MOUSE_BUTTON_STATE.FROM_LEFT_1ST_BUTTON_PRESSED
             ? MouseButtonState.Pressed
             : MouseButtonState.Released;
     }
 
-    private MouseButtonState getMiddleButtonState(MOUSE_BUTTON_STATE rawState) {
+    private MouseButtonState getMiddleButtonState(MOUSE_BUTTON_STATE rawState)
+    {
         return (rawState & MOUSE_BUTTON_STATE.FROM_LEFT_2ND_BUTTON_PRESSED) ==
                MOUSE_BUTTON_STATE.FROM_LEFT_2ND_BUTTON_PRESSED
             ? MouseButtonState.Pressed
             : MouseButtonState.Released;
     }
 
-    private MouseButtonState getRightButtonState(MOUSE_BUTTON_STATE rawState) {
+    private MouseButtonState getRightButtonState(MOUSE_BUTTON_STATE rawState)
+    {
         return (rawState & MOUSE_BUTTON_STATE.RIGHTMOST_BUTTON_PRESSED) ==
                MOUSE_BUTTON_STATE.RIGHTMOST_BUTTON_PRESSED
             ? MouseButtonState.Pressed
@@ -195,12 +227,16 @@ public sealed class EventManager {
     private Timer timer;
     private MouseButtonEventArgs lastMousePressEventArgs;
 
-    private void startAutoRepeatTimer( MouseButtonEventArgs eventArgs ) {
+    private void startAutoRepeatTimer(MouseButtonEventArgs eventArgs)
+    {
         lastMousePressEventArgs = eventArgs;
-        timer = new Timer( state => {
-            ConsoleApplication.Instance.RunOnUiThread( ( ) => {
-                if (autoRepeatTimerRunning) {
-                    eventsQueue.Enqueue( new MouseButtonEventArgs(
+        timer = new Timer(state =>
+        {
+            ConsoleApplication.Instance.RunOnUiThread(() =>
+            {
+                if (autoRepeatTimerRunning)
+                {
+                    eventsQueue.Enqueue(new MouseButtonEventArgs(
                         lastMousePressEventArgs.Source,
                         Control.MouseDownEvent,
                         lastMousePosition,
@@ -210,39 +246,47 @@ public sealed class EventManager {
                         MouseButton.Left,
                         1,
                         true
-                    ) );
+                    ));
                 }
-            } );
+            });
             // todo : make this constants configurable
-        }, null, TimeSpan.FromMilliseconds( 300 ), TimeSpan.FromMilliseconds(100) );
+        }, null, TimeSpan.FromMilliseconds(300), TimeSpan.FromMilliseconds(100));
         autoRepeatTimerRunning = true;
     }
 
-    private void stopAutoRepeatTimer( ) {
-        timer.Dispose( );
+    private void stopAutoRepeatTimer()
+    {
+        timer.Dispose();
         timer = null;
         autoRepeatTimerRunning = false;
         lastMousePressEventArgs = null;
     }
 
-    public void ParseInputEvent(INPUT_RECORD inputRecord, Control rootElement) {
-        if (inputRecord.EventType == EventType.MOUSE_EVENT) {
+    public void ParseInputEvent(INPUT_RECORD inputRecord, Control rootElement)
+    {
+        if (inputRecord.EventType == EventType.MOUSE_EVENT)
+        {
             MOUSE_EVENT_RECORD mouseEvent = inputRecord.MouseEvent;
 
             if (mouseEvent.dwEventFlags != MouseEventFlags.PRESSED_OR_RELEASED &&
                 mouseEvent.dwEventFlags != MouseEventFlags.MOUSE_MOVED &&
                 mouseEvent.dwEventFlags != MouseEventFlags.DOUBLE_CLICK &&
                 mouseEvent.dwEventFlags != MouseEventFlags.MOUSE_WHEELED &&
-                mouseEvent.dwEventFlags != MouseEventFlags.MOUSE_HWHEELED) {
+                mouseEvent.dwEventFlags != MouseEventFlags.MOUSE_HWHEELED)
+            {
                 //
                 throw new InvalidOperationException("Flags combination in mouse event was not expected.");
             }
+
             Point rawPosition;
             if (mouseEvent.dwEventFlags == MouseEventFlags.MOUSE_MOVED ||
-                mouseEvent.dwEventFlags == MouseEventFlags.PRESSED_OR_RELEASED) {
+                mouseEvent.dwEventFlags == MouseEventFlags.PRESSED_OR_RELEASED)
+            {
                 rawPosition = new Point(mouseEvent.dwMousePosition.X, mouseEvent.dwMousePosition.Y);
                 lastMousePosition = rawPosition;
-            } else {
+            }
+            else
+            {
                 // При событии MOUSE_WHEELED в Windows некорректно устанавливается mouseEvent.dwMousePosition
                 // Поэтому для определения элемента, над которым производится прокручивание колёсика, мы
                 // вынуждены сохранять координаты, полученные при предыдущем событии мыши
@@ -259,9 +303,10 @@ public sealed class EventManager {
             Control source = (inputCaptureStack.Count != 0) ? inputCaptureStack.Peek() : topMost;
 
             // No sense to further process event with no source control
-            if ( source == null ) return;
-                
-            if (mouseEvent.dwEventFlags == MouseEventFlags.MOUSE_MOVED) {
+            if (source == null) return;
+
+            if (mouseEvent.dwEventFlags == MouseEventFlags.MOUSE_MOVED)
+            {
                 MouseButtonState leftMouseButtonState = getLeftButtonState(mouseEvent.dwButtonState);
                 MouseButtonState middleMouseButtonState = getMiddleButtonState(mouseEvent.dwButtonState);
                 MouseButtonState rightMouseButtonState = getRightButtonState(mouseEvent.dwButtonState);
@@ -283,18 +328,21 @@ public sealed class EventManager {
                 // path to source from root element down
                 List<Control> mouseOverStack = new List<Control>();
                 Control current = topMost;
-                while (null != current) {
+                while (null != current)
+                {
                     mouseOverStack.Insert(0, current);
                     current = current.Parent;
                 }
 
                 int index;
-                for (index = 0; index < Math.Min(mouseOverStack.Count, prevMouseOverStack.Count); index++) {
+                for (index = 0; index < Math.Min(mouseOverStack.Count, prevMouseOverStack.Count); index++)
+                {
                     if (mouseOverStack[index] != prevMouseOverStack[index])
                         break;
                 }
 
-                for (int i = prevMouseOverStack.Count - 1; i >= index; i-- ) {
+                for (int i = prevMouseOverStack.Count - 1; i >= index; i--)
+                {
                     Control control = prevMouseOverStack[i];
                     MouseEventArgs args = new MouseEventArgs(control, Control.MouseLeaveEvent,
                         rawPosition,
@@ -305,7 +353,8 @@ public sealed class EventManager {
                     eventsQueue.Enqueue(args);
                 }
 
-                for (int i = index; i < mouseOverStack.Count; i++ ) {
+                for (int i = index; i < mouseOverStack.Count; i++)
+                {
                     // enqueue MouseEnter event
                     Control control = mouseOverStack[i];
                     MouseEventArgs args = new MouseEventArgs(control, Control.MouseEnterEvent,
@@ -320,16 +369,21 @@ public sealed class EventManager {
                 prevMouseOverStack.Clear();
                 prevMouseOverStack.AddRange(mouseOverStack);
             }
-            if (mouseEvent.dwEventFlags == MouseEventFlags.PRESSED_OR_RELEASED) {
+
+            if (mouseEvent.dwEventFlags == MouseEventFlags.PRESSED_OR_RELEASED)
+            {
                 //
                 MouseButtonState leftMouseButtonState = getLeftButtonState(mouseEvent.dwButtonState);
                 MouseButtonState middleMouseButtonState = getMiddleButtonState(mouseEvent.dwButtonState);
                 MouseButtonState rightMouseButtonState = getRightButtonState(mouseEvent.dwButtonState);
                 //
                 MouseButtonEventArgs eventArgs = null;
-                if (leftMouseButtonState != lastLeftMouseButtonState) {
+                if (leftMouseButtonState != lastLeftMouseButtonState)
+                {
                     eventArgs = new MouseButtonEventArgs(source,
-                        leftMouseButtonState == MouseButtonState.Pressed ? Control.PreviewMouseDownEvent : Control.PreviewMouseUpEvent,
+                        leftMouseButtonState == MouseButtonState.Pressed
+                            ? Control.PreviewMouseDownEvent
+                            : Control.PreviewMouseUpEvent,
                         rawPosition,
                         leftMouseButtonState,
                         lastMiddleMouseButtonState,
@@ -337,9 +391,13 @@ public sealed class EventManager {
                         MouseButton.Left
                     );
                 }
-                if (middleMouseButtonState != lastMiddleMouseButtonState) {
+
+                if (middleMouseButtonState != lastMiddleMouseButtonState)
+                {
                     eventArgs = new MouseButtonEventArgs(source,
-                        middleMouseButtonState == MouseButtonState.Pressed ? Control.PreviewMouseDownEvent : Control.PreviewMouseUpEvent,
+                        middleMouseButtonState == MouseButtonState.Pressed
+                            ? Control.PreviewMouseDownEvent
+                            : Control.PreviewMouseUpEvent,
                         rawPosition,
                         lastLeftMouseButtonState,
                         middleMouseButtonState,
@@ -347,9 +405,13 @@ public sealed class EventManager {
                         MouseButton.Middle
                     );
                 }
-                if (rightMouseButtonState != lastRightMouseButtonState) {
+
+                if (rightMouseButtonState != lastRightMouseButtonState)
+                {
                     eventArgs = new MouseButtonEventArgs(source,
-                        rightMouseButtonState == MouseButtonState.Pressed ? Control.PreviewMouseDownEvent : Control.PreviewMouseUpEvent,
+                        rightMouseButtonState == MouseButtonState.Pressed
+                            ? Control.PreviewMouseDownEvent
+                            : Control.PreviewMouseUpEvent,
                         rawPosition,
                         lastLeftMouseButtonState,
                         lastMiddleMouseButtonState,
@@ -357,36 +419,45 @@ public sealed class EventManager {
                         MouseButton.Right
                     );
                 }
+
                 if (eventArgs != null) eventsQueue.Enqueue(eventArgs);
                 //
                 lastLeftMouseButtonState = leftMouseButtonState;
                 lastMiddleMouseButtonState = middleMouseButtonState;
                 lastRightMouseButtonState = rightMouseButtonState;
 
-                if ( leftMouseButtonState == MouseButtonState.Pressed ) {
-                    if ( eventArgs != null && !autoRepeatTimerRunning ) {
-                        startAutoRepeatTimer( eventArgs );
+                if (leftMouseButtonState == MouseButtonState.Pressed)
+                {
+                    if (eventArgs != null && !autoRepeatTimerRunning)
+                    {
+                        startAutoRepeatTimer(eventArgs);
                     }
-                } else {
-                    if (eventArgs != null && autoRepeatTimerRunning) {
-                        stopAutoRepeatTimer( );
+                }
+                else
+                {
+                    if (eventArgs != null && autoRepeatTimerRunning)
+                    {
+                        stopAutoRepeatTimer();
                     }
                 }
             }
 
-            if (mouseEvent.dwEventFlags == MouseEventFlags.MOUSE_WHEELED) {
+            if (mouseEvent.dwEventFlags == MouseEventFlags.MOUSE_WHEELED)
+            {
                 MouseWheelEventArgs args = new MouseWheelEventArgs(
                     topMost,
                     Control.PreviewMouseWheelEvent,
                     rawPosition,
-                    lastLeftMouseButtonState, lastMiddleMouseButtonState, 
+                    lastLeftMouseButtonState, lastMiddleMouseButtonState,
                     lastRightMouseButtonState,
                     mouseEvent.dwButtonState > 0 ? 1 : -1
                 );
-                eventsQueue.Enqueue( args );
+                eventsQueue.Enqueue(args);
             }
         }
-        if (inputRecord.EventType == EventType.KEY_EVENT) {
+
+        if (inputRecord.EventType == EventType.KEY_EVENT)
+        {
             KEY_EVENT_RECORD keyEvent = inputRecord.KeyEvent;
             KeyEventArgs eventArgs = new KeyEventArgs(
                 ConsoleApplication.Instance.FocusManager.FocusedElement,
@@ -404,19 +475,23 @@ public sealed class EventManager {
     /// <summary>
     /// Processes all routed events in queue.
     /// </summary>
-    public void ProcessEvents( ) {
-        while (eventsQueue.Count != 0) {
+    public void ProcessEvents()
+    {
+        while (eventsQueue.Count != 0)
+        {
             RoutedEventArgs routedEventArgs = eventsQueue.Dequeue();
             processRoutedEvent(routedEventArgs.RoutedEvent, routedEventArgs);
         }
     }
 
-    public bool IsQueueEmpty( ) {
+    public bool IsQueueEmpty()
+    {
         return eventsQueue.Count == 0;
     }
 
     // todo : think about remove it
-    internal bool ProcessRoutedEvent(RoutedEvent routedEvent, RoutedEventArgs args) {
+    internal bool ProcessRoutedEvent(RoutedEvent routedEvent, RoutedEventArgs args)
+    {
         if (null == routedEvent)
             throw new ArgumentNullException("routedEvent");
         if (null == args)
@@ -425,22 +500,26 @@ public sealed class EventManager {
         return processRoutedEvent(routedEvent, args);
     }
 
-    private static bool isControlAllowedToReceiveEvents( Control control, Control capturingControl ) {
+    private static bool isControlAllowedToReceiveEvents(Control control, Control capturingControl)
+    {
         Control c = control;
-        while ( true ) {
-            if ( c == capturingControl ) return true;
-            if ( c == null ) return false;
+        while (true)
+        {
+            if (c == capturingControl) return true;
+            if (c == null) return false;
             c = c.Parent;
         }
     }
 
-    private bool processRoutedEvent(RoutedEvent routedEvent, RoutedEventArgs args) {
+    private bool processRoutedEvent(RoutedEvent routedEvent, RoutedEventArgs args)
+    {
         //
         List<RoutedEventTargetInfo> subscribedTargets = getTargetsSubscribedTo(routedEvent);
 
         Control capturingControl = inputCaptureStack.Count != 0 ? inputCaptureStack.Peek() : null;
         //
-        if (routedEvent.RoutingStrategy == RoutingStrategy.Direct) {
+        if (routedEvent.RoutingStrategy == RoutingStrategy.Direct)
+        {
             if (null == subscribedTargets)
                 return false;
             //
@@ -451,52 +530,71 @@ public sealed class EventManager {
 
             // если имеется контрол, захватывающий события, события получает только он сам
             // и его дочерние контролы
-            if ( capturingControl != null ) {
-                if ( !(args.Source is Control) ) return false;
-                if ( !isControlAllowedToReceiveEvents( ( Control ) args.Source, capturingControl ) )
+            if (capturingControl != null)
+            {
+                if (!(args.Source is Control)) return false;
+                if (!isControlAllowedToReceiveEvents((Control)args.Source, capturingControl))
                     return false;
             }
 
             // copy handlersList to local list to avoid modifications when enumerating
-            foreach (DelegateInfo delegateInfo in new List< DelegateInfo >(targetInfo.handlersList)) {
-                if (!args.Handled || delegateInfo.handledEventsToo) {
-                    if (delegateInfo.@delegate is RoutedEventHandler) {
-                        ((RoutedEventHandler) delegateInfo.@delegate).Invoke(targetInfo.target, args);
-                    } else {
+            foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.handlersList))
+            {
+                if (!args.Handled || delegateInfo.handledEventsToo)
+                {
+                    if (delegateInfo.@delegate is RoutedEventHandler)
+                    {
+                        ((RoutedEventHandler)delegateInfo.@delegate).Invoke(targetInfo.target, args);
+                    }
+                    else
+                    {
                         delegateInfo.@delegate.DynamicInvoke(targetInfo.target, args);
                     }
                 }
             }
         }
 
-        Control source = (Control) args.Source;
+        Control source = (Control)args.Source;
         // path to source from root element down to Source
         List<Control> path = new List<Control>();
         Control current = source;
-        while (null != current) {
+        while (null != current)
+        {
             // та же логика с контролом, захватившим обработку сообщений
             // если имеется контрол, захватывающий события, события получает только он сам
             // и его дочерние контролы
-            if ( capturingControl == null || isControlAllowedToReceiveEvents( current, capturingControl ) ) {
-                path.Insert( 0, current );
+            if (capturingControl == null || isControlAllowedToReceiveEvents(current, capturingControl))
+            {
+                path.Insert(0, current);
                 current = current.Parent;
-            } else {
+            }
+            else
+            {
                 break;
             }
         }
 
-        if (routedEvent.RoutingStrategy == RoutingStrategy.Tunnel) {
-            if (subscribedTargets != null) {
-                foreach (Control potentialTarget in path) {
+        if (routedEvent.RoutingStrategy == RoutingStrategy.Tunnel)
+        {
+            if (subscribedTargets != null)
+            {
+                foreach (Control potentialTarget in path)
+                {
                     Control target = potentialTarget;
                     RoutedEventTargetInfo targetInfo =
                         subscribedTargets.FirstOrDefault(info => info.target == target);
-                    if (null != targetInfo) {
-                        foreach (DelegateInfo delegateInfo in new List< DelegateInfo >(targetInfo.handlersList)) {
-                            if (!args.Handled || delegateInfo.handledEventsToo) {
-                                if (delegateInfo.@delegate is RoutedEventHandler) {
-                                    ((RoutedEventHandler) delegateInfo.@delegate).Invoke(target, args);
-                                } else {
+                    if (null != targetInfo)
+                    {
+                        foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.handlersList))
+                        {
+                            if (!args.Handled || delegateInfo.handledEventsToo)
+                            {
+                                if (delegateInfo.@delegate is RoutedEventHandler)
+                                {
+                                    ((RoutedEventHandler)delegateInfo.@delegate).Invoke(target, args);
+                                }
+                                else
+                                {
                                     delegateInfo.@delegate.DynamicInvoke(target, args);
                                 }
                             }
@@ -504,11 +602,13 @@ public sealed class EventManager {
                     }
                 }
             }
+
             // для парных Preview-событий запускаем соответствующие настоящие события,
             // сохраняя при этом Handled (если Preview событие помечено как Handled=true,
             // то и настоящее событие будет маршрутизировано с Handled=true)
-            if (routedEvent == Control.PreviewMouseDownEvent) {
-                MouseButtonEventArgs mouseArgs = ( ( MouseButtonEventArgs ) args );
+            if (routedEvent == Control.PreviewMouseDownEvent)
+            {
+                MouseButtonEventArgs mouseArgs = ((MouseButtonEventArgs)args);
                 MouseButtonEventArgs argsNew = new MouseButtonEventArgs(
                     args.Source, Control.MouseDownEvent, mouseArgs.RawPosition,
                     mouseArgs.LeftButton, mouseArgs.MiddleButton, mouseArgs.RightButton,
@@ -517,8 +617,10 @@ public sealed class EventManager {
                 argsNew.Handled = args.Handled;
                 eventsQueue.Enqueue(argsNew);
             }
-            if (routedEvent == Control.PreviewMouseUpEvent) {
-                MouseButtonEventArgs mouseArgs = ( ( MouseButtonEventArgs ) args );
+
+            if (routedEvent == Control.PreviewMouseUpEvent)
+            {
+                MouseButtonEventArgs mouseArgs = ((MouseButtonEventArgs)args);
                 MouseButtonEventArgs argsNew = new MouseButtonEventArgs(
                     args.Source, Control.MouseUpEvent, mouseArgs.RawPosition,
                     mouseArgs.LeftButton, mouseArgs.MiddleButton, mouseArgs.RightButton,
@@ -527,8 +629,10 @@ public sealed class EventManager {
                 argsNew.Handled = args.Handled;
                 eventsQueue.Enqueue(argsNew);
             }
-            if (routedEvent == Control.PreviewMouseMoveEvent) {
-                MouseEventArgs mouseArgs = ( ( MouseEventArgs ) args );
+
+            if (routedEvent == Control.PreviewMouseMoveEvent)
+            {
+                MouseEventArgs mouseArgs = ((MouseEventArgs)args);
                 MouseEventArgs argsNew = new MouseEventArgs(
                     args.Source, Control.MouseMoveEvent, mouseArgs.RawPosition,
                     mouseArgs.LeftButton, mouseArgs.MiddleButton, mouseArgs.RightButton
@@ -536,7 +640,9 @@ public sealed class EventManager {
                 argsNew.Handled = args.Handled;
                 eventsQueue.Enqueue(argsNew);
             }
-            if ( routedEvent == Control.PreviewMouseWheelEvent ) {
+
+            if (routedEvent == Control.PreviewMouseWheelEvent)
+            {
                 MouseWheelEventArgs oldArgs = ((MouseWheelEventArgs)args);
                 MouseEventArgs argsNew = new MouseWheelEventArgs(
                     args.Source, Control.MouseWheelEvent, oldArgs.RawPosition,
@@ -547,9 +653,10 @@ public sealed class EventManager {
                 eventsQueue.Enqueue(argsNew);
             }
 
-            if (routedEvent == Control.PreviewKeyDownEvent) {
+            if (routedEvent == Control.PreviewKeyDownEvent)
+            {
                 KeyEventArgs argsNew = new KeyEventArgs(args.Source, Control.KeyDownEvent);
-                KeyEventArgs keyEventArgs = ( ( KeyEventArgs ) args );
+                KeyEventArgs keyEventArgs = ((KeyEventArgs)args);
                 argsNew.UnicodeChar = keyEventArgs.UnicodeChar;
                 argsNew.bKeyDown = keyEventArgs.bKeyDown;
                 argsNew.dwControlKeyState = keyEventArgs.dwControlKeyState;
@@ -559,9 +666,11 @@ public sealed class EventManager {
                 argsNew.Handled = args.Handled;
                 eventsQueue.Enqueue(argsNew);
             }
-            if (routedEvent == Control.PreviewKeyUpEvent) {
+
+            if (routedEvent == Control.PreviewKeyUpEvent)
+            {
                 KeyEventArgs argsNew = new KeyEventArgs(args.Source, Control.KeyUpEvent);
-                KeyEventArgs keyEventArgs = ( ( KeyEventArgs ) args );
+                KeyEventArgs keyEventArgs = ((KeyEventArgs)args);
                 argsNew.UnicodeChar = keyEventArgs.UnicodeChar;
                 argsNew.bKeyDown = keyEventArgs.bKeyDown;
                 argsNew.dwControlKeyState = keyEventArgs.dwControlKeyState;
@@ -573,19 +682,28 @@ public sealed class EventManager {
             }
         }
 
-        if (routedEvent.RoutingStrategy == RoutingStrategy.Bubble) {
-            if (subscribedTargets != null) {
-                for (int i = path.Count - 1; i >= 0; i--) {
+        if (routedEvent.RoutingStrategy == RoutingStrategy.Bubble)
+        {
+            if (subscribedTargets != null)
+            {
+                for (int i = path.Count - 1; i >= 0; i--)
+                {
                     Control target = path[i];
                     RoutedEventTargetInfo targetInfo =
                         subscribedTargets.FirstOrDefault(info => info.target == target);
-                    if (null != targetInfo) {
+                    if (null != targetInfo)
+                    {
                         //
-                        foreach (DelegateInfo delegateInfo in new List< DelegateInfo >(targetInfo.handlersList)) {
-                            if (!args.Handled || delegateInfo.handledEventsToo) {
-                                if (delegateInfo.@delegate is RoutedEventHandler) {
-                                    ((RoutedEventHandler) delegateInfo.@delegate).Invoke(target, args);
-                                } else {
+                        foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.handlersList))
+                        {
+                            if (!args.Handled || delegateInfo.handledEventsToo)
+                            {
+                                if (delegateInfo.@delegate is RoutedEventHandler)
+                                {
+                                    ((RoutedEventHandler)delegateInfo.@delegate).Invoke(target, args);
+                                }
+                                else
+                                {
                                     delegateInfo.@delegate.DynamicInvoke(target, args);
                                 }
                             }
@@ -601,7 +719,8 @@ public sealed class EventManager {
     /// <summary>
     /// Adds specified routed event to event queue. This event will be processed in next pass.
     /// </summary>
-    internal void QueueEvent(RoutedEvent routedEvent, RoutedEventArgs args) {
+    internal void QueueEvent(RoutedEvent routedEvent, RoutedEventArgs args)
+    {
         if (routedEvent != args.RoutedEvent)
             throw new ArgumentException("Routed event doesn't match to routedEvent passed.", "args");
         this.eventsQueue.Enqueue(args);

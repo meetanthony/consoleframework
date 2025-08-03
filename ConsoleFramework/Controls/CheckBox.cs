@@ -10,49 +10,59 @@ namespace ConsoleFramework.Controls;
 /// </summary>
 public class CheckBox : ButtonBase
 {
-    public CheckBox( ) {
+    public CheckBox()
+    {
         OnClick += CheckBox_OnClick;
     }
 
-    private void CheckBox_OnClick( object sender, RoutedEventArgs routedEventArgs ) {
+    private void CheckBox_OnClick(object sender, RoutedEventArgs routedEventArgs)
+    {
         Checked = !Checked;
     }
 
     private string caption;
-    public string Caption {
-        get {
-            return caption;
-        }
-        set {
-            if ( caption != value ) {
+
+    public string Caption
+    {
+        get { return caption; }
+        set
+        {
+            if (caption != value)
+            {
                 caption = value;
-                Invalidate( );
+                Invalidate();
             }
         }
     }
 
     private bool isChecked;
-    public bool Checked {
-        get {
-            return isChecked;
-        }
-        set {
-            if ( isChecked != value ) {
+
+    public bool Checked
+    {
+        get { return isChecked; }
+        set
+        {
+            if (isChecked != value)
+            {
                 isChecked = value;
                 RaisePropertyChanged("Checked");
-                Invalidate(  );
+                Invalidate();
             }
         }
     }
 
-    protected override Size MeasureOverride(Size availableSize) {
-        if (!string.IsNullOrEmpty(caption)) {
+    protected override Size MeasureOverride(Size availableSize)
+    {
+        if (!string.IsNullOrEmpty(caption))
+        {
             Size minButtonSize = new Size(caption.Length + 4, 1);
             return minButtonSize;
-        } else return new Size(8, 1);
+        }
+        else return new Size(8, 1);
     }
 
-    public override void Render(RenderingBuffer buffer) {
+    public override void Render(RenderingBuffer buffer)
+    {
         Attr captionAttrs;
         if (HasFocus)
             captionAttrs = Colors.Blend(Color.White, Color.DarkGreen);
@@ -63,13 +73,13 @@ public class CheckBox : ButtonBase
 //            if ( pressed )
 //                buttonAttrs = Colors.Blend(Color.Black, Color.DarkGreen);
 
-        buffer.SetOpacityRect( 0, 0, ActualWidth, ActualHeight, 3 );
+        buffer.SetOpacityRect(0, 0, ActualWidth, ActualHeight, 3);
 
         buffer.SetPixel(0, 0, pressed ? '<' : '[', buttonAttrs);
         buffer.SetPixel(1, 0, Checked ? 'X' : ' ', buttonAttrs);
         buffer.SetPixel(2, 0, pressed ? '>' : ']', buttonAttrs);
         buffer.SetPixel(3, 0, ' ', buttonAttrs);
         if (null != caption)
-            RenderString( caption, buffer, 4, 0, ActualWidth - 4, captionAttrs );
+            RenderString(caption, buffer, 4, 0, ActualWidth - 4, captionAttrs);
     }
 }

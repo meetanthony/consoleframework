@@ -10,15 +10,15 @@ namespace ConsoleFramework.Native;
 public static class Libc
 {
     public const int LC_ALL = 0;
-        
+
     [DllImport("libc.so.6", SetLastError = true)]
     public static extern string setlocale(int category, string locale);
-        
+
     /// <summary>
     /// See the &lt;sys/poll.h&gt; and &lt;bits/poll.h&gt;
     /// </summary>
     [DllImport("libc.so.6", SetLastError = true)]
-    public static extern int poll( [In, Out] pollfd[] fds, int fdsCount, int timeout);
+    public static extern int poll([In, Out] pollfd[] fds, int fdsCount, int timeout);
 
     /// <summary>
     /// Creates a pipe object. fds must be initialized array of 2 items.
@@ -26,7 +26,7 @@ public static class Libc
     /// fds[1] will store descriptor for writing
     /// </summary>
     [DllImport("libc.so.6", SetLastError = true)]
-    public static extern int pipe (int[] fds);
+    public static extern int pipe(int[] fds);
 
     /// <summary>
     /// Creates the eventfd kernel object. Returns file descriptor for
@@ -34,39 +34,41 @@ public static class Libc
     /// </summary>
     [DllImport("libc.so.6", SetLastError = true)]
     public static extern int eventfd(uint initval, EVENTFD_FLAGS flags);
-        
+
     [DllImport("libc.so.6", SetLastError = true)]
     private static extern int read(int fd, out UInt64 buf, int count);
-        
+
     [DllImport("libc.so.6", SetLastError = true)]
     private static extern int write(int fd, ref UInt64 buf, int count);
-        
+
     /// <summary>
     /// Used to read from eventfd file descriptor.
     /// </summary>
     /// <returns>
     /// Number of bytes readed or -1 if error has occured.
     /// </returns>
-    public static int readInt64(int fd, out UInt64 res) {
-        return read (fd, out res, sizeof(UInt64));
+    public static int readInt64(int fd, out UInt64 res)
+    {
+        return read(fd, out res, sizeof(UInt64));
     }
-        
+
     /// <summary>
     /// Used to write to eventfd file descriptor.
     /// </summary>
     /// <returns>
     /// Number of bytes written or -1 if error has occured.
     /// </returns>
-    public static int writeInt64(int fd, UInt64 u) {
+    public static int writeInt64(int fd, UInt64 u)
+    {
         return write(fd, ref u, sizeof(UInt64));
     }
-        
+
     /// <summary>
     /// Close the specified file descriptor.
     /// </summary>
     [DllImport("libc.so.6", SetLastError = true)]
     public static extern int close(int fd);
-        
+
     // Used in terminal size retrieving
     public const Int32 STDIN_FILENO = 0;
 
@@ -76,7 +78,7 @@ public static class Libc
     // For Mac OS it is different
     // https://groups.google.com/forum/#!msg/golang-nuts/eZgB_2RUDmQ/nv9wgeIoja4J
     public const Int32 TIOCGWINSZ_DARWIN = 0x40087468;
-        
+
     /// <summary>
     /// Used in terminal size retrieving.
     /// </summary>
@@ -94,12 +96,13 @@ public static class Libc
     /// </summary>
     /// <param name="isDarwin">True if application is executed under Mac OS X.</param>
     /// <returns></returns>
-    public static winsize GetTerminalSize( bool isDarwin ) {
+    public static winsize GetTerminalSize(bool isDarwin)
+    {
         winsize ws;
         ioctl(STDIN_FILENO, isDarwin ? TIOCGWINSZ_DARWIN : TIOCGWINSZ_LINUX, out ws);
         return ws;
     }
-        
+
     public delegate void SignalHandler(int arg);
 
     [DllImport("libc.so.6", SetLastError = true)]
@@ -110,7 +113,7 @@ public static class Libc
     /// </summary>
     [DllImport("libc.so.6", SetLastError = true)]
     public static extern int tcgetattr(int fd, [Out] out termios termios);
-        
+
     /// <summary>
     /// Upon successful completion, the functions tcgetattr() and tcsetattr() 
     /// return a value of 0.  Otherwise, they return -1 and the global variable
@@ -118,25 +121,25 @@ public static class Libc
     /// </summary>
     [DllImport("libc.so.6", SetLastError = true)]
     public static extern int tcsetattr(int fd, int optional_actions, ref termios termios);
-        
+
     /// <summary>
     /// The change occurs immediately.
     /// </summary>
     public const Int32 TCSANOW = 0;
-        
+
     /// <summary>
     /// The change occurs after all output written to fd has been transmitted.
     /// This function should be used when changing parameters that affect output.
     /// </summary>
     public const Int32 TCSADRAIN = 1;
-        
+
     /// <summary>
     /// The change occurs after all output written to the object referred by fd has been transmitted,
     /// and all input that has been received but not read will be discarded before the change is made.
     /// </summary>
     public const Int32 TCSAFLUSH = 2;
 }
-    
+
 [StructLayout(LayoutKind.Sequential)]
 public struct termios
 {
@@ -145,16 +148,19 @@ public struct termios
     public UInt32 c_cflag;
     public UInt32 c_lflag;
     public Byte c_line;
+
     [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
-    public Byte[] c_cc;  // 32 items
+    public Byte[] c_cc; // 32 items
+
     public UInt32 c_ispeed;
     public UInt32 c_ospeed;
 }
-    
+
 /// <summary>
 /// Structure to retrieve terminal size.
 /// </summary>
-public struct winsize {
+public struct winsize
+{
     public UInt16 ws_row;
     public UInt16 ws_col;
     public UInt16 ws_xpixel;
@@ -162,22 +168,24 @@ public struct winsize {
 }
 
 [Flags]
-public enum EVENTFD_FLAGS : int {
+public enum EVENTFD_FLAGS : int
+{
     EFD_SEMAPHORE = 0x00000001,
-    EFD_CLOEXEC =   0x00080000,
+    EFD_CLOEXEC = 0x00080000,
     EEFD_NONBLOCK = 0x00000800
 }
-    
+
 [StructLayout(LayoutKind.Sequential)]
-public struct pollfd {
+public struct pollfd
+{
     public int fd;
     public POLL_EVENTS events;
     public POLL_EVENTS revents;
 }
-    
-    
+
 [Flags]
-public enum POLL_EVENTS : ushort {
+public enum POLL_EVENTS : ushort
+{
     NONE = 0x0000,
     POLLIN = 0x001,
     POLLPRI = 0x002,
@@ -185,6 +193,7 @@ public enum POLL_EVENTS : ushort {
     POLLMSG = 0x400,
     POLLREMOVE = 0x1000,
     POLLRDHUP = 0x2000,
+
     // output only
     POLLERR = 0x008,
     POLLHUP = 0x010,

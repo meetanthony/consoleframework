@@ -9,10 +9,12 @@ namespace ConsoleFramework.Xaml;
 [AttributeUsage(AttributeTargets.Class, Inherited = true)]
 public class MarkupExtensionAttribute : Attribute
 {
-    public MarkupExtensionAttribute( ) {
+    public MarkupExtensionAttribute()
+    {
     }
 
-    public MarkupExtensionAttribute( string name ) {
+    public MarkupExtensionAttribute(string name)
+    {
         Name = name;
     }
 

@@ -1,6 +1,7 @@
 ﻿namespace ConsoleFramework.Core;
 
-class UnicodeTable {
+class UnicodeTable
+{
     public const char WindowCloseSymbol = '\u25a0'; // ■
     public const char WindowClosePressedSymbol = '\u263c'; // ☼
 

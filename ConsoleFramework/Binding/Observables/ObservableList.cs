@@ -7,22 +7,27 @@ namespace ConsoleFramework.Binding.Observables;
 /// <summary>
 /// Non-generic <see cref="IObservableList"/> implementation.
 /// </summary>
-public class ObservableList : IObservableList, IList {
+public class ObservableList : IObservableList, IList
+{
     private readonly IList _list;
 
-    public ObservableList(IList list) {
+    public ObservableList(IList list)
+    {
         _list = list;
     }
 
-    public IEnumerator GetEnumerator() {
+    public IEnumerator GetEnumerator()
+    {
         return _list.GetEnumerator();
     }
 
-    IEnumerator IEnumerable.GetEnumerator() {
+    IEnumerator IEnumerable.GetEnumerator()
+    {
         return GetEnumerator();
     }
-        
-    public int Add(Object? item) {
+
+    public int Add(Object? item)
+    {
         int index = _list.Count;
         _list.Add(item);
 
@@ -30,33 +35,40 @@ public class ObservableList : IObservableList, IList {
         return index;
     }
 
-    public void Clear() {
+    public void Clear()
+    {
         int count = _list.Count;
-        List<object?> removedItems = new ();
-        foreach (object item in _list) {
+        List<object?> removedItems = new();
+        foreach (object item in _list)
+        {
             removedItems.Add(item);
         }
+
         _list.Clear();
 
         RaiseListElementsRemoved(0, count, removedItems);
     }
 
-    public bool Contains(Object? item) {
+    public bool Contains(Object? item)
+    {
         return _list.Contains(item);
     }
 
-    public void CopyTo(object[] array, int arrayIndex) {
+    public void CopyTo(object[] array, int arrayIndex)
+    {
         _list.CopyTo(array, arrayIndex);
     }
 
-    public void Remove(Object? item) {
+    public void Remove(Object? item)
+    {
         int index = _list.IndexOf(item);
         _list.Remove(item);
         if (-1 != index)
             RaiseListElementsRemoved(index, 1, [item]);
     }
 
-    public void CopyTo(Array array, int index) {
+    public void CopyTo(Array array, int index)
+    {
         _list.CopyTo(array, index);
     }
 
@@ -70,45 +82,58 @@ public class ObservableList : IObservableList, IList {
 
     public bool IsFixedSize => _list.IsFixedSize;
 
-    public int IndexOf(Object? item) {
+    public int IndexOf(Object? item)
+    {
         return _list.IndexOf(item);
     }
 
-    public void Insert(int index, Object? item) {
+    public void Insert(int index, Object? item)
+    {
         _list.Insert(index, item);
         RaiseListElementsAdded(index, 1);
     }
 
-    public void RemoveAt(int index) {
+    public void RemoveAt(int index)
+    {
         object? removedItem = _list[index];
         _list.RemoveAt(index);
         RaiseListElementsRemoved(index, 1, [removedItem]);
     }
 
-    public Object? this[int index] {
+    public Object? this[int index]
+    {
         get => _list[index];
-        set {
+        set
+        {
             object? removedItem = _list[index];
             _list[index] = value;
             RaiseListElementReplaced(index, [removedItem]);
         }
     }
 
-    private void RaiseListElementsAdded(int index, int length) {
-        if (null != ListChanged) {
+    private void RaiseListElementsAdded(int index, int length)
+    {
+        if (null != ListChanged)
+        {
             ListChanged.Invoke(this, new ListChangedEventArgs(ListChangedEventType.ItemsInserted, index, length, null));
         }
     }
 
-    private void RaiseListElementsRemoved(int index, int length, List<object?>? removedItems) {
-        if (null != ListChanged) {
-            ListChanged.Invoke(this, new ListChangedEventArgs(ListChangedEventType.ItemsRemoved, index, length, removedItems));
+    private void RaiseListElementsRemoved(int index, int length, List<object?>? removedItems)
+    {
+        if (null != ListChanged)
+        {
+            ListChanged.Invoke(this,
+                new ListChangedEventArgs(ListChangedEventType.ItemsRemoved, index, length, removedItems));
         }
     }
 
-    private void RaiseListElementReplaced(int index, List<object?> removedItems) {
-        if (null != ListChanged) {
-            ListChanged.Invoke(this, new ListChangedEventArgs(ListChangedEventType.ItemReplaced, index, 1, removedItems));
+    private void RaiseListElementReplaced(int index, List<object?> removedItems)
+    {
+        if (null != ListChanged)
+        {
+            ListChanged.Invoke(this,
+                new ListChangedEventArgs(ListChangedEventType.ItemReplaced, index, 1, removedItems));
         }
     }
 

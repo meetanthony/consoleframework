@@ -10,11 +10,13 @@ public class ValidationResult
     private readonly bool valid;
     private readonly String message;
 
-    public bool Valid {
+    public bool Valid
+    {
         get { return valid; }
     }
 
-    public string Message {
+    public string Message
+    {
         get { return message; }
     }
 

@@ -24,7 +24,8 @@ public enum ListChangedEventType
 
 public class ListChangedEventArgs : EventArgs
 {
-    public ListChangedEventArgs(ListChangedEventType type, int index, int count, List<Object?>? removedItems) {
+    public ListChangedEventArgs(ListChangedEventType type, int index, int count, List<Object?>? removedItems)
+    {
         Type = type;
         Index = index;
         Count = count;

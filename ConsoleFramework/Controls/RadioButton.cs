@@ -8,11 +8,14 @@ namespace ConsoleFramework.Controls;
 public class RadioGroup : Panel
 {
     private int? selectedItemIndex;
+
     public int? SelectedItemIndex
     {
         get { return selectedItemIndex; }
-        set {
-            if (selectedItemIndex != value) {
+        set
+        {
+            if (selectedItemIndex != value)
+            {
                 selectedItemIndex = value;
                 RaisePropertyChanged("SelectedItemIndex");
                 RaisePropertyChanged("SelectedItem");
@@ -22,36 +25,46 @@ public class RadioGroup : Panel
 
     public RadioButton SelectedItem
     {
-        get { return selectedItemIndex.HasValue ? (RadioButton) ((Control) this).Children[selectedItemIndex.Value] : null; }
+        get
+        {
+            return selectedItemIndex.HasValue ? (RadioButton)((Control)this).Children[selectedItemIndex.Value] : null;
+        }
     }
 
-    public RadioGroup() {
+    public RadioGroup()
+    {
         Children.ControlAdded += onControlAdded;
         Children.ControlRemoved -= onControlRemoved;
     }
 
-    private void onControlRemoved(Control control) {
+    private void onControlRemoved(Control control)
+    {
         if (!(control is RadioButton)) return;
         var radioButton = (RadioButton)control;
         radioButton.OnClick -= radioButton_OnClick;
     }
 
-    private void onControlAdded(Control control) {
+    private void onControlAdded(Control control)
+    {
         if (!(control is RadioButton)) return;
-        var radioButton = (RadioButton) control;
+        var radioButton = (RadioButton)control;
         radioButton.OnClick += radioButton_OnClick;
-        int index = ((Control) this).Children.IndexOf(radioButton);
+        int index = ((Control)this).Children.IndexOf(radioButton);
         radioButton.Checked = selectedItemIndex != null && (selectedItemIndex == index);
     }
 
-    private void radioButton_OnClick(object sender, RoutedEventArgs args) {
-        foreach (var child in Children) {
-            if (child is RadioButton && child != sender) {
-                ((RadioButton) child).Checked = false;
+    private void radioButton_OnClick(object sender, RoutedEventArgs args)
+    {
+        foreach (var child in Children)
+        {
+            if (child is RadioButton && child != sender)
+            {
+                ((RadioButton)child).Checked = false;
             }
         }
-        ((RadioButton) sender).Checked = true;
-        int index = ((Control) this).Children.IndexOf((Control) sender);
+
+        ((RadioButton)sender).Checked = true;
+        int index = ((Control)this).Children.IndexOf((Control)sender);
         SelectedItemIndex = index;
     }
 }

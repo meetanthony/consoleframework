@@ -2,10 +2,12 @@
 
 namespace ConsoleFramework.Binding.Converters;
 
-public class ReversedConverter : IBindingConverter {
+public class ReversedConverter : IBindingConverter
+{
     readonly IBindingConverter _converter;
 
-    public ReversedConverter(IBindingConverter converter) {
+    public ReversedConverter(IBindingConverter converter)
+    {
         _converter = converter;
     }
 
@@ -13,11 +15,13 @@ public class ReversedConverter : IBindingConverter {
 
     public Type SecondType => _converter.FirstType;
 
-    public ConversionResult Convert(object tFirst) {
+    public ConversionResult Convert(object tFirst)
+    {
         return _converter.ConvertBack(tFirst);
     }
 
-    public ConversionResult ConvertBack(object tSecond) {
+    public ConversionResult ConvertBack(object tSecond)
+    {
         return _converter.Convert(tSecond);
     }
 }

@@ -1,26 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="xunit.runner.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="xunit.runner.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="xunit" Version="2.2.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ConsoleFramework\ConsoleFramework.csproj">
-      <Project>{B1496225-E3CE-4FEF-A7BA-8B6612DE35DA}</Project>
-      <Name>ConsoleFramework</Name>
-    </ProjectReference>
-    <EmbeddedResource Include="Xaml\EnumsTest\ObjectToCreate.xml" LogicalName="Tests.Xaml.EnumsTest.ObjectToCreate.xml" />
-    <EmbeddedResource Include="Xaml\TypeExtensionTest\object.xml" LogicalName="Tests.Xaml.TypeExtensionTest.object.xml" />
-    <EmbeddedResource Include="Xaml\XamlObject1.xml" LogicalName="Tests.Xaml.XamlObject1.xml" />
-  </ItemGroup>
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <None Remove="xunit.runner.json"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="xunit.runner.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="xunit" Version="2.2.0"/>
+        <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\ConsoleFramework\ConsoleFramework.csproj">
+            <Project>{B1496225-E3CE-4FEF-A7BA-8B6612DE35DA}</Project>
+            <Name>ConsoleFramework</Name>
+        </ProjectReference>
+        <EmbeddedResource Include="Xaml\EnumsTest\ObjectToCreate.xml" LogicalName="Tests.Xaml.EnumsTest.ObjectToCreate.xml"/>
+        <EmbeddedResource Include="Xaml\TypeExtensionTest\object.xml" LogicalName="Tests.Xaml.TypeExtensionTest.object.xml"/>
+        <EmbeddedResource Include="Xaml\XamlObject1.xml" LogicalName="Tests.Xaml.XamlObject1.xml"/>
+    </ItemGroup>
 </Project>

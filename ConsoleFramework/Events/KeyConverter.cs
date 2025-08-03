@@ -6,25 +6,31 @@ namespace ConsoleFramework.Events;
 
 public class KeyConverter : ITypeConverter
 {
-    public bool CanConvertFrom(Type sourceType) {
+    public bool CanConvertFrom(Type sourceType)
+    {
         return (sourceType == typeof(string));
     }
 
-    public bool CanConvertTo(Type destinationType) {
-        return (destinationType == typeof (string));
+    public bool CanConvertTo(Type destinationType)
+    {
+        return (destinationType == typeof(string));
     }
 
-    public object ConvertFrom(object source) {
+    public object ConvertFrom(object source)
+    {
         if (!(source is string)) throw new NotSupportedException();
         string keyToken = ((string)source).Trim();
         object key = this.parseKey(keyToken);
-        if (key == null) {
-            throw new NotSupportedException("Unsupported key " + keyToken );
+        if (key == null)
+        {
+            throw new NotSupportedException("Unsupported key " + keyToken);
         }
+
         return (VirtualKeys)key;
     }
 
-    public object ConvertTo(object value, Type destinationType) {
+    public object ConvertTo(object value, Type destinationType)
+    {
 //            if (destinationType == null) {
 //                throw new ArgumentNullException("destinationType");
 //            }
@@ -46,22 +52,32 @@ public class KeyConverter : ITypeConverter
         throw new NotSupportedException("todo :");
     }
 
-    private VirtualKeys parseKey(string keyToken) {
-        if (keyToken == string.Empty) {
+    private VirtualKeys parseKey(string keyToken)
+    {
+        if (keyToken == string.Empty)
+        {
             throw new ArgumentException("keyToken is empty");
         }
+
         keyToken = keyToken.ToUpper();
-        if ((keyToken.Length == 1) && char.IsLetterOrDigit(keyToken[0])) {
-            if ((char.IsDigit(keyToken[0]) && (keyToken[0] >= '0')) && (keyToken[0] <= '9')) {
-                return ( VirtualKeys ) ( ((int) VirtualKeys.N0) + (keyToken[0] - '0') );
+        if ((keyToken.Length == 1) && char.IsLetterOrDigit(keyToken[0]))
+        {
+            if ((char.IsDigit(keyToken[0]) && (keyToken[0] >= '0')) && (keyToken[0] <= '9'))
+            {
+                return (VirtualKeys)(((int)VirtualKeys.N0) + (keyToken[0] - '0'));
             }
-            if ((!char.IsLetter(keyToken[0]) || (keyToken[0] < 'A')) || (keyToken[0] > 'Z')) {
-                throw new ArgumentException("Cannot convert string to VirtualKeys "+ keyToken);
+
+            if ((!char.IsLetter(keyToken[0]) || (keyToken[0] < 'A')) || (keyToken[0] > 'Z'))
+            {
+                throw new ArgumentException("Cannot convert string to VirtualKeys " + keyToken);
             }
-            return ( VirtualKeys ) ( ((int) VirtualKeys.A) + (keyToken[0] - 0x41) );
+
+            return (VirtualKeys)(((int)VirtualKeys.A) + (keyToken[0] - 0x41));
         }
+
         VirtualKeys escape = 0;
-        switch (keyToken) {
+        switch (keyToken)
+        {
             case "ENTER":
                 escape = VirtualKeys.Return;
                 break;
@@ -181,9 +197,12 @@ public class KeyConverter : ITypeConverter
                 escape = (VirtualKeys)Enum.Parse(typeof(VirtualKeys), keyToken, true);
                 break;
         }
-        if (escape != 0) {
+
+        if (escape != 0)
+        {
             return escape;
         }
+
         throw new InvalidOperationException("Cannot convert " + keyToken + " to VirtualKeys");
     }
 }

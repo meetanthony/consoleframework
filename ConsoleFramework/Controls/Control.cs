@@ -25,7 +25,6 @@ public enum HorizontalAlignment
     Stretch
 }
 
-
 public enum VerticalAlignment
 {
     Top,
@@ -34,7 +33,8 @@ public enum VerticalAlignment
     Stretch
 }
 
-internal enum LayoutValidity {
+internal enum LayoutValidity
+{
     Nothing = 1,
     MeasureAndArrange = 2,
     Render = 3
@@ -43,11 +43,15 @@ internal enum LayoutValidity {
 /// <summary>
 /// Полностью описывает состояние лайаута контрола.
 /// </summary>
-internal class LayoutInfo : IEquatable<LayoutInfo> {
+internal class LayoutInfo : IEquatable<LayoutInfo>
+{
     public Size measureArgument;
+
     // если это поле не изменилось, то можно считать, что контрол не поменял своего размера
     public Size unclippedDesiredSize;
+
     public Size desiredSize;
+
     // по сути это arrangeArgument
     public Rect renderSlotRect;
     public Size renderSize;
@@ -55,7 +59,8 @@ internal class LayoutInfo : IEquatable<LayoutInfo> {
     public Vector actualOffset;
     public LayoutValidity validity = LayoutValidity.Nothing;
 
-    public void CopyValuesFrom(LayoutInfo layoutInfo) {
+    public void CopyValuesFrom(LayoutInfo layoutInfo)
+    {
         this.measureArgument = layoutInfo.measureArgument;
         this.unclippedDesiredSize = layoutInfo.unclippedDesiredSize;
         this.desiredSize = layoutInfo.desiredSize;
@@ -66,7 +71,8 @@ internal class LayoutInfo : IEquatable<LayoutInfo> {
         this.validity = layoutInfo.validity;
     }
 
-    public void ClearValues() {
+    public void ClearValues()
+    {
         this.measureArgument = new Size();
         this.unclippedDesiredSize = new Size();
         this.desiredSize = new Size();
@@ -78,7 +84,8 @@ internal class LayoutInfo : IEquatable<LayoutInfo> {
     }
 
     // All members except 'validity'
-    public bool Equals(LayoutInfo other) {
+    public bool Equals(LayoutInfo other)
+    {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
         return other.measureArgument.Equals(measureArgument)
@@ -90,11 +97,12 @@ internal class LayoutInfo : IEquatable<LayoutInfo> {
                && other.actualOffset.Equals(actualOffset);
     }
 
-    public override bool Equals(object obj) {
+    public override bool Equals(object obj)
+    {
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != typeof (LayoutInfo)) return false;
-        return Equals((LayoutInfo) obj);
+        if (obj.GetType() != typeof(LayoutInfo)) return false;
+        return Equals((LayoutInfo)obj);
     }
 }
 
@@ -102,8 +110,8 @@ internal class LayoutInfo : IEquatable<LayoutInfo> {
 /// Base class for all controls.
 /// </summary>
 [DataContextProperty("DataContext")]
-public partial class Control : INotifyPropertyChanged {
-
+public partial class Control : INotifyPropertyChanged
+{
     /// <summary>
     /// Часть RenderSlotRect контрола, которая в текущий момент перекрывается
     /// одним или несколькими соседями, размещёнными выше по Z-Order. Поддерживается
@@ -117,73 +125,117 @@ public partial class Control : INotifyPropertyChanged {
 
     public Object DataContext { get; set; }
 
-    private Dictionary< String, Object > resources;
-    public Dictionary< String, Object > Resources {
-        get { return resources ?? ( resources = new Dictionary< string, object >( ) ); }
+    private Dictionary<String, Object> resources;
+
+    public Dictionary<String, Object> Resources
+    {
+        get { return resources ?? (resources = new Dictionary<string, object>()); }
     }
 
-    public static RoutedEvent PreviewMouseMoveEvent = EventManager.RegisterRoutedEvent("PreviewMouseMove", RoutingStrategy.Tunnel, typeof(MouseEventHandler), typeof(Control));
-    public static RoutedEvent MouseMoveEvent = EventManager.RegisterRoutedEvent("MouseMove", RoutingStrategy.Bubble, typeof(MouseEventHandler), typeof(Control));
-    public static RoutedEvent PreviewMouseDownEvent = EventManager.RegisterRoutedEvent("PreviewMouseDown", RoutingStrategy.Tunnel, typeof(MouseButtonEventHandler), typeof(Control));
-    public static RoutedEvent MouseDownEvent = EventManager.RegisterRoutedEvent("MouseDown", RoutingStrategy.Bubble, typeof(MouseButtonEventHandler), typeof(Control));
-    public static RoutedEvent PreviewMouseUpEvent = EventManager.RegisterRoutedEvent("PreviewMouseUp", RoutingStrategy.Tunnel, typeof(MouseButtonEventHandler), typeof(Control));
-    public static RoutedEvent MouseUpEvent = EventManager.RegisterRoutedEvent("MouseUp", RoutingStrategy.Bubble, typeof(MouseButtonEventHandler), typeof(Control));
-    public static RoutedEvent PreviewMouseWheelEvent = EventManager.RegisterRoutedEvent("PreviewMouseWheel", RoutingStrategy.Tunnel, typeof(MouseWheelEventHandler), typeof(Control));
-    public static RoutedEvent MouseWheelEvent = EventManager.RegisterRoutedEvent("MouseWheel", RoutingStrategy.Bubble, typeof(MouseWheelEventHandler), typeof(Control));
-    public static RoutedEvent MouseEnterEvent = EventManager.RegisterRoutedEvent("MouseEnter", RoutingStrategy.Direct, typeof(MouseEventHandler), typeof(Control));
-    public static RoutedEvent MouseLeaveEvent = EventManager.RegisterRoutedEvent("MouseLeave", RoutingStrategy.Direct, typeof(MouseEventHandler), typeof(Control));
+    public static RoutedEvent PreviewMouseMoveEvent = EventManager.RegisterRoutedEvent("PreviewMouseMove",
+        RoutingStrategy.Tunnel, typeof(MouseEventHandler), typeof(Control));
 
-    public static RoutedEvent PreviewKeyDownEvent = EventManager.RegisterRoutedEvent("PreviewKeyDown", RoutingStrategy.Tunnel, typeof(KeyEventHandler), typeof(Control));
-    public static RoutedEvent KeyDownEvent = EventManager.RegisterRoutedEvent("KeyDown", RoutingStrategy.Bubble, typeof(KeyEventHandler), typeof(Control));
-    public static RoutedEvent PreviewKeyUpEvent = EventManager.RegisterRoutedEvent("PreviewKeyUp", RoutingStrategy.Tunnel, typeof(KeyEventHandler), typeof(Control));
-    public static RoutedEvent KeyUpEvent = EventManager.RegisterRoutedEvent("KeyUp", RoutingStrategy.Bubble, typeof(KeyEventHandler), typeof(Control));
+    public static RoutedEvent MouseMoveEvent = EventManager.RegisterRoutedEvent("MouseMove", RoutingStrategy.Bubble,
+        typeof(MouseEventHandler), typeof(Control));
 
-    public static RoutedEvent PreviewLostKeyboardFocusEvent = EventManager.RegisterRoutedEvent("PreviewLostKeyboardFocus", RoutingStrategy.Tunnel, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
-    public static RoutedEvent LostKeyboardFocusEvent = EventManager.RegisterRoutedEvent("LostKeyboardFocus", RoutingStrategy.Bubble, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
-    public static RoutedEvent PreviewGotKeyboardFocusEvent = EventManager.RegisterRoutedEvent("PreviewGotKeyboardFocus", RoutingStrategy.Tunnel, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
-    public static RoutedEvent GotKeyboardFocusEvent = EventManager.RegisterRoutedEvent("GotKeyboardFocus", RoutingStrategy.Bubble, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
+    public static RoutedEvent PreviewMouseDownEvent = EventManager.RegisterRoutedEvent("PreviewMouseDown",
+        RoutingStrategy.Tunnel, typeof(MouseButtonEventHandler), typeof(Control));
 
-    public event MouseEventHandler MouseMove {
+    public static RoutedEvent MouseDownEvent = EventManager.RegisterRoutedEvent("MouseDown", RoutingStrategy.Bubble,
+        typeof(MouseButtonEventHandler), typeof(Control));
+
+    public static RoutedEvent PreviewMouseUpEvent = EventManager.RegisterRoutedEvent("PreviewMouseUp",
+        RoutingStrategy.Tunnel, typeof(MouseButtonEventHandler), typeof(Control));
+
+    public static RoutedEvent MouseUpEvent = EventManager.RegisterRoutedEvent("MouseUp", RoutingStrategy.Bubble,
+        typeof(MouseButtonEventHandler), typeof(Control));
+
+    public static RoutedEvent PreviewMouseWheelEvent = EventManager.RegisterRoutedEvent("PreviewMouseWheel",
+        RoutingStrategy.Tunnel, typeof(MouseWheelEventHandler), typeof(Control));
+
+    public static RoutedEvent MouseWheelEvent = EventManager.RegisterRoutedEvent("MouseWheel", RoutingStrategy.Bubble,
+        typeof(MouseWheelEventHandler), typeof(Control));
+
+    public static RoutedEvent MouseEnterEvent = EventManager.RegisterRoutedEvent("MouseEnter", RoutingStrategy.Direct,
+        typeof(MouseEventHandler), typeof(Control));
+
+    public static RoutedEvent MouseLeaveEvent = EventManager.RegisterRoutedEvent("MouseLeave", RoutingStrategy.Direct,
+        typeof(MouseEventHandler), typeof(Control));
+
+    public static RoutedEvent PreviewKeyDownEvent = EventManager.RegisterRoutedEvent("PreviewKeyDown",
+        RoutingStrategy.Tunnel, typeof(KeyEventHandler), typeof(Control));
+
+    public static RoutedEvent KeyDownEvent = EventManager.RegisterRoutedEvent("KeyDown", RoutingStrategy.Bubble,
+        typeof(KeyEventHandler), typeof(Control));
+
+    public static RoutedEvent PreviewKeyUpEvent = EventManager.RegisterRoutedEvent("PreviewKeyUp",
+        RoutingStrategy.Tunnel, typeof(KeyEventHandler), typeof(Control));
+
+    public static RoutedEvent KeyUpEvent =
+        EventManager.RegisterRoutedEvent("KeyUp", RoutingStrategy.Bubble, typeof(KeyEventHandler), typeof(Control));
+
+    public static RoutedEvent PreviewLostKeyboardFocusEvent = EventManager.RegisterRoutedEvent(
+        "PreviewLostKeyboardFocus", RoutingStrategy.Tunnel, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
+
+    public static RoutedEvent LostKeyboardFocusEvent = EventManager.RegisterRoutedEvent("LostKeyboardFocus",
+        RoutingStrategy.Bubble, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
+
+    public static RoutedEvent PreviewGotKeyboardFocusEvent = EventManager.RegisterRoutedEvent("PreviewGotKeyboardFocus",
+        RoutingStrategy.Tunnel, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
+
+    public static RoutedEvent GotKeyboardFocusEvent = EventManager.RegisterRoutedEvent("GotKeyboardFocus",
+        RoutingStrategy.Bubble, typeof(KeyboardFocusChangedEventHandler), typeof(Control));
+
+    public event MouseEventHandler MouseMove
+    {
         add => AddHandler(MouseMoveEvent, value);
         remove => RemoveHandler(MouseMoveEvent, value);
     }
 
-    public event MouseButtonEventHandler MouseDown {
+    public event MouseButtonEventHandler MouseDown
+    {
         add => AddHandler(MouseDownEvent, value);
         remove => RemoveHandler(MouseDownEvent, value);
     }
 
-    public event MouseButtonEventHandler MouseUp {
+    public event MouseButtonEventHandler MouseUp
+    {
         add => AddHandler(MouseUpEvent, value);
         remove => RemoveHandler(MouseUpEvent, value);
     }
 
-    public event MouseEventHandler MouseEnter {
+    public event MouseEventHandler MouseEnter
+    {
         add => AddHandler(MouseEnterEvent, value);
         remove => RemoveHandler(MouseEnterEvent, value);
     }
 
-    public event MouseEventHandler MouseLeave {
+    public event MouseEventHandler MouseLeave
+    {
         add => AddHandler(MouseLeaveEvent, value);
         remove => RemoveHandler(MouseLeaveEvent, value);
     }
 
-    public event KeyEventHandler KeyDown {
+    public event KeyEventHandler KeyDown
+    {
         add => AddHandler(KeyDownEvent, value);
         remove => RemoveHandler(KeyDownEvent, value);
     }
 
-    public event KeyEventHandler KeyUp {
+    public event KeyEventHandler KeyUp
+    {
         add => AddHandler(KeyUpEvent, value);
         remove => RemoveHandler(KeyUpEvent, value);
     }
 
-    public event KeyboardFocusChangedEventHandler LostKeyboardFocus {
+    public event KeyboardFocusChangedEventHandler LostKeyboardFocus
+    {
         add => AddHandler(LostKeyboardFocusEvent, value);
         remove => RemoveHandler(LostKeyboardFocusEvent, value);
     }
 
-    public event KeyboardFocusChangedEventHandler GotKeyboardFocus {
+    public event KeyboardFocusChangedEventHandler GotKeyboardFocus
+    {
         add => AddHandler(GotKeyboardFocusEvent, value);
         remove => RemoveHandler(GotKeyboardFocusEvent, value);
     }
@@ -195,44 +247,50 @@ public partial class Control : INotifyPropertyChanged {
     /// <summary>
     /// Обладает ли на данный момент текущий контрол фокусом (т.е. принимает клавиатурный ввод)
     /// </summary>
-    public bool HasFocus {
-        get {
-            return ConsoleApplication.Instance.FocusManager.FocusedElement == this;
-        }
+    public bool HasFocus
+    {
+        get { return ConsoleApplication.Instance.FocusManager.FocusedElement == this; }
     }
 
-    public void AddHandler(RoutedEvent routedEvent, Delegate @delegate) {
+    public void AddHandler(RoutedEvent routedEvent, Delegate @delegate)
+    {
         EventManager.AddHandler(this, routedEvent, @delegate);
     }
 
-    public void AddHandler(RoutedEvent routedEvent, Delegate @delegate, bool handledEventsToo) {
+    public void AddHandler(RoutedEvent routedEvent, Delegate @delegate, bool handledEventsToo)
+    {
         EventManager.AddHandler(this, routedEvent, @delegate, handledEventsToo);
     }
 
     /// <summary>
     /// Addes specified routed event to event queue. This event will be processed in next pass.
     /// </summary>
-    public void RaiseEvent(RoutedEvent routedEvent, RoutedEventArgs args) {
-        if ( routedEvent == null ) throw new ArgumentNullException( "routedEvent" );
-        if ( args == null ) throw new ArgumentNullException( "args" );
+    public void RaiseEvent(RoutedEvent routedEvent, RoutedEventArgs args)
+    {
+        if (routedEvent == null) throw new ArgumentNullException("routedEvent");
+        if (args == null) throw new ArgumentNullException("args");
 
         ConsoleApplication.Instance.EventManager.QueueEvent(routedEvent, args);
     }
 
-    public void RemoveHandler(RoutedEvent routedEvent, Delegate @delegate) {
+    public void RemoveHandler(RoutedEvent routedEvent, Delegate @delegate)
+    {
         EventManager.RemoveHandler(this, routedEvent, @delegate);
     }
 
-    public T FindChildByName<T>( string name ) where T:Control {
-        return (T) VisualTreeHelper.FindChildByName( this, name );
+    public T FindChildByName<T>(string name) where T : Control
+    {
+        return (T)VisualTreeHelper.FindChildByName(this, name);
     }
 
-    public Control FindDirectChildByName(string name) {
+    public Control FindDirectChildByName(string name)
+    {
         return Children.FirstOrDefault(control => control.Name == name);
     }
 
-    public T FindDirectChildByName< T >( string name ) where T:Control {
-        return (T) FindDirectChildByName( name );
+    public T FindDirectChildByName<T>(string name) where T : Control
+    {
+        return (T)FindDirectChildByName(name);
     }
 
     internal LayoutInfo layoutInfo = new LayoutInfo();
@@ -240,10 +298,13 @@ public partial class Control : INotifyPropertyChanged {
 
     private Visibility visibility;
 
-    public Visibility Visibility {
+    public Visibility Visibility
+    {
         get { return visibility; }
-        set {
-            if ( visibility != value ) {
+        set
+        {
+            if (visibility != value)
+            {
                 visibility = value;
                 Invalidate();
             }
@@ -253,57 +314,55 @@ public partial class Control : INotifyPropertyChanged {
     /// <summary>
     /// Just for debug.
     /// </summary>
-    public Size? MeasureArgument {
-        get {
-            return layoutInfo.validity != LayoutValidity.Nothing ? (Size?)layoutInfo.measureArgument : null;
-        }
+    public Size? MeasureArgument
+    {
+        get { return layoutInfo.validity != LayoutValidity.Nothing ? (Size?)layoutInfo.measureArgument : null; }
     }
-        
+
     /// <summary>
     /// Name of control. If set, it should be unique for siblings to avoid
     /// ambiguities when searching by name.
     /// </summary>
-    public string Name {
-        get;
-        set;
-    }
+    public string Name { get; set; }
 
     /// <summary>
     /// Read-only collection of children controls ordered by Z-Order.
     /// (Last items will be on top.)
     /// </summary>
-    protected internal IList< Control > Children;
+    protected internal IList<Control> Children;
 
     /// <summary>
     /// Collection of children controls.
     /// </summary>
-    private readonly List<Control> children = new List< Control >();
+    private readonly List<Control> children = new List<Control>();
 
     /// <summary>
     /// Parent of current control in visual tree.
     /// </summary>
-    public Control Parent {
-        get;
-        private set;
-    }
+    public Control Parent { get; private set; }
 
     /// <summary>
     /// Called when control is added to some parent or removed from.
     /// Default implementation does nothing.
     /// </summary>
-    protected virtual void OnParentChanged( ) {
+    protected virtual void OnParentChanged()
+    {
     }
 
-    private void attachedToRootElement() {
+    private void attachedToRootElement()
+    {
         this.attachedToVisualTree = true;
-        foreach (Control child in Children) {
+        foreach (Control child in Children)
+        {
             child.attachedToRootElement();
         }
     }
 
-    private void detachedFromRootElement() {
+    private void detachedFromRootElement()
+    {
         this.attachedToVisualTree = false;
-        foreach (Control child in Children) {
+        foreach (Control child in Children)
+        {
             child.detachedFromRootElement();
         }
     }
@@ -312,18 +371,24 @@ public partial class Control : INotifyPropertyChanged {
     /// Called by ConsoleApplication when Run() initializes the root element
     /// to init attached-detached system to be consistent.
     /// </summary>
-    internal void ControlSetAsRootElement() {
+    internal void ControlSetAsRootElement()
+    {
         attachedToRootElement();
     }
 
-    internal void ControlUnsetAsRootElement() {
+    internal void ControlUnsetAsRootElement()
+    {
         detachedFromRootElement();
     }
 
-    private void parentChanged() {
-        if (Parent == null) {
+    private void parentChanged()
+    {
+        if (Parent == null)
+        {
             detachedFromRootElement();
-        } else {
+        }
+        else
+        {
             if (Parent.attachedToVisualTree) attachedToRootElement();
             else detachedFromRootElement();
         }
@@ -333,7 +398,8 @@ public partial class Control : INotifyPropertyChanged {
 
     private bool attachedToVisualTree;
 
-    protected void InsertChildAt( int index, Control child ) {
+    protected void InsertChildAt(int index, Control child)
+    {
         if (null == child)
             throw new ArgumentNullException("child");
         if (null != child.Parent)
@@ -341,11 +407,12 @@ public partial class Control : INotifyPropertyChanged {
         children.Insert(index, child);
         child.Parent = this;
         child.parentChanged();
-        child.Invalidate(  );
+        child.Invalidate();
         Invalidate();
     }
 
-    protected void AddChild(Control child) {
+    protected void AddChild(Control child)
+    {
         if (null == child)
             throw new ArgumentNullException("child");
         if (null != child.Parent)
@@ -357,19 +424,21 @@ public partial class Control : INotifyPropertyChanged {
         Invalidate();
     }
 
-    protected void RemoveChild(Control child) {
+    protected void RemoveChild(Control child)
+    {
         if (null == child)
             throw new ArgumentNullException("child");
         if (child.Parent != this)
             throw new InvalidOperationException("Specified control is not a child.");
-        else {
+        else
+        {
             ConsoleApplication.Instance.FocusManager.BeforeRemoveElementFromTree(child);
             if (!this.children.Remove(child))
                 throw new InvalidOperationException("Assertion failed.");
             child.Parent = null;
 
             // Remove it from invalidation queue if already added
-            ConsoleApplication.Instance.Renderer.ControlRemovedFromTree( child);
+            ConsoleApplication.Instance.Renderer.ControlRemovedFromTree(child);
 
             child.parentChanged();
 
@@ -382,39 +451,43 @@ public partial class Control : INotifyPropertyChanged {
     /// </summary>
     /// <param name="a">Index of first child</param>
     /// <param name="b">Index of second child</param>
-    protected void SwapChildsZOrder( int a, int b ) {
+    protected void SwapChildsZOrder(int a, int b)
+    {
         if (a < 0 || a >= children.Count) throw new ArgumentException("Incorrect index", "a");
         if (b < 0 || b >= children.Count) throw new ArgumentException("Incorrect index", "b");
-        if ( a == b ) return;
+        if (a == b) return;
 
-        Control tmp = this.children[ a ];
-        this.children[ a ] = this.children[ b ];
-        this.children[ b ] = tmp;
+        Control tmp = this.children[a];
+        this.children[a] = this.children[b];
+        this.children[b] = tmp;
 
         // Add this to zorderCheckControls list
-        ConsoleApplication.Instance.Renderer.AddControlToZOrderCheckList( this );
+        ConsoleApplication.Instance.Renderer.AddControlToZOrderCheckList(this);
     }
 
-    private void Control_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs args) {
+    private void Control_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs args)
+    {
         // Focusable controls invalidated automatically when aquire focus
         if (this.Focusable)
-            Invalidate(  );
+            Invalidate();
     }
 
     /// <summary>
     /// Если один из дочерних контролов окна теряет фокус, то будет вызван этот обработчик
     /// </summary>
-    private void Control_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs args) {
+    private void Control_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs args)
+    {
         // Если текущий контрол является FocusScope, то мы должны сохранить элемент,
         // который имел фокус, чтобы восстановить его, когда FocusScope получит его обратно
         this.StoredFocus = this.IsFocusScope ? args.OldFocus : null;
 
         // Focusable controls invalidated automatically when lose focus
         if (this.Focusable)
-            Invalidate(  );
+            Invalidate();
     }
 
-    public Control() {
+    public Control()
+    {
         Children = children.AsReadOnly();
         MinWidth = 0;
         Focusable = false;
@@ -423,7 +496,7 @@ public partial class Control : INotifyPropertyChanged {
         AddHandler(GotKeyboardFocusEvent, new KeyboardFocusChangedEventHandler(Control_GotKeyboardFocus));
         AddHandler(LostKeyboardFocusEvent, new KeyboardFocusChangedEventHandler(Control_LostKeyboardFocus));
     }
-        
+
     /// <summary>
     /// Смещение виртуального холста контрола отн-но холста родительского элемента управления.
     /// Если контрол целиком размещен в родительском элементе управления и не обрезан маргином,
@@ -431,13 +504,10 @@ public partial class Control : INotifyPropertyChanged {
     /// ActualOffset отличается от RenderSlotRect.Location.
     /// Учитывает <see cref="Margin"/>, <see cref="HorizontalAlignment"/> и <see cref="VerticalAlignment"/>.
     /// </summary>
-    public Vector ActualOffset {
-        get {
-            return layoutInfo.actualOffset;
-        }
-        private set {
-            layoutInfo.actualOffset = value;
-        }
+    public Vector ActualOffset
+    {
+        get { return layoutInfo.actualOffset; }
+        private set { layoutInfo.actualOffset = value; }
     }
 
     /// <summary>
@@ -445,21 +515,26 @@ public partial class Control : INotifyPropertyChanged {
     /// should be treated as layout revalidated. (Returns true if layout validity 
     /// has actually changed to Render and there are some subscribers to LayoutRevalidated event).
     /// </summary>
-    internal bool SetValidityToRender() {
-        if (layoutInfo.validity != LayoutValidity.Render) {
+    internal bool SetValidityToRender()
+    {
+        if (layoutInfo.validity != LayoutValidity.Render)
+        {
             layoutInfo.validity = LayoutValidity.Render;
 
             return (LayoutRevalidated != null);
         }
+
         return false;
     }
 
-    internal void RaiseInvalidatedEvent() {
+    internal void RaiseInvalidatedEvent()
+    {
         if (LayoutInvalidated != null)
             LayoutInvalidated.Invoke(this, EventArgs.Empty);
     }
 
-    internal void RaiseRevalidatedEvent() {
+    internal void RaiseRevalidatedEvent()
+    {
         if (LayoutRevalidated != null)
             LayoutRevalidated.Invoke(this, EventArgs.Empty);
     }
@@ -491,34 +566,22 @@ public partial class Control : INotifyPropertyChanged {
 
     public int ActualHeight => RenderSize.Height;
 
-    public int MinWidth {
-        get;
-        set;
-    }
+    public int MinWidth { get; set; }
 
     public int MaxWidth { get; set; } = int.MaxValue;
 
-    public int MinHeight {
-        get;
-        set;
-    }
+    public int MinHeight { get; set; }
 
     /// <summary>
     /// Shows whether control can handle keyboard input or can't.
     /// </summary>
-    public bool Focusable {
-        get;
-        set;
-    }
+    public bool Focusable { get; set; }
 
     /// <summary>
     /// Specifies the order for keyboard focus move.
     /// Takes 0 by default.
     /// </summary>
-    public int TabOrder {
-        get; 
-        set;
-    }
+    public int TabOrder { get; set; }
 
     /// <summary>
     /// Показывает, может ли элемент управления выступать в роли FocusScope.
@@ -527,22 +590,14 @@ public partial class Control : INotifyPropertyChanged {
 
     public int MaxHeight { get; set; } = int.MaxValue;
 
-    public int? Width {
-        get;
-        set;
-    }
+    public int? Width { get; set; }
 
-    public int? Height {
-        get;
-        set;
-    }
+    public int? Height { get; set; }
 
-    public Thickness Margin {
-        get;
-        set;
-    }
+    public Thickness Margin { get; set; }
 
-    public Size DesiredSize {
+    public Size DesiredSize
+    {
         get => layoutInfo.desiredSize;
         private set => layoutInfo.desiredSize = value;
     }
@@ -558,7 +613,8 @@ public partial class Control : INotifyPropertyChanged {
         /// В случае конфликта приоритет имеет Min-property, затем явно заданное значение (Width или Height),
         /// и в последнюю очередь играет роль Max-property.
         /// </summary>
-        internal MinMax(int minHeight, int maxHeight, int minWidth, int maxWidth, int? width, int? height) {
+        internal MinMax(int minHeight, int maxHeight, int minWidth, int maxWidth, int? width, int? height)
+        {
             this.maxHeight = maxHeight;
             this.minHeight = minHeight;
             int? l = height;
@@ -595,15 +651,20 @@ public partial class Control : INotifyPropertyChanged {
     /// int.MaxValue + int.MaxValue = int.MaxValue
     /// int.MaxValue + int.MinValue = Exception
     /// </summary>
-    public static int SumWithInf(int a, int b) {
-        if (a == int.MaxValue || a == int.MinValue) {
+    public static int SumWithInf(int a, int b)
+    {
+        if (a == int.MaxValue || a == int.MinValue)
+        {
             assert(b != MinusWithInf(a));
             return a;
         }
-        if (b == int.MaxValue || b == int.MinValue) {
+
+        if (b == int.MaxValue || b == int.MinValue)
+        {
             assert(a != MinusWithInf(b));
             return a;
         }
+
         int result = a + b;
         // Check case when sum transforms into one of the "special" values
         assert(result != int.MinValue && result != int.MaxValue);
@@ -616,8 +677,10 @@ public partial class Control : INotifyPropertyChanged {
     /// </summary>
     /// <param name="v"></param>
     /// <returns></returns>
-    public static int MinusWithInf(int v) {
-        switch (v) {
+    public static int MinusWithInf(int v)
+    {
+        switch (v)
+        {
             case int.MaxValue:
                 return int.MinValue;
             case int.MinValue:
@@ -630,17 +693,22 @@ public partial class Control : INotifyPropertyChanged {
         }
     }
 
-    public void Measure(Size availableSize) {
-        if (availableSize.Width < 0 || availableSize.Height < 0) {
+    public void Measure(Size availableSize)
+    {
+        if (availableSize.Width < 0 || availableSize.Height < 0)
+        {
             throw new ArgumentException("Negative width/height is not allowed");
         }
-        if (layoutInfo.validity != LayoutValidity.Nothing) {
+
+        if (layoutInfo.validity != LayoutValidity.Nothing)
+        {
             return;
         }
 
         layoutInfo.measureArgument = availableSize;
 
-        if (Visibility == Visibility.Collapsed) {
+        if (Visibility == Visibility.Collapsed)
+        {
             layoutInfo.unclippedDesiredSize = Size.Empty;
             DesiredSize = Size.Empty;
             return;
@@ -663,7 +731,8 @@ public partial class Control : INotifyPropertyChanged {
         frameworkAvailableSize.Height = Math.Max(mm.minHeight, Math.Min(frameworkAvailableSize.Height, mm.maxHeight));
 
         Size desiredSize = MeasureOverride(frameworkAvailableSize);
-        if (desiredSize.Width == int.MaxValue || desiredSize.Height == int.MaxValue) {
+        if (desiredSize.Width == int.MaxValue || desiredSize.Height == int.MaxValue)
+        {
             throw new InvalidOperationException("MeasureOverride should not return int.MaxValue even for" +
                                                 "availableSize = {int.MaxValue, int.MaxValue} argument.");
         }
@@ -680,11 +749,13 @@ public partial class Control : INotifyPropertyChanged {
         // User-specified max size starts to "clip" the control here. 
         //Starting from this point desiredSize could be smaller then actually
         //needed to render the whole control
-        if (desiredSize.Width > mm.maxWidth) {
+        if (desiredSize.Width > mm.maxWidth)
+        {
             desiredSize.Width = mm.maxWidth;
         }
 
-        if (desiredSize.Height > mm.maxHeight) {
+        if (desiredSize.Height > mm.maxHeight)
+        {
             desiredSize.Height = mm.maxHeight;
         }
 
@@ -697,11 +768,13 @@ public partial class Control : INotifyPropertyChanged {
         // In overconstrained scenario, parent wins and measured size of the child,
         // including any sizes set or computed, can not be larger then
         // available size. We will clip the guy later. 
-        if (clippedDesiredWidth > availableSize.Width) {
+        if (clippedDesiredWidth > availableSize.Width)
+        {
             clippedDesiredWidth = availableSize.Width;
         }
 
-        if (clippedDesiredHeight > availableSize.Height) {
+        if (clippedDesiredHeight > availableSize.Height)
+        {
             clippedDesiredHeight = availableSize.Height;
         }
 
@@ -713,11 +786,12 @@ public partial class Control : INotifyPropertyChanged {
 
         DesiredSize = new Size(Math.Max(0, clippedDesiredWidth), Math.Max(0, clippedDesiredHeight));
 
-        if (DesiredSize.Width == int.MaxValue || DesiredSize.Height == int.MaxValue) {
+        if (DesiredSize.Width == int.MaxValue || DesiredSize.Height == int.MaxValue)
+        {
             throw new Exception("Desired size cannot have int.MaxValue width/height");
         }
     }
-        
+
     /// <summary>
     /// Возвращает размеры, необходимые для размещения контрола вместе с его дочерними элементами.
     /// <para>
@@ -746,7 +820,8 @@ public partial class Control : INotifyPropertyChanged {
     /// при размещении элемента.
     /// </para>
     /// </summary>
-    protected virtual Size MeasureOverride(Size availableSize) {
+    protected virtual Size MeasureOverride(Size availableSize)
+    {
         return new Size(0, 0);
     }
 
@@ -771,10 +846,12 @@ public partial class Control : INotifyPropertyChanged {
     /// (обрежется системой отрисовки), но и родительскому контролу не даст ничего нарисовать.
     /// </para>
     /// </summary>
-    public void Arrange(Rect finalRect) {
+    public void Arrange(Rect finalRect)
+    {
         if (layoutInfo.validity != LayoutValidity.Nothing) return;
 
-        if (Visibility == Visibility.Collapsed) {
+        if (Visibility == Visibility.Collapsed)
+        {
             RenderSlotRect = Rect.Empty;
             RenderSize = Size.Empty;
             layoutInfo.layoutClip = calculateLayoutClip();
@@ -809,25 +886,29 @@ public partial class Control : INotifyPropertyChanged {
 
         arrangeSize.Width = Math.Max(0, arrangeSize.Width - marginWidth);
         arrangeSize.Height = Math.Max(0, arrangeSize.Height - marginHeight);
-            
+
         // Next, compare against unclipped, transformed size.
         Size unclippedDesiredSize = layoutInfo.unclippedDesiredSize;
 
-        if (arrangeSize.Width < unclippedDesiredSize.Width) {
+        if (arrangeSize.Width < unclippedDesiredSize.Width)
+        {
             arrangeSize.Width = unclippedDesiredSize.Width;
         }
 
-        if (arrangeSize.Height < unclippedDesiredSize.Height) {
+        if (arrangeSize.Height < unclippedDesiredSize.Height)
+        {
             arrangeSize.Height = unclippedDesiredSize.Height;
         }
 
         // Alignment==Stretch --> arrange at the slot size minus margins
         // Alignment!=Stretch --> arrange at the unclippedDesiredSize 
-        if (HorizontalAlignment != HorizontalAlignment.Stretch) {
+        if (HorizontalAlignment != HorizontalAlignment.Stretch)
+        {
             arrangeSize.Width = unclippedDesiredSize.Width;
         }
 
-        if (VerticalAlignment != VerticalAlignment.Stretch) {
+        if (VerticalAlignment != VerticalAlignment.Stretch)
+        {
             arrangeSize.Height = unclippedDesiredSize.Height;
         }
 
@@ -841,7 +922,8 @@ public partial class Control : INotifyPropertyChanged {
         offset.X += finalRect.X + margin.Left;
         offset.Y += finalRect.Y + margin.Top;
 
-        if (!this.ActualOffset.Equals(offset)) {
+        if (!this.ActualOffset.Equals(offset))
+        {
             this.ActualOffset = offset;
         }
 
@@ -849,23 +931,18 @@ public partial class Control : INotifyPropertyChanged {
 
         layoutInfo.validity = LayoutValidity.MeasureAndArrange;
     }
-        
-    public HorizontalAlignment HorizontalAlignment {
-        get;
-        set;
-    }
 
-    public VerticalAlignment VerticalAlignment {
-        get;
-        set;
-    }
+    public HorizontalAlignment HorizontalAlignment { get; set; }
+
+    public VerticalAlignment VerticalAlignment { get; set; }
 
     /// <summary>
     /// Размер, под который контрол будет рендерить свое содержимое.
     /// Может быть больше RenderSlotRect из-за случаев, когда контрол не влезает в рамки,
     /// отведенные методом Arrange. Контрол будет обрезан лайаут-системой в соответствии с RenderSlotRect.
     /// </summary>
-    public Size RenderSize {
+    public Size RenderSize
+    {
         get => layoutInfo.renderSize;
         private set => layoutInfo.renderSize = value;
     }
@@ -874,26 +951,29 @@ public partial class Control : INotifyPropertyChanged {
     /// Отведенный родительским элементом управления слот для отрисовки.
     /// Задается аргументом при вызове <see cref="Arrange"/>.
     /// </summary>
-    public Rect RenderSlotRect {
+    public Rect RenderSlotRect
+    {
         get => layoutInfo.renderSlotRect;
         private set => layoutInfo.renderSlotRect = value;
     }
 
-    private Rect calculateLayoutClip() {
+    private Rect calculateLayoutClip()
+    {
         Vector offset = computeAlignmentOffset();
         Size clientSize = getClientSize();
         var layoutClip = new Rect(-offset.X, -offset.Y, clientSize.Width, clientSize.Height);
         return applyMaxConstraints(layoutClip);
     }
 
-    internal Rect applyMaxConstraints(Rect layoutClip) {
+    internal Rect applyMaxConstraints(Rect layoutClip)
+    {
         // Если указаны MaxWidth/Height ограничения, то из видимой части layoutClip
         // оставляем в углу TopLeft только то, что влезает в Max. TopLeft выбран потому,
         // что при вычислении в computeAlignmentOffset() мы уже подразумевали такой исход
         // (см. комментарий внутри computeAlignmentOffset)
         var visibleLayoutClip = Rect.Intersect(new Rect(RenderSize), layoutClip);
         MinMax mm = new MinMax(MinHeight, MaxHeight, MinWidth, MaxWidth, Width, Height);
-            
+
         return new Rect(visibleLayoutClip.TopLeft, new Size(
             Math.Min(visibleLayoutClip.Width, mm.maxWidth),
             Math.Min(visibleLayoutClip.Height, mm.maxHeight)));
@@ -906,7 +986,8 @@ public partial class Control : INotifyPropertyChanged {
     /// </summary>
     public Rect LayoutClip => layoutInfo.layoutClip;
 
-    private Vector computeAlignmentOffset() {
+    private Vector computeAlignmentOffset()
+    {
         //
         MinMax mm = new MinMax(MinHeight, MaxHeight, MinWidth, MaxWidth, Width, Height);
 
@@ -928,7 +1009,8 @@ public partial class Control : INotifyPropertyChanged {
     // This is the "window" through which we see the content of the child.
     // Alignments position ink of the child in this "window".
     // Max with 0 is neccessary because layout slot may be smaller then unclipped desired size.
-    private Size getClientSize() {
+    private Size getClientSize()
+    {
         Thickness margin = Margin;
         int marginWidth = margin.Left + margin.Right;
         int marginHeight = margin.Top + margin.Bottom;
@@ -939,7 +1021,8 @@ public partial class Control : INotifyPropertyChanged {
             Math.Max(0, renderSlotRect.Height - marginHeight));
     }
 
-    internal Vector computeAlignmentOffsetCore(Size clientSize, Size inkSize) {
+    internal Vector computeAlignmentOffsetCore(Size clientSize, Size inkSize)
+    {
         Vector offset = new Vector();
 
         HorizontalAlignment ha = HorizontalAlignment;
@@ -948,31 +1031,43 @@ public partial class Control : INotifyPropertyChanged {
         //this is to degenerate Stretch to Top-Left in case when clipping is about to occur
         //if we need it to be Center instead, simply remove these 2 ifs
         if (ha == HorizontalAlignment.Stretch
-            && inkSize.Width > clientSize.Width) {
+            && inkSize.Width > clientSize.Width)
+        {
             ha = HorizontalAlignment.Left;
         }
 
         if (va == VerticalAlignment.Stretch
-            && inkSize.Height > clientSize.Height) {
+            && inkSize.Height > clientSize.Height)
+        {
             va = VerticalAlignment.Top;
         }
         //end of degeneration of Stretch to Top-Left 
 
         if (ha == HorizontalAlignment.Center
-            || ha == HorizontalAlignment.Stretch) {
-            offset.X = (clientSize.Width - inkSize.Width)/2;
-        } else if (ha == HorizontalAlignment.Right) {
+            || ha == HorizontalAlignment.Stretch)
+        {
+            offset.X = (clientSize.Width - inkSize.Width) / 2;
+        }
+        else if (ha == HorizontalAlignment.Right)
+        {
             offset.X = clientSize.Width - inkSize.Width;
-        } else {
+        }
+        else
+        {
             offset.X = 0;
         }
 
         if (va == VerticalAlignment.Center
-            || va == VerticalAlignment.Stretch) {
-            offset.Y = (clientSize.Height - inkSize.Height)/2;
-        } else if (va == VerticalAlignment.Bottom) {
+            || va == VerticalAlignment.Stretch)
+        {
+            offset.Y = (clientSize.Height - inkSize.Height) / 2;
+        }
+        else if (va == VerticalAlignment.Bottom)
+        {
             offset.Y = clientSize.Height - inkSize.Height;
-        } else {
+        }
+        else
+        {
             offset.Y = 0;
         }
 
@@ -1005,10 +1100,11 @@ public partial class Control : INotifyPropertyChanged {
     /// should use to arrange itself and its children.</param>
     /// <returns>The actual size used.</returns>
     /// </summary>
-    protected virtual Size ArrangeOverride(Size finalSize) {
+    protected virtual Size ArrangeOverride(Size finalSize)
+    {
         return finalSize;
     }
-        
+
     /// <summary>
     /// Возвращает список контролов, у которых был вызван метод ResetValidity, и которые
     /// имеют подписчиков на событие LayoutInvalidated. То есть если у контрола был вызван
@@ -1016,11 +1112,14 @@ public partial class Control : INotifyPropertyChanged {
     /// не должно.
     /// </summary>
     /// <returns></returns>
-    internal void ResetValidity(List<Control> affectedControls) {
+    internal void ResetValidity(List<Control> affectedControls)
+    {
         // Copy all calculated layout info into lastLayoutInfo
-        if (layoutInfo.validity == LayoutValidity.Render) {
+        if (layoutInfo.validity == LayoutValidity.Render)
+        {
             lastLayoutInfo.CopyValuesFrom(layoutInfo);
         }
+
         // Clear layoutInfo.validity (and whole layoutInfo structure to avoid garbage data)
         layoutInfo.ClearValues();
 
@@ -1029,16 +1128,18 @@ public partial class Control : INotifyPropertyChanged {
         List<Control> childrenCopy = new List<Control>(Children);
 
         // Raise Invalidated event
-        if (LayoutInvalidated != null) {
+        if (LayoutInvalidated != null)
+        {
             affectedControls.Add(this);
         }
 
         // Recursively invalidate children, but without add them to queue
-        foreach (Control child in childrenCopy) {
+        foreach (Control child in childrenCopy)
+        {
             child.ResetValidity(affectedControls);
         }
     }
-        
+
     /// <summary>
     /// Добавляет этот контрол в очередь для обновления. При следующем выполнении цикла
     /// обновления UI система размещения вызовет Measure, Arrange и Render. Дочерние контролы,
@@ -1046,14 +1147,17 @@ public partial class Control : INotifyPropertyChanged {
     /// если размеры самого контрола не изменились. Но этот контрол будет перерисован 
     /// на экране обязательно, вместе со всеми дочерними, даже если у него ничего не изменилось.
     /// </summary>
-    public void Invalidate() {
-        if (this.attachedToVisualTree) {
+    public void Invalidate()
+    {
+        if (this.attachedToVisualTree)
+        {
             ConsoleApplication.Instance.Renderer.AddControlToInvalidationQueue(this);
-            if (Invalidated != null) Invalidated.Invoke( this, EventArgs.Empty );
+            if (Invalidated != null) Invalidated.Invoke(this, EventArgs.Empty);
         }
     }
 
-    public virtual Control GetTopChildAtPoint(Point point) {
+    public virtual Control GetTopChildAtPoint(Point point)
+    {
         return (from child in Children
             where child.RenderSlotRect.Contains(point)
             select child).FirstOrDefault();
@@ -1068,52 +1172,71 @@ public partial class Control : INotifyPropertyChanged {
     /// <param name="point">Координаты точки относительно source.</param>
     /// <param name="dest">Контрол, относительно которого необходимо вычислить координаты точки.</param>
     /// <returns></returns>
-    public static Point TranslatePoint(Control source, Point point, Control dest) {
-        if (source == null || dest == null) {
-            if (source == null && dest != null) {
+    public static Point TranslatePoint(Control source, Point point, Control dest)
+    {
+        if (source == null || dest == null)
+        {
+            if (source == null && dest != null)
+            {
                 // translating raw point (absolute coords) into relative to dest control point
                 Control currentControl = dest;
-                for (;;) {
+                for (;;)
+                {
                     Vector actualOffset = currentControl.ActualOffset;
                     point.Offset(-actualOffset.X, -actualOffset.y);
-                    if (currentControl.Parent == null) {
+                    if (currentControl.Parent == null)
+                    {
                         break;
                     }
+
                     currentControl = currentControl.Parent;
                 }
+
                 return point;
-            } else if (source != null && dest == null) {
+            }
+            else if (source != null && dest == null)
+            {
                 // translating point relative to source into absolute coords
                 Control currentControl = source;
-                for (;;) {
+                for (;;)
+                {
                     Vector actualOffset = currentControl.ActualOffset;
                     point.Offset(actualOffset.X, actualOffset.y);
                     if (currentControl.Parent == null)
                         break;
                     currentControl = currentControl.Parent;
                 }
+
                 return point;
-            } else {
+            }
+            else
+            {
                 // both source and dest are null - we shouldn't to do anything
                 return point;
             }
-        } else {
+        }
+        else
+        {
             // find common ancestor
             Control ancestor = FindCommonAncestor(source, dest);
             // traverse back from source to common ancestor
             Control currentControl = source;
-            while (currentControl != ancestor) {
+            while (currentControl != ancestor)
+            {
                 Vector actualOffset = currentControl.ActualOffset;
                 point.Offset(actualOffset.X, actualOffset.y);
                 currentControl = currentControl.Parent;
             }
+
             // traverse back from dest to common ancestor
             currentControl = dest;
-            while (currentControl != ancestor) {
+            while (currentControl != ancestor)
+            {
                 Vector actualOffset = currentControl.ActualOffset;
                 point.Offset(-actualOffset.X, -actualOffset.y);
                 currentControl = currentControl.Parent;
             }
+
             return point;
         }
     }
@@ -1123,7 +1246,8 @@ public partial class Control : INotifyPropertyChanged {
     /// If there are no common ancestor found, null will be returned.
     /// But this situation is impossible because there are only one main control in application.
     /// </summary>
-    public static Control FindCommonAncestor(Control a, Control b) {
+    public static Control FindCommonAncestor(Control a, Control b)
+    {
         if (null == a)
             throw new ArgumentNullException("a");
         if (null == b)
@@ -1133,7 +1257,8 @@ public partial class Control : INotifyPropertyChanged {
         Control refA = a;
         Control refB = b;
         bool f = true;
-        for (;;) {
+        for (;;)
+        {
             if (refA == refB)
                 return refA;
             if (visited.Contains(refB))
@@ -1142,23 +1267,30 @@ public partial class Control : INotifyPropertyChanged {
                 return refA;
             if (refA.Parent == null && refB.Parent == null)
                 return null;
-            if (f) {
-                if (refA.Parent != null) {
+            if (f)
+            {
+                if (refA.Parent != null)
+                {
                     visited.Add(refA);
                     refA = refA.Parent;
                 }
-            } else {
-                if (refB.Parent != null) {
+            }
+            else
+            {
+                if (refB.Parent != null)
+                {
                     visited.Add(refB);
                     refB = refB.Parent;
                 }
             }
+
             f = !f;
         }
     }
 
-    public override string ToString() {
-        return string.Format("{0}: {1}", GetType(  ), Name);
+    public override string ToString()
+    {
+        return string.Format("{0}: {1}", GetType(), Name);
     }
 
     /// <summary>
@@ -1166,19 +1298,22 @@ public partial class Control : INotifyPropertyChanged {
     /// </summary>
     /// <param name="rawPoint"></param>
     /// <returns>True if point is on control, otherwise false.</returns>
-    public bool HitTest(Point rawPoint) {
+    public bool HitTest(Point rawPoint)
+    {
         Point point = TranslatePoint(null, rawPoint, Parent);
         // hit testing - calculate position in child according to specified layout attributes
         Vector actualOffset = ActualOffset;
         Rect renderSlotRect = RenderSlotRect;
         Rect virtualSlotRect = new Rect(new Point(actualOffset.x, actualOffset.y), RenderSize);
-        if (!LayoutClip.IsEmpty) {
+        if (!LayoutClip.IsEmpty)
+        {
             Rect layoutClip = LayoutClip;
             Point location = layoutClip.Location;
             location.Offset(actualOffset.x, actualOffset.y);
             layoutClip.Location = location;
             virtualSlotRect.Intersect(layoutClip);
         }
+
         virtualSlotRect.Intersect(renderSlotRect);
         return virtualSlotRect.Contains(point);
     }
@@ -1191,7 +1326,8 @@ public partial class Control : INotifyPropertyChanged {
     /// <param name="parent"></param>
     /// <param name="child"></param>
     /// <returns>True if point is on child, false otherwise.</returns>
-    public static bool HitTest(Point rawPoint, Control parent, Control child) {
+    public static bool HitTest(Point rawPoint, Control parent, Control child)
+    {
         if (null == parent)
             throw new ArgumentNullException("parent");
         if (null == child)
@@ -1202,13 +1338,15 @@ public partial class Control : INotifyPropertyChanged {
         Vector actualOffset = child.ActualOffset;
         Rect renderSlotRect = child.RenderSlotRect;
         Rect virtualSlotRect = new Rect(new Point(actualOffset.x, actualOffset.y), child.RenderSize);
-        if (!child.LayoutClip.IsEmpty) {
+        if (!child.LayoutClip.IsEmpty)
+        {
             Rect layoutClip = child.LayoutClip;
             Point location = layoutClip.Location;
             location.Offset(actualOffset.x, actualOffset.y);
             layoutClip.Location = location;
             virtualSlotRect.Intersect(layoutClip);
         }
+
         virtualSlotRect.Intersect(renderSlotRect);
         return virtualSlotRect.Contains(point);
     }
@@ -1216,25 +1354,31 @@ public partial class Control : INotifyPropertyChanged {
     /// <summary>
     /// Проверяет, не перекрывается ли точка point контрола другими контролами.
     /// </summary>
-    public bool IsPointVisible(Point point) {
+    public bool IsPointVisible(Point point)
+    {
         return IsPointVisible(this, point);
     }
 
     /// <summary>
     /// Проверяет, не перекрывается ли точка point контрола control другими контролами.
     /// </summary>
-    internal static bool IsPointVisible(Control control, Point point) {
+    internal static bool IsPointVisible(Control control, Point point)
+    {
         if (null == control)
             throw new ArgumentNullException("control");
         //
         Rect layoutClip = control.LayoutClip;
         bool visible;
-        if (layoutClip.IsEmpty) {
+        if (layoutClip.IsEmpty)
+        {
             Rect controlVirtualCanvasRect = new Rect(new Point(0, 0), control.RenderSize);
             visible = controlVirtualCanvasRect.Contains(point);
-        } else {
+        }
+        else
+        {
             visible = layoutClip.Contains(point);
         }
+
         //
         if (!visible)
             return false;
@@ -1249,10 +1393,12 @@ public partial class Control : INotifyPropertyChanged {
     /// You should define your rendering logic here.
     /// </summary>
     /// <param name="buffer">Buffer where rendered content will be stored.</param>
-    public virtual void Render(RenderingBuffer buffer) {
+    public virtual void Render(RenderingBuffer buffer)
+    {
     }
 
-    internal virtual IList<Control> GetChildrenOrderedByZIndex() {
+    internal virtual IList<Control> GetChildrenOrderedByZIndex()
+    {
         return Children;
     }
 
@@ -1260,27 +1406,33 @@ public partial class Control : INotifyPropertyChanged {
     /// Sets the position of console cursor.
     /// </summary>
     /// <param name="point">Coords relatively to this control.</param>
-    protected void SetCursorPosition(Point point) {
+    protected void SetCursorPosition(Point point)
+    {
         ConsoleApplication.Instance.SetCursorPosition(TranslatePoint(this, point, null));
     }
 
-    protected static void HideCursor() {
+    protected static void HideCursor()
+    {
         ConsoleApplication.Instance.HideCursor();
     }
 
-    protected static void ShowCursor() {
+    protected static void ShowCursor()
+    {
         ConsoleApplication.Instance.ShowCursor();
     }
 
     private bool cursorVisible = false;
-    internal bool CursorVisible {
-        get {
-            return cursorVisible;
-        }
-        set {
-            if (cursorVisible != value) {
+
+    internal bool CursorVisible
+    {
+        get { return cursorVisible; }
+        set
+        {
+            if (cursorVisible != value)
+            {
                 cursorVisible = value;
-                if (HasFocus) {
+                if (HasFocus)
+                {
                     ConsoleApplication.Instance.FocusManager.RefreshMouseCursor();
                 }
             }
@@ -1288,12 +1440,17 @@ public partial class Control : INotifyPropertyChanged {
     }
 
     private Point cursorPosition = new Point(0, 0);
-    internal Point CursorPosition {
+
+    internal Point CursorPosition
+    {
         get => cursorPosition;
-        set {
-            if (cursorPosition != value) {
+        set
+        {
+            if (cursorPosition != value)
+            {
                 cursorPosition = value;
-                if (HasFocus) {
+                if (HasFocus)
+                {
                     ConsoleApplication.Instance.FocusManager.RefreshMouseCursor();
                 }
             }
@@ -1329,18 +1486,22 @@ public partial class Control : INotifyPropertyChanged {
             {
                 c = '.';
             }
+
             buffer.SetPixel(x + i, y, c, attr);
         }
+
         return Math.Min(s.Length, maxWidth);
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
 
-    protected virtual void RaisePropertyChanged( string propertyName ) {
+    protected virtual void RaisePropertyChanged(string propertyName)
+    {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
-    protected static void assert( bool assertion ) {
+    protected static void assert(bool assertion)
+    {
         if (!assertion) throw new InvalidOperationException("Assertion failed.");
     }
 
@@ -1356,16 +1517,22 @@ public partial class Control : INotifyPropertyChanged {
     /// и передаёт на него фокус, если он - Focusable. А если нажата правая кнопка мыши и у
     /// контрола есть контекстное меню, активизирует его.
     /// </summary>
-    protected void PassFocusToChildUnderPoint( MouseEventArgs args ) {
-        Control topControl = VisualTreeHelper.FindTopControlUnderMouse( this, args.GetPosition( this ) );
-        if ( topControl != null ) {
-            if ( topControl.Focusable ) {
+    protected void PassFocusToChildUnderPoint(MouseEventArgs args)
+    {
+        Control topControl = VisualTreeHelper.FindTopControlUnderMouse(this, args.GetPosition(this));
+        if (topControl != null)
+        {
+            if (topControl.Focusable)
+            {
                 ConsoleApplication.Instance.FocusManager.SetFocus(this, topControl);
             }
-            if ( args.RightButton == MouseButtonState.Pressed ) {
-                if ( topControl.ContextMenu != null ) {
-                    var windowsHost = VisualTreeHelper.FindClosestParent< WindowsHost >( this );
-                    topControl.ContextMenu.OpenMenu( windowsHost, args.GetPosition( windowsHost ) );
+
+            if (args.RightButton == MouseButtonState.Pressed)
+            {
+                if (topControl.ContextMenu != null)
+                {
+                    var windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
+                    topControl.ContextMenu.OpenMenu(windowsHost, args.GetPosition(windowsHost));
                 }
             }
         }
@@ -1375,11 +1542,14 @@ public partial class Control : INotifyPropertyChanged {
     /// This method is called after control has been created and filled with children.
     /// todo : think about avoiding reentrant Created() calls
     /// </summary>
-    public void Created( ) {
-        foreach ( var child in Children ) {
-            child.Created(  );
+    public void Created()
+    {
+        foreach (var child in Children)
+        {
+            child.Created();
         }
-        OnCreated(  );
+
+        OnCreated();
     }
 
     /// <summary>
@@ -1387,7 +1557,8 @@ public partial class Control : INotifyPropertyChanged {
     /// controls are created too (and children' OnCreated called). So, you can
     /// find any child control in this method and subscribe for events.
     /// </summary>
-    protected virtual void OnCreated( ) {
+    protected virtual void OnCreated()
+    {
     }
 
     public ContextMenu ContextMenu { get; set; }

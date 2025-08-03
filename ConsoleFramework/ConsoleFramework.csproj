@@ -1,27 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);DOTNETCORE</DefineConstants>
-    <DebugType>portable</DebugType>
-    <AssemblyName>ConsoleFramework</AssemblyName>
-    <PackageId>Elwood.ConsoleFramework</PackageId>
-    <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>0.0.3</Version>
-    <PackageProjectUrl>https://github.com/elw00d/consoleframework</PackageProjectUrl>
-    <PackageIconUrl>http://elw00d.github.io/consoleframework/favicon.png</PackageIconUrl>
-    <Authors />
-  </PropertyGroup>
-  <ItemGroup>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
-  </ItemGroup>
+    <PropertyGroup>
+        <DefineConstants>$(DefineConstants);DOTNETCORE</DefineConstants>
+        <DebugType>portable</DebugType>
+        <AssemblyName>ConsoleFramework</AssemblyName>
+        <PackageId>Elwood.ConsoleFramework</PackageId>
+        <RuntimeFrameworkVersion>1.0.4</RuntimeFrameworkVersion>
+        <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+        <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+        <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+        <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>0.0.3</Version>
+        <PackageProjectUrl>https://github.com/elw00d/consoleframework</PackageProjectUrl>
+        <PackageIconUrl>http://elw00d.github.io/consoleframework/favicon.png</PackageIconUrl>
+        <Authors/>
+    </PropertyGroup>
+    <ItemGroup>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="System.Threading.Thread" Version="4.3.0"/>
+    </ItemGroup>
 </Project>

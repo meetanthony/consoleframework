@@ -32,7 +32,8 @@ public class LayoutClipTests
         HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment,
         int expectedX, int expectedY)
     {
-        Control control = new Control {
+        Control control = new Control
+        {
             HorizontalAlignment = horizontalAlignment,
             VerticalAlignment = verticalAlignment
         };
@@ -42,11 +43,14 @@ public class LayoutClipTests
     }
 
     [Fact]
-    public void TestApplyMaxConstraints() {
-        Control control = new Control {
+    public void TestApplyMaxConstraints()
+    {
+        Control control = new Control
+        {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             MaxWidth = 3,
-            layoutInfo = new LayoutInfo {
+            layoutInfo = new LayoutInfo
+            {
                 renderSize = new Size(10, 1)
             }
         };

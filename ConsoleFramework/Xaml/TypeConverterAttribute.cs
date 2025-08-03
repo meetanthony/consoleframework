@@ -9,10 +9,12 @@ namespace ConsoleFramework.Xaml;
                                        | AttributeTargets.Enum, Inherited = true)]
 public class TypeConverterAttribute : Attribute
 {
-    public TypeConverterAttribute( ) {
+    public TypeConverterAttribute()
+    {
     }
 
-    public TypeConverterAttribute( Type type ) {
+    public TypeConverterAttribute(Type type)
+    {
         Type = type;
     }
 

@@ -16,25 +16,31 @@ public class Program
     class MyDataContext : INotifyPropertyChanged
     {
         private string str;
-        public String Str {
+
+        public String Str
+        {
             get { return str; }
-            set {
-                if ( str != value ) {
+            set
+            {
+                if (str != value)
+                {
                     str = value;
-                    raisePropertyChanged( "Str" );
+                    raisePropertyChanged("Str");
                 }
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void raisePropertyChanged( string propertyName ) {
+        protected virtual void raisePropertyChanged(string propertyName)
+        {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if ( handler != null ) handler( this, new PropertyChangedEventArgs( propertyName ) );
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
-    public static void Main(string[] args) {
+    public static void Main(string[] args)
+    {
 //            Control window = ConsoleApplication.LoadFromXaml( "ConsoleFramework.Layout.xml", null );
 ////            window.FindChildByName< TextBlock >( "text" ).MouseDown += ( sender, eventArgs ) => {
 ////                window.FindChildByName< TextBlock >( "text" ).Text = "F";
@@ -47,7 +53,7 @@ public class Program
 //            ConsoleApplication.Instance.Run( window );
 //            return;
         Type type = typeof(Program);
-        TypeInfo typeInfo = type.GetTypeInfo ();
+        TypeInfo typeInfo = type.GetTypeInfo();
 
         var assembly = typeInfo.Assembly;
         var resourceName = "ManyControls.GridTest.xaml";
@@ -56,7 +62,7 @@ public class Program
         using (StreamReader reader = new StreamReader(stream))
         {
             string result = reader.ReadToEnd();
-            MyDataContext dataContext = new MyDataContext( );
+            MyDataContext dataContext = new MyDataContext();
             dataContext.Str = "Введите заголовок";
             createdFromXaml = XamlParser.CreateFromXaml<Window>(result, dataContext, new List<string>()
             {
@@ -68,58 +74,71 @@ public class Program
 //            ConsoleApplication.Instance.Run(createdFromXaml);
 //            return;
 
-        using (ConsoleApplication application = ConsoleApplication.Instance) {
+        using (ConsoleApplication application = ConsoleApplication.Instance)
+        {
             Panel panel = new Panel();
             panel.Name = "panel1";
-            panel.HorizontalAlignment =  HorizontalAlignment.Center;
+            panel.HorizontalAlignment = HorizontalAlignment.Center;
             panel.VerticalAlignment = VerticalAlignment.Stretch;
-            panel.Children.Add(new TextBlock() {
+            panel.Children.Add(new TextBlock()
+            {
                 Name = "label1",
                 Text = "Label1",
-                Margin = new Thickness(1,2,1,0)
+                Margin = new Thickness(1, 2, 1, 0)
                 //,Visibility = Visibility.Collapsed
             });
-            panel.Children.Add(new TextBlock() {
+            panel.Children.Add(new TextBlock()
+            {
                 Name = "label2",
                 Text = "Label2_____",
                 HorizontalAlignment = HorizontalAlignment.Right
             });
-            TextBox textBox = new TextBox() {
+            TextBox textBox = new TextBox()
+            {
                 MaxWidth = 10,
                 Margin = new Thickness(1),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Size = 15
             };
-            Button button = new Button() {
+            Button button = new Button()
+            {
                 Name = "button1",
                 Caption = "Button!",
                 Margin = new Thickness(1),
                 HorizontalAlignment = HorizontalAlignment.Center
             };
-            button.OnClick += (sender, eventArgs) => {
+            button.OnClick += (sender, eventArgs) =>
+            {
                 Debug.WriteLine("Click");
-                MessageBox.Show( "Окно сообщения", "Внимание ! Тестовое сообщение", delegate( MessageBoxResult result ) {  } );
+                MessageBox.Show("Окно сообщения", "Внимание ! Тестовое сообщение",
+                    delegate(MessageBoxResult result) { });
                 Control label = panel.FindDirectChildByName("label1");
-                if (label.Visibility == Visibility.Visible) {
+                if (label.Visibility == Visibility.Visible)
+                {
                     label.Visibility = Visibility.Collapsed;
-                } else if (label.Visibility == Visibility.Collapsed) {
+                }
+                else if (label.Visibility == Visibility.Collapsed)
+                {
                     label.Visibility = Visibility.Hidden;
-                } else {
+                }
+                else
+                {
                     label.Visibility = Visibility.Visible;
                 }
+
                 label.Invalidate();
             };
-            ComboBox comboBox = new ComboBox(  )
+            ComboBox comboBox = new ComboBox()
             {
 //                        Width = 14
 //HorizontalAlignment = HorizontalAlignment.Stretch
             };
-            comboBox.Items.Add( "Сделать одно" );
+            comboBox.Items.Add("Сделать одно");
             comboBox.Items.Add("Сделать второе");
             comboBox.Items.Add("Ничего не делать");
-            ListBox listbox = new ListBox(  );
-            listbox.Items.Add( "First item" );
-            listbox.Items.Add( "second item1!!!!!!1fff" );
+            ListBox listbox = new ListBox();
+            listbox.Items.Add("First item");
+            listbox.Items.Add("second item1!!!!!!1fff");
             listbox.HorizontalAlignment = HorizontalAlignment.Stretch;
             //listbox.Width = 10;
 
@@ -127,14 +146,15 @@ public class Program
             panel.Children.Add(button);
             panel.Children.Add(textBox);
             panel.Children.Add(listbox);
-                
+
             //application.Run(panel);
             WindowsHost windowsHost = new WindowsHost()
             {
                 Name = "WindowsHost"
             };
 
-            Window window1 = new Window {
+            Window window1 = new Window
+            {
                 X = 5,
                 Y = 4,
                 //MinHeight = 100,
@@ -146,13 +166,15 @@ public class Program
                 Content = panel
             };
 
-            GroupBox groupBox = new GroupBox(  );
+            GroupBox groupBox = new GroupBox();
             groupBox.Title = "Группа";
-            ScrollViewer scrollViewer = new ScrollViewer(  );
-            ListBox listBox = new ListBox(  );
-            for ( int i = 0; i < 30; i++ ) {
+            ScrollViewer scrollViewer = new ScrollViewer();
+            ListBox listBox = new ListBox();
+            for (int i = 0; i < 30; i++)
+            {
                 listBox.Items.Add(string.Format("Длинный элемент {0}", i));
             }
+
 //                listBox.Items.Add( "Длинный элемент" );
 //                listBox.Items.Add("Длинный элемент 2");
 //                listBox.Items.Add("Длинный элемент 3");
@@ -171,14 +193,16 @@ public class Program
 
             ComboBox combo = new ComboBox();
             combo.ShownItemsCount = 10;
-            for ( int i = 0; i < 30; i++ ) {
+            for (int i = 0; i < 30; i++)
+            {
                 combo.Items.Add(string.Format("Длинный элемент {0}", i));
             }
 //                groupBox.Content = combo;
 
             groupBox.HorizontalAlignment = HorizontalAlignment.Stretch;
 
-            windowsHost.Show(new Window() {
+            windowsHost.Show(new Window()
+            {
                 X = 30,
                 Y = 6,
                 //MinHeight = 10,
@@ -198,15 +222,19 @@ public class Program
             //windowsHost.Width = 80;
             //windowsHost.Height = 20;
 
-            Window persistentWindow = new Window {
+            Window persistentWindow = new Window
+            {
                 X = 10,
                 Y = 10,
                 Title = "Persistent Window",
                 Height = 14,
                 Width = 50,
-                Content = new Panel {
-                    Children = {
-                        new Button {
+                Content = new Panel
+                {
+                    Children =
+                    {
+                        new Button
+                        {
                             Caption = "OK",
                             Width = 30,
                             Height = 8,
@@ -217,9 +245,7 @@ public class Program
                 }
             };
 
-            persistentWindow.Closing += (sender, e) => {
-                e.Cancel = true;
-            };
+            persistentWindow.Closing += (sender, e) => { e.Cancel = true; };
 
             windowsHost.Show(persistentWindow);
 

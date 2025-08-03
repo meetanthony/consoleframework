@@ -8,93 +8,79 @@ public sealed class LayoutTests
 {
     private class TestContentControl : Control
     {
-        public Control Content {
-            get;
-            set;
-        }
+        public Control Content { get; set; }
 
-        protected override Size MeasureOverride(Size availableSize) {
+        protected override Size MeasureOverride(Size availableSize)
+        {
             LastMeasureOverrideArgument = availableSize;
             Size res;
-            if (null != Content) {
+            if (null != Content)
+            {
                 Content.Measure(availableSize);
                 res = Content.DesiredSize;
-            } else {
+            }
+            else
+            {
                 res = base.MeasureOverride(availableSize);
             }
+
             LastMeasureOverrideResult = res;
             return res;
         }
 
-        protected override Size ArrangeOverride(Size finalSize) {
+        protected override Size ArrangeOverride(Size finalSize)
+        {
             LastArrangeOverrideArgument = finalSize;
             LastArrangeOverrideResult = base.ArrangeOverride(finalSize);
-            if (null != Content) {
+            if (null != Content)
+            {
                 Content.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
             }
+
             return LastArrangeOverrideResult.Value;
         }
 
-        public Size? LastMeasureOverrideArgument {
-            get;
-            private set;
-        }
+        public Size? LastMeasureOverrideArgument { get; private set; }
 
-        public Size? LastMeasureOverrideResult {
-            get;
-            set;
-        }
+        public Size? LastMeasureOverrideResult { get; set; }
 
-        public Size? LastArrangeOverrideArgument {
-            get;
-            private set;
-        }
+        public Size? LastArrangeOverrideArgument { get; private set; }
 
-        public Size? LastArrangeOverrideResult {
-            get;
-            private set;
-        }
+        public Size? LastArrangeOverrideResult { get; private set; }
     }
 
-    private class TestFinalControl : Control {
-        protected override Size MeasureOverride(Size availableSize) {
+    private class TestFinalControl : Control
+    {
+        protected override Size MeasureOverride(Size availableSize)
+        {
             LastMeasureOverrideArgument = availableSize;
             Size res = base.MeasureOverride(availableSize);
             LastMeasureOverrideResult = res;
             return res;
         }
 
-        protected override Size ArrangeOverride(Size finalSize) {
+        protected override Size ArrangeOverride(Size finalSize)
+        {
             LastArrangeOverrideArgument = finalSize;
             LastArrangeOverrideResult = base.ArrangeOverride(finalSize);
             return LastArrangeOverrideResult.Value;
         }
 
-        public Size? LastMeasureOverrideArgument {
-            get;
-            private set;
-        }
+        public Size? LastMeasureOverrideArgument { get; private set; }
 
-        public Size? LastMeasureOverrideResult {
-            get;
-            set;
-        }
+        public Size? LastMeasureOverrideResult { get; set; }
 
-        public Size? LastArrangeOverrideArgument {
-            get;
-            private set;
-        }
+        public Size? LastArrangeOverrideArgument { get; private set; }
 
-        public Size? LastArrangeOverrideResult {
-            get;
-            private set;
-        }
+        public Size? LastArrangeOverrideResult { get; private set; }
     }
 
     [Fact]
-    public void TestNormalMeasure() {
+    public void TestNormalMeasure()
+    {
         TestContentControl contentControl = new TestContentControl();
-        TestFinalControl finalControl = new TestFinalControl {
+        TestFinalControl finalControl = new TestFinalControl
+        {
             Width = 100,
             Height = 100,
             Margin = new Thickness(10, 0, 20, 0),
@@ -120,9 +106,11 @@ public sealed class LayoutTests
     }
 
     [Fact]
-    public void TestNormalMeasure2() {
+    public void TestNormalMeasure2()
+    {
         TestContentControl contentControl = new TestContentControl();
-        TestFinalControl finalControl = new TestFinalControl {
+        TestFinalControl finalControl = new TestFinalControl
+        {
             Width = 100,
             Height = 20,
             Margin = new Thickness(10, 0, 20, 0),
@@ -147,24 +135,28 @@ public sealed class LayoutTests
     }
 
     [Fact]
-    public void TestMaxIntWithMarginMeasure() {
+    public void TestMaxIntWithMarginMeasure()
+    {
         var contentControl = new TestContentControl();
-        var finalControl = new TestFinalControl() {
+        var finalControl = new TestFinalControl()
+        {
             Margin = new Thickness(1)
         };
         contentControl.Content = finalControl;
         contentControl.Measure(new Size(int.MaxValue, int.MaxValue));
-            
+
         // Margin should not reduce measure argument by 1,
         // MaxValue should be treated like PositiveInf in doubles arithmetic
         Assert.Equal(new Size(int.MaxValue, int.MaxValue), finalControl.LastMeasureOverrideArgument);
         Assert.Equal(new Size(0, 0), finalControl.LastMeasureOverrideResult);
     }
-        
+
     [Fact]
-    public void TestNormalMeasure3() {
+    public void TestNormalMeasure3()
+    {
         TestContentControl contentControl = new TestContentControl();
-        TestFinalControl finalControl = new TestFinalControl {
+        TestFinalControl finalControl = new TestFinalControl
+        {
             Width = 100,
             Height = 20,
             Margin = new Thickness(10, -10, 20, 7),
