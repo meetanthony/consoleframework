@@ -13,7 +13,6 @@ public class StringToIntegerConverter : IBindingConverter {
 
     public ConversionResult Convert(Object s) {
         try {
-            if (s == null) return new ConversionResult( false, "String is null");
             int value = int.Parse(( string ) s);
             return new ConversionResult(value);
         } catch (FormatException e) {

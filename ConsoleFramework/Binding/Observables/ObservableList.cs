@@ -8,131 +8,109 @@ namespace ConsoleFramework.Binding.Observables;
 /// Non-generic <see cref="IObservableList"/> implementation.
 /// </summary>
 public class ObservableList : IObservableList, IList {
-    private readonly IList list;
+    private readonly IList _list;
 
     public ObservableList(IList list) {
-        this.list = list;
+        _list = list;
     }
 
     public IEnumerator GetEnumerator() {
-        return list.GetEnumerator();
+        return _list.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator() {
         return GetEnumerator();
     }
         
-    public int Add(Object item) {
-        int index = list.Count;
-        list.Add(item);
+    public int Add(Object? item) {
+        int index = _list.Count;
+        _list.Add(item);
 
-        raiseListElementsAdded(index, 1);
+        RaiseListElementsAdded(index, 1);
         return index;
     }
 
     public void Clear() {
-        int count = list.Count;
-        List<object> removedItems = new List<object>();
-        foreach (object item in list) {
+        int count = _list.Count;
+        List<object?> removedItems = new ();
+        foreach (object item in _list) {
             removedItems.Add(item);
         }
-        list.Clear();
+        _list.Clear();
 
-        raiseListElementsRemoved(0, count, removedItems);
+        RaiseListElementsRemoved(0, count, removedItems);
     }
 
-    public bool Contains(Object item) {
-        return list.Contains(item);
+    public bool Contains(Object? item) {
+        return _list.Contains(item);
     }
 
     public void CopyTo(object[] array, int arrayIndex) {
-        list.CopyTo(array, arrayIndex);
+        _list.CopyTo(array, arrayIndex);
     }
 
-    public void Remove(Object item) {
-        int index = list.IndexOf(item);
-        list.Remove(item);
+    public void Remove(Object? item) {
+        int index = _list.IndexOf(item);
+        _list.Remove(item);
         if (-1 != index)
-            raiseListElementsRemoved(index, 1, new List<Object>() { item });
+            RaiseListElementsRemoved(index, 1, [item]);
     }
 
     public void CopyTo(Array array, int index) {
-        list.CopyTo(array, index);
+        _list.CopyTo(array, index);
     }
 
-    public int Count {
-        get {
-            return list.Count;
-        }
+    public int Count => _list.Count;
+
+    public object SyncRoot => _list.SyncRoot;
+
+    public bool IsSynchronized => _list.IsSynchronized;
+
+    public bool IsReadOnly => _list.IsReadOnly;
+
+    public bool IsFixedSize => _list.IsFixedSize;
+
+    public int IndexOf(Object? item) {
+        return _list.IndexOf(item);
     }
 
-    public object SyncRoot {
-        get {
-            return list.SyncRoot;
-        }
-    }
-
-    public bool IsSynchronized {
-        get {
-            return list.IsSynchronized;
-        }
-    }
-
-    public bool IsReadOnly {
-        get {
-            return list.IsReadOnly;
-        }
-    }
-
-    public bool IsFixedSize {
-        get {
-            return list.IsFixedSize;
-        }
-    }
-
-    public int IndexOf(Object item) {
-        return list.IndexOf(item);
-    }
-
-    public void Insert(int index, Object item) {
-        list.Insert(index, item);
-        raiseListElementsAdded(index, 1);
+    public void Insert(int index, Object? item) {
+        _list.Insert(index, item);
+        RaiseListElementsAdded(index, 1);
     }
 
     public void RemoveAt(int index) {
-        object removedItem = list[index];
-        list.RemoveAt(index);
-        raiseListElementsRemoved(index, 1, new List<object>() { removedItem });
+        object? removedItem = _list[index];
+        _list.RemoveAt(index);
+        RaiseListElementsRemoved(index, 1, [removedItem]);
     }
 
-    public Object this[int index] {
-        get {
-            return list[index];
-        }
+    public Object? this[int index] {
+        get => _list[index];
         set {
-            object removedItem = list[index];
-            list[index] = value;
-            raiseListElementReplaced(index, new List<object>() { removedItem });
+            object? removedItem = _list[index];
+            _list[index] = value;
+            RaiseListElementReplaced(index, [removedItem]);
         }
     }
 
-    private void raiseListElementsAdded(int index, int length) {
+    private void RaiseListElementsAdded(int index, int length) {
         if (null != ListChanged) {
             ListChanged.Invoke(this, new ListChangedEventArgs(ListChangedEventType.ItemsInserted, index, length, null));
         }
     }
 
-    private void raiseListElementsRemoved(int index, int length, List<object> removedItems) {
+    private void RaiseListElementsRemoved(int index, int length, List<object?>? removedItems) {
         if (null != ListChanged) {
             ListChanged.Invoke(this, new ListChangedEventArgs(ListChangedEventType.ItemsRemoved, index, length, removedItems));
         }
     }
 
-    private void raiseListElementReplaced(int index, List<object> removedItems) {
+    private void RaiseListElementReplaced(int index, List<object?> removedItems) {
         if (null != ListChanged) {
             ListChanged.Invoke(this, new ListChangedEventArgs(ListChangedEventType.ItemReplaced, index, 1, removedItems));
         }
     }
 
-    public event ListChangedHandler ListChanged;
+    public event ListChangedHandler? ListChanged;
 }

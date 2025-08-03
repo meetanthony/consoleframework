@@ -3,25 +3,21 @@
 namespace ConsoleFramework.Binding.Converters;
 
 public class ReversedConverter : IBindingConverter {
-    readonly IBindingConverter converter;
+    readonly IBindingConverter _converter;
 
     public ReversedConverter(IBindingConverter converter) {
-        this.converter = converter;
+        _converter = converter;
     }
 
-    public Type FirstType {
-        get { return converter.SecondType; }
-    }
+    public Type FirstType => _converter.SecondType;
 
-    public Type SecondType {
-        get { return converter.FirstType; }
-    }
+    public Type SecondType => _converter.FirstType;
 
     public ConversionResult Convert(object tFirst) {
-        return converter.ConvertBack(tFirst);
+        return _converter.ConvertBack(tFirst);
     }
 
     public ConversionResult ConvertBack(object tSecond) {
-        return converter.Convert(tSecond);
+        return _converter.Convert(tSecond);
     }
 }

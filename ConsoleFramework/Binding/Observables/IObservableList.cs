@@ -24,15 +24,15 @@ public enum ListChangedEventType
 
 public class ListChangedEventArgs : EventArgs
 {
-    public ListChangedEventArgs(ListChangedEventType type, int index, int count, List<Object> removedItems) {
-        this.Type = type;
-        this.Index = index;
-        this.Count = count;
-        this.RemovedItems = removedItems;
+    public ListChangedEventArgs(ListChangedEventType type, int index, int count, List<Object?>? removedItems) {
+        Type = type;
+        Index = index;
+        Count = count;
+        RemovedItems = removedItems;
     }
 
     public readonly ListChangedEventType Type;
     public readonly int Index;
     public readonly int Count;
-    public readonly List<Object> RemovedItems;
+    public readonly List<Object?>? RemovedItems;
 }
