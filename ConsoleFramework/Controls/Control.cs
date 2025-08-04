@@ -1208,10 +1208,10 @@ public partial class Control : INotifyPropertyChanged
         else
         {
             // find common ancestor
-            Control ancestor = FindCommonAncestor(source, dest);
+            Control? ancestor = FindCommonAncestor(source, dest);
             // traverse back from source to common ancestor
             Control? currentControl = source;
-            while (currentControl != ancestor)
+            while (currentControl != ancestor && currentControl != null)
             {
                 Vector actualOffset = currentControl.ActualOffset;
                 point.Offset(actualOffset.X, actualOffset.y);
@@ -1220,7 +1220,7 @@ public partial class Control : INotifyPropertyChanged
 
             // traverse back from dest to common ancestor
             currentControl = dest;
-            while (currentControl != ancestor)
+            while (currentControl != ancestor && currentControl != null)
             {
                 Vector actualOffset = currentControl.ActualOffset;
                 point.Offset(-actualOffset.X, -actualOffset.y);
@@ -1236,7 +1236,7 @@ public partial class Control : INotifyPropertyChanged
     /// If there are no common ancestor found, null will be returned.
     /// But this situation is impossible because there are only one main control in application.
     /// </summary>
-    public static Control FindCommonAncestor(Control a, Control b)
+    public static Control? FindCommonAncestor(Control a, Control b)
     {
         if (null == a)
             throw new ArgumentNullException("a");
@@ -1415,7 +1415,7 @@ public partial class Control : INotifyPropertyChanged
 
     internal bool CursorVisible
     {
-        get { return _cursorVisible; }
+        get => _cursorVisible;
         set
         {
             if (_cursorVisible != value)
@@ -1521,8 +1521,9 @@ public partial class Control : INotifyPropertyChanged
             {
                 if (topControl.ContextMenu != null)
                 {
-                    var windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
-                    topControl.ContextMenu.OpenMenu(windowsHost, args.GetPosition(windowsHost));
+                    WindowsHost? windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
+                    if (windowsHost != null)
+                        topControl.ContextMenu.OpenMenu(windowsHost, args.GetPosition(windowsHost));
                 }
             }
         }

@@ -39,19 +39,13 @@ public struct GridLength
 
     public GridLength(GridUnitType unitType, int value)
     {
-        this._gridUnitType = unitType;
-        this._value = value;
+        _gridUnitType = unitType;
+        _value = value;
     }
 
-    public GridUnitType GridUnitType
-    {
-        get { return _gridUnitType; }
-    }
+    public GridUnitType GridUnitType => _gridUnitType;
 
-    public int Value
-    {
-        get { return _value; }
-    }
+    public int Value => _value;
 }
 
 public class ColumnDefinition
@@ -173,20 +167,11 @@ public class Grid : Control
     private int[] _columnsWidths;
     private int[] _rowsHeights;
 
-    public List<ColumnDefinition> ColumnDefinitions
-    {
-        get { return _columnDefinitions; }
-    }
+    public List<ColumnDefinition> ColumnDefinitions => _columnDefinitions;
 
-    public List<RowDefinition> RowDefinitions
-    {
-        get { return _rowDefinitions; }
-    }
+    public List<RowDefinition> RowDefinitions => _rowDefinitions;
 
-    public UIElementCollection Controls
-    {
-        get { return _children; }
-    }
+    public UIElementCollection Controls => _children;
 
     public Grid()
     {
@@ -197,7 +182,7 @@ public class Grid : Control
     {
         if (ColumnDefinitions.Count == 0 || RowDefinitions.Count == 0)
             return Size.Empty;
-        Control[,] matrix = new Control[ColumnDefinitions.Count, RowDefinitions.Count];
+        Control?[,] matrix = new Control[ColumnDefinitions.Count, RowDefinitions.Count];
         for (int x = 0; x < ColumnDefinitions.Count; x++)
         {
             for (int y = 0; y < RowDefinitions.Count; y++)
@@ -267,13 +252,19 @@ public class Grid : Control
                     : 0;
                 // Учитываем MinWidth. MaxWidth учитывать специально не нужно, поскольку мы это
                 // уже сделали при первом Measure, и DesiredSize не может быть больше MaxWidth
-                if (ColumnDefinitions[x].MinWidth != null && maxWidth < ColumnDefinitions[x].MinWidth.Value)
-                    maxWidth = ColumnDefinitions[x].MinWidth.Value;
+                var minWidth = ColumnDefinitions[x].MinWidth;
+                if (minWidth.HasValue)
+                {
+                    if (maxWidth < minWidth.Value)
+                        maxWidth = minWidth.Value;
+                }
+
                 for (int y = 0; y < RowDefinitions.Count; y++)
                 {
-                    if (matrix[x, y] != null)
-                        if (matrix[x, y].DesiredSize.Width > maxWidth)
-                            maxWidth = matrix[x, y].DesiredSize.Width;
+                    var control = matrix[x, y];
+                    if (control != null)
+                        if (control.DesiredSize.Width > maxWidth)
+                            maxWidth = control.DesiredSize.Width;
                 }
 
                 _columnsWidths[x] = maxWidth;
@@ -289,13 +280,20 @@ public class Grid : Control
                 int maxHeight = RowDefinitions[y].Height.GridUnitType == GridUnitType.Pixel
                     ? RowDefinitions[y].Height.Value
                     : 0;
-                if (RowDefinitions[y].MinHeight != null && maxHeight < RowDefinitions[y].MinHeight.Value)
-                    maxHeight = RowDefinitions[y].MinHeight.Value;
+
+                var minHeight = RowDefinitions[y].MinHeight;
+                if (minHeight.HasValue)
+                {
+                    if (maxHeight < minHeight.Value)
+                        maxHeight = minHeight.Value;
+                }
+
                 for (int x = 0; x < ColumnDefinitions.Count; x++)
                 {
-                    if (matrix[x, y] != null)
-                        if (matrix[x, y].DesiredSize.Height > maxHeight)
-                            maxHeight = matrix[x, y].DesiredSize.Height;
+                    var control = matrix[x, y];
+                    if (control != null)
+                        if (control.DesiredSize.Height > maxHeight)
+                            maxHeight = control.DesiredSize.Height;
                 }
 
                 _rowsHeights[y] = maxHeight;
@@ -352,8 +350,7 @@ public class Grid : Control
             for (int y = 0; y < RowDefinitions.Count; y++)
             {
                 int height = _rowsHeights[y];
-                if (matrix[x, y] != null)
-                    matrix[x, y].Measure(new Size(width, height));
+                matrix[x, y].Measure(new Size(width, height));
             }
         }
 

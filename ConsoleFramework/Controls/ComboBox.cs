@@ -221,8 +221,8 @@ public class ComboBox : Control
             popup.Height = (ShownItemsCount != null ? ShownItemsCount.Value : Items.Count)
                            + (_shadow ? 2 : 1); // 1 row for transparent "header"
         else popup.Height = _shadow ? 3 : 2;
-        WindowsHost windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
-        windowsHost.ShowModal(popup, true);
+        WindowsHost? windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
+        windowsHost?.ShowModal(popup, true);
         Opened = true;
         EventManager.AddHandler(popup, Window.ClosedEvent, new EventHandler(OnPopupClosed));
     }
