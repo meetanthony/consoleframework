@@ -40,10 +40,7 @@ public class Button : ButtonBase
         }
         else
         {
-            if (HasFocus)
-                captionAttrs = Colors.Blend(Color.White, Color.DarkGreen);
-            else
-                captionAttrs = Colors.Blend(Color.Black, Color.DarkGreen);
+            captionAttrs = Colors.Blend(HasFocus ? Color.White : Color.Black, Color.DarkGreen);
         }
 
         if (Pressed || PressedUsingKeyboard)

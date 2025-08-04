@@ -23,5 +23,5 @@ public interface ICommand
     /// Defines the method that should be executed when the command is executed.
     /// </summary>
     /// <param name="parameter">A parameter that may be used in executing the command. This parameter may be ignored by some implementations.</param>
-    void Execute(object parameter);
+    void Execute(object? parameter);
 }
