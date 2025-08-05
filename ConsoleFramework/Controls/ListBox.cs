@@ -22,25 +22,19 @@ public class ListBox : Control
 
     private readonly ObservableList<string> items = new ObservableList<string>(new List<string>());
 
-    public ObservableList<String> Items
-    {
-        get { return items; }
-    }
+    public ObservableList<String> Items => items;
 
     private int? selectedItemIndex = null;
 
-    public event EventHandler SelectedItemIndexChanged;
+    public event EventHandler? SelectedItemIndexChanged;
 
     private readonly List<int> disabledItemsIndexes = new List<int>();
 
-    public List<int> DisabledItemsIndexes
-    {
-        get { return disabledItemsIndexes; }
-    }
+    public List<int> DisabledItemsIndexes => disabledItemsIndexes;
 
     public int? SelectedItemIndex
     {
-        get { return selectedItemIndex; }
+        get => selectedItemIndex;
         set
         {
             if (selectedItemIndex != value)
@@ -59,7 +53,7 @@ public class ListBox : Control
         AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown));
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(OnMouseDown));
         AddHandler(MouseMoveEvent, new MouseEventHandler(OnMouseMove));
-        AddHandler(MouseWheelEvent, new MouseWheelEventHandler(onMouseWheel));
+        AddHandler(MouseWheelEvent, new MouseWheelEventHandler(OnMouseWheel));
         this.items.ListChanged += (sender, args) =>
         {
             // Shift indexes of disabled items
@@ -123,15 +117,15 @@ public class ListBox : Control
         };
     }
 
-    private void onMouseWheel(object sender, MouseWheelEventArgs args)
+    private void OnMouseWheel(object sender, MouseWheelEventArgs args)
     {
         if (args.Delta > 0)
         {
-            pageUpCore(2);
+            PageUpCore(2);
         }
         else
         {
-            pageDownCore(2);
+            PageDownCore(2);
         }
 
         args.Handled = true;
@@ -165,9 +159,9 @@ public class ListBox : Control
             args.Handled = true;
     }
 
-    private void pageUpCore(int? pageSize)
+    private void PageUpCore(int? pageSize)
     {
-        if (allItemsAreDisabled) return;
+        if (AllItemsAreDisabled) return;
         if (pageSize == null)
         {
             int firstEnabledIndex = 0;
@@ -203,7 +197,7 @@ public class ListBox : Control
             }
         }
 
-        currentItemShouldBeVisibleAtTop();
+        CurrentItemShouldBeVisibleAtTop();
     }
 
     /// <summary>
@@ -211,7 +205,7 @@ public class ListBox : Control
     /// (if any wrapping scroll viewer presents).
     /// Call this method after any PgDown or keyboard down arrow handling.
     /// </summary>
-    private void currentItemShouldBeVisibleAtBottom()
+    private void CurrentItemShouldBeVisibleAtBottom()
     {
         // Notify any ScrollViewer that wraps this control to scroll visible part
         this.RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
@@ -226,7 +220,7 @@ public class ListBox : Control
     /// (if any wrapping scroll viewer presents).
     /// Call this method after any PgUp or keyboard up arrow handling.
     /// </summary>
-    private void currentItemShouldBeVisibleAtTop()
+    private void CurrentItemShouldBeVisibleAtTop()
     {
         // Notify any ScrollViewer that wraps this control to scroll visible part
         this.RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
@@ -237,13 +231,13 @@ public class ListBox : Control
                 null));
     }
 
-    private void pageDownCore(int? pageSize)
+    private void PageDownCore(int? pageSize)
     {
-        if (allItemsAreDisabled) return;
+        if (AllItemsAreDisabled) return;
         int itemIndex = SelectedItemIndex.HasValue ? SelectedItemIndex.Value : 0;
         if (pageSize == null)
         {
-            if (!allItemsAreDisabled && itemIndex != items.Count - 1)
+            if (!AllItemsAreDisabled && itemIndex != items.Count - 1)
             {
                 // Take the last non-disabled item
                 int firstEnabledItemIndex = items.Count - 1;
@@ -275,7 +269,7 @@ public class ListBox : Control
             }
         }
 
-        currentItemShouldBeVisibleAtBottom();
+        CurrentItemShouldBeVisibleAtBottom();
     }
 
     private void OnKeyDown(object sender, KeyEventArgs args)
@@ -288,17 +282,17 @@ public class ListBox : Control
 
         if (args.wVirtualKeyCode == VirtualKeys.PageUp)
         {
-            pageUpCore(PageSize);
+            PageUpCore(PageSize);
         }
 
         if (args.wVirtualKeyCode == VirtualKeys.PageDown)
         {
-            pageDownCore(PageSize);
+            PageDownCore(PageSize);
         }
 
         if (args.wVirtualKeyCode == VirtualKeys.Up)
         {
-            if (allItemsAreDisabled) return;
+            if (AllItemsAreDisabled) return;
             do
             {
                 if (SelectedItemIndex == 0 || SelectedItemIndex == null)
@@ -309,28 +303,25 @@ public class ListBox : Control
                 }
             } while (disabledItemsIndexes.Contains(SelectedItemIndex.Value));
 
-            currentItemShouldBeVisibleAtTop();
+            CurrentItemShouldBeVisibleAtTop();
         }
 
         if (args.wVirtualKeyCode == VirtualKeys.Down)
         {
-            if (allItemsAreDisabled) return;
+            if (AllItemsAreDisabled) return;
             do
             {
                 if (SelectedItemIndex == null) SelectedItemIndex = 0;
                 SelectedItemIndex = (SelectedItemIndex + 1) % items.Count;
             } while (disabledItemsIndexes.Contains(SelectedItemIndex.Value));
 
-            currentItemShouldBeVisibleAtBottom();
+            CurrentItemShouldBeVisibleAtBottom();
         }
 
         args.Handled = true;
     }
 
-    private bool allItemsAreDisabled
-    {
-        get { return disabledItemsIndexes.Count == items.Count; }
-    }
+    private bool AllItemsAreDisabled => disabledItemsIndexes.Count == items.Count;
 
     protected override Size MeasureOverride(Size availableSize)
     {
