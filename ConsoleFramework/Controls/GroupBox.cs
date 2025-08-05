@@ -10,40 +10,45 @@ namespace ConsoleFramework.Controls;
 /// </summary>
 public class GroupBox : Control
 {
-    private string title;
+    private string _title = String.Empty;
 
     public string Title
     {
-        get { return title; }
+        get => _title;
         set
         {
-            if (title != value)
+            if (_title != value)
             {
-                title = value;
+                _title = value;
                 Invalidate();
                 RaisePropertyChanged("Title");
             }
         }
     }
 
-    private Control content;
+    private Control? _content;
 
-    public Control Content
+    public Control? Content
     {
-        get { return content; }
+        get => _content;
         set
         {
-            if (content != value)
+            if (_content != value)
             {
-                if (content != null) RemoveChild(content);
-                content = value;
-                AddChild(content);
+                if (_content != null)
+                    RemoveChild(_content);
+
+                _content = value;
+                
+                if (_content != null)
+                    AddChild(_content);
+
                 Invalidate();
             }
         }
     }
 
-    private bool fitSizeToContent = false;
+    private bool _fitSizeToContent = false;
 
     /// <summary>
     /// If true, child will always win in layout battle.
@@ -52,12 +57,12 @@ public class GroupBox : Control
     /// </summary>
     public bool FitSizeToContent
     {
-        get { return fitSizeToContent; }
+        get => _fitSizeToContent;
         set
         {
-            if (fitSizeToContent != value)
+            if (_fitSizeToContent != value)
             {
-                fitSizeToContent = value;
+                _fitSizeToContent = value;
                 Invalidate();
             }
         }
@@ -66,29 +71,29 @@ public class GroupBox : Control
     protected override Size MeasureOverride(Size availableSize)
     {
         Size contentSize = Size.Empty;
-        if (content != null)
+        if (_content != null)
         {
-            content.Measure(new Size(int.MaxValue, int.MaxValue));
-            contentSize = content.DesiredSize;
+            _content.Measure(new Size(int.MaxValue, int.MaxValue));
+            contentSize = _content.DesiredSize;
         }
 
         Size needSize = new Size(
-            Math.Max(contentSize.Width + 2, (title ?? string.Empty).Length + 4),
+            Math.Max(contentSize.Width + 2, _title.Length + 4),
             contentSize.Height + 2
         );
-        if (fitSizeToContent) return needSize;
+        if (_fitSizeToContent) return needSize;
 
         Size constrainedSize = new Size(
             Math.Min(needSize.Width, availableSize.Width),
             Math.Min(needSize.Height, availableSize.Height)
         );
-        if (needSize != constrainedSize && content != null)
+        if (needSize != constrainedSize && _content != null)
         {
             // если контрол вместе с содержимым не помещается в availableSize,
             // то мы оставляем содержимому меньше места, чем ему хотелось бы,
             // и поэтому повторным вызовом Measure должны установить его реальные размеры,
             // которые будут использованы при размещении
-            content.Measure(new Size(
+            _content.Measure(new Size(
                 Math.Max(0, constrainedSize.Width - 2),
                 Math.Max(0, constrainedSize.Height - 2)
             ));
@@ -99,12 +104,12 @@ public class GroupBox : Control
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (null == content)
+        if (null == _content)
             return finalSize;
         Rect contentRect = new Rect(1, 1,
             Math.Max(0, finalSize.Width - 2),
             Math.Max(0, finalSize.Height - 2));
-        content.Arrange(contentRect);
+        _content.Arrange(contentRect);
         return finalSize;
     }
 
@@ -119,8 +124,8 @@ public class GroupBox : Control
             buffer.SetOpacityRect(1, 1, ActualWidth - 2, ActualHeight - 2, 2);
         // title
         int titleRenderedWidth = 0;
-        if (!string.IsNullOrEmpty(title))
-            titleRenderedWidth = RenderString(title, buffer, 2, 0, ActualWidth - 4, attr);
+        if (!string.IsNullOrEmpty(_title))
+            titleRenderedWidth = RenderString(_title, buffer, 2, 0, ActualWidth - 4, attr);
         // upper border
         for (int x = 0; x < ActualWidth; x++)
         {
