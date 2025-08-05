@@ -232,8 +232,9 @@ public class Grid : Control
                 if (rowDefinition.MaxHeight != null && height > rowDefinition.MaxHeight.Value)
                     height = rowDefinition.MaxHeight.Value;
 
-                if (matrix[x, y] != null)
-                    matrix[x, y].Measure(new Size(width, height));
+                var control = matrix[x, y];
+                if (control != null)
+                    control.Measure(new Size(width, height));
             }
         }
 
