@@ -14,7 +14,7 @@ public class ProgressBar : Control
     /// </summary>
     public int Percent
     {
-        get { return percent; }
+        get => percent;
         set
         {
             if (percent != value)

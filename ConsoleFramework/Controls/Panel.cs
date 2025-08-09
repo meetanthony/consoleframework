@@ -20,12 +20,12 @@ public enum Orientation
 /// Может быть самым первым контролом программы (окно не может, к примеру, оно может существовать
 /// только в рамках хоста окон).
 /// </summary>
-[ContentProperty("Children")]
+[ContentProperty(nameof(Children))]
 public class Panel : Control
 {
     public Panel()
     {
-        children = new UIElementCollection(this);
+        Children = new UIElementCollection(this);
     }
 
     public Attr Background { get; set; }
@@ -34,7 +34,7 @@ public class Panel : Control
 
     public Orientation Orientation
     {
-        get { return orientation; }
+        get => orientation;
         set
         {
             if (orientation != value)
@@ -45,12 +45,7 @@ public class Panel : Control
         }
     }
 
-    private readonly UIElementCollection children;
-
-    public new UIElementCollection Children
-    {
-        get { return children; }
-    }
+    public new UIElementCollection Children { get; }
 
     /// <summary>
     /// Размещает элементы вертикально, самым простым методом.

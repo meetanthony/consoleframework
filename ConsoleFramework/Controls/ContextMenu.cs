@@ -9,7 +9,7 @@ using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls;
 
-[ContentProperty("Items")]
+[ContentProperty(nameof(Items))]
 public class ContextMenu
 {
     private readonly ObservableList<MenuItemBase> _items = new(new List<MenuItemBase>());
@@ -34,12 +34,12 @@ public class ContextMenu
     {
         List<MenuItem> expandedSubmenus = new List<MenuItem>();
         MenuItem? currentItem =
-            (MenuItem?)Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
+            (MenuItem?)Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
         while (null != currentItem)
         {
             expandedSubmenus.Add(currentItem);
             currentItem =
-                (MenuItem?)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
+                (MenuItem?)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
         }
 
         expandedSubmenus.Reverse();

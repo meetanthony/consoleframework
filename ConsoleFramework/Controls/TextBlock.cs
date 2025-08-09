@@ -5,25 +5,25 @@ using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls;
 
-[ContentProperty("Text")]
+[ContentProperty(nameof(Text))]
 public class TextBlock : Control
 {
-    private string text;
+    private string? _text;
 
-    private void initialize()
+    private void Initialize()
     {
     }
 
     public TextBlock()
     {
-        initialize();
+        Initialize();
     }
 
     private Color color = Color.Black;
 
     public Color Color
     {
-        get { return color; }
+        get => color;
         set
         {
             if (color != value)
@@ -34,23 +34,23 @@ public class TextBlock : Control
         }
     }
 
-    public string Text
+    public string? Text
     {
-        get { return text; }
+        get => _text;
         set
         {
-            if (text != value)
+            if (_text != value)
             {
-                text = value;
-                this.Invalidate();
+                _text = value;
+                Invalidate();
             }
         }
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        if (null != text)
-            return new Size(text.Length, 1);
+        if (null != _text)
+            return new Size(_text.Length, 1);
         return new Size(0, 0);
     }
 
@@ -62,9 +62,9 @@ public class TextBlock : Control
         {
             for (int y = 0; y < ActualHeight; ++y)
             {
-                if (y == 0 && x < text.Length)
+                if (y == 0 && x < _text.Length)
                 {
-                    buffer.SetPixel(x, y, text[x], attr);
+                    buffer.SetPixel(x, y, _text[x], attr);
                 }
             }
         }

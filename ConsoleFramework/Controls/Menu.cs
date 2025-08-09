@@ -18,20 +18,18 @@ public enum MenuItemType
     Separator
 }
 
-public class MenuItemBase : Control
-{
-}
+public class MenuItemBase : Control;
 
 /// <summary>
 /// Item of menu.
 /// </summary>
-[ContentProperty("Items")]
+[ContentProperty(nameof(Items))]
 public class MenuItem : MenuItemBase, ICommandSource
 {
     public static readonly RoutedEvent ClickEvent = EventManager.RegisterRoutedEvent("Click",
         RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(MenuItem));
 
-    public MenuItem ParentItem { get; internal set; }
+    public MenuItem? ParentItem { get; internal set; }
 
     /// <summary>
     /// Call this method if you have changed menu items set
@@ -39,19 +37,19 @@ public class MenuItem : MenuItemBase, ICommandSource
     /// </summary>
     public void ReinitializePopup()
     {
-        if (null != popup)
-            popup.DisconnectMenuItems();
+        if (null != _popup)
+            _popup.DisconnectMenuItems();
     }
 
     public event RoutedEventHandler Click
     {
-        add { AddHandler(ClickEvent, value); }
-        remove { RemoveHandler(ClickEvent, value); }
+        add => AddHandler(ClickEvent, value);
+        remove => RemoveHandler(ClickEvent, value);
     }
 
     private bool _expanded;
 
-    internal bool expanded
+    internal bool Expanded
     {
         get { return _expanded; }
         private set
@@ -64,51 +62,39 @@ public class MenuItem : MenuItemBase, ICommandSource
         }
     }
 
-    private bool disabled;
+    private bool _disabled;
 
     public bool Disabled
     {
-        get { return disabled; }
+        get => _disabled;
         set
         {
-            if (disabled != value)
+            if (_disabled != value)
             {
-                disabled = value;
-                Focusable = !disabled;
+                _disabled = value;
+                Focusable = !_disabled;
                 Invalidate();
             }
         }
     }
 
-    private KeyGesture gesture;
+    public KeyGesture? Gesture { get; set; }
 
-    public KeyGesture Gesture
-    {
-        get { return gesture; }
-        set { gesture = value; }
-    }
-
-    private bool popupShadow = true;
-
-    public bool PopupShadow
-    {
-        get { return popupShadow; }
-        set { popupShadow = value; }
-    }
+    public bool PopupShadow { get; set; } = true;
 
     public MenuItem()
     {
         Focusable = true;
 
-        AddHandler(MouseDownEvent, new MouseEventHandler(onMouseDown));
-        AddHandler(MouseMoveEvent, new MouseEventHandler(onMouseMove));
-        AddHandler(MouseUpEvent, new MouseEventHandler(onMouseUp));
-        AddHandler(KeyDownEvent, new KeyEventHandler(onKeyDown));
+        AddHandler(MouseDownEvent, new MouseEventHandler(OnMouseDown));
+        AddHandler(MouseMoveEvent, new MouseEventHandler(OnMouseMove));
+        AddHandler(MouseUpEvent, new MouseEventHandler(OnMouseUp));
+        AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown));
 
         // Stretch by default
         HorizontalAlignment = HorizontalAlignment.Stretch;
 
-        items.ListChanged += (sender, args) =>
+        _items.ListChanged += (_, args) =>
         {
             switch (args.Type)
             {
@@ -116,33 +102,41 @@ public class MenuItem : MenuItemBase, ICommandSource
                 {
                     for (int i = 0; i < args.Count; i++)
                     {
-                        MenuItemBase itemBase = items[args.Index + i];
-                        if (itemBase is MenuItem)
+                        MenuItemBase itemBase = _items[args.Index + i];
+                        if (itemBase is MenuItem item)
                         {
-                            (itemBase as MenuItem).ParentItem = this;
+                            item.ParentItem = this;
                         }
                     }
 
                     break;
                 }
                 case ListChangedEventType.ItemsRemoved:
-                    foreach (object removedItem in args.RemovedItems)
+                {
+                    var removedItems = args.RemovedItems;
+                    if (removedItems == null) return;
+                    
+                    foreach (object? removedItem in removedItems)
                     {
-                        if (removedItem is MenuItem)
-                            (removedItem as MenuItem).ParentItem = null;
+                        if (removedItem is MenuItem item)
+                            item.ParentItem = null;
                     }
 
                     break;
+                }
                 case ListChangedEventType.ItemReplaced:
                 {
-                    object removedItem = args.RemovedItems[0];
-                    if (removedItem is MenuItem)
-                        (removedItem as MenuItem).ParentItem = null;
+                    var removedItems = args.RemovedItems;
+                    if (removedItems == null || removedItems.Count < 1) return;
+                    
+                    object? removedItem = removedItems[0];
+                    if (removedItem is MenuItem item)
+                        item.ParentItem = null;
 
-                    MenuItemBase itemBase = items[args.Index];
-                    if (itemBase is MenuItem)
+                    MenuItemBase itemBase = _items[args.Index];
+                    if (itemBase is MenuItem menuItem)
                     {
-                        (itemBase as MenuItem).ParentItem = this;
+                        menuItem.ParentItem = this;
                     }
 
                     break;
@@ -151,12 +145,12 @@ public class MenuItem : MenuItemBase, ICommandSource
         };
     }
 
-    private void onKeyDown(object sender, KeyEventArgs args)
+    private void OnKeyDown(object sender, KeyEventArgs args)
     {
         if (args.wVirtualKeyCode == VirtualKeys.Return)
         {
             if (Type == MenuItemType.RootSubmenu || Type == MenuItemType.Submenu)
-                openMenu();
+                OpenMenu();
             else if (Type == MenuItemType.Item)
             {
                 RaiseClick();
@@ -166,7 +160,7 @@ public class MenuItem : MenuItemBase, ICommandSource
         }
     }
 
-    private void onMouseUp(object sender, MouseEventArgs args)
+    private void OnMouseUp(object sender, MouseEventArgs args)
     {
         if (Type == MenuItemType.Item)
         {
@@ -175,89 +169,86 @@ public class MenuItem : MenuItemBase, ICommandSource
         }
     }
 
-    private void onMouseMove(object sender, MouseEventArgs args)
+    private void OnMouseMove(object sender, MouseEventArgs args)
     {
         // Mouse move opens the submenus only in root level
-        if (!disabled && args.LeftButton == MouseButtonState.Pressed /*&& Parent.Parent is Menu*/)
+        if (!_disabled && args.LeftButton == MouseButtonState.Pressed /*&& Parent.Parent is Menu*/)
         {
-            openMenu();
+            OpenMenu();
         }
 
         args.Handled = true;
     }
 
-    private void onMouseDown(object sender, MouseEventArgs args)
+    private void OnMouseDown(object sender, MouseEventArgs args)
     {
-        if (!disabled)
-            openMenu();
+        if (!_disabled)
+            OpenMenu();
         args.Handled = true;
     }
 
-    private Popup popup;
+    private Popup? _popup;
 
-    private void openMenu()
+    private void OpenMenu()
     {
-        if (expanded) return;
+        if (Expanded) return;
 
-        if (this.Type == MenuItemType.Submenu || Type == MenuItemType.RootSubmenu)
+        if (Type == MenuItemType.Submenu || Type == MenuItemType.RootSubmenu)
         {
-            if (null == popup)
+            if (null == _popup)
             {
-                popup = new Popup(this.Items, this.popupShadow, this.ActualWidth);
-                foreach (MenuItemBase itemBase in this.Items)
+                _popup = new Popup(Items, PopupShadow, ActualWidth);
+                foreach (MenuItemBase itemBase in Items)
                 {
                     if (itemBase is MenuItem)
                         ((MenuItem)itemBase).ParentItem = this;
                 }
 
-                popup.AddHandler(Window.ClosedEvent, new EventHandler(onPopupClosed));
+                _popup.AddHandler(Window.ClosedEvent, new EventHandler(OnPopupClosed));
             }
 
-            WindowsHost windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
+            WindowsHost? windowsHost = VisualTreeHelper.FindClosestParent<WindowsHost>(this);
             Point point = TranslatePoint(this, new Point(0, 0), windowsHost);
-            popup.X = point.X;
-            popup.Y = point.Y;
-            windowsHost.ShowModal(popup, true);
-            expanded = true;
+            _popup.X = point.X;
+            _popup.Y = point.Y;
+            windowsHost?.ShowModal(_popup, true);
+            Expanded = true;
         }
     }
 
-    private void onPopupClosed(object sender, EventArgs eventArgs)
+    private void OnPopupClosed(object? sender, EventArgs eventArgs)
     {
-        Assert(expanded);
-        expanded = false;
+        Assert(Expanded);
+        Expanded = false;
     }
 
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
-    private string titleRight;
+    private string? _titleRight;
 
-    public string TitleRight
+    public string? TitleRight
     {
         get
         {
-            if (titleRight == null && Type == MenuItemType.Submenu)
+            if (_titleRight == null && Type == MenuItemType.Submenu)
                 return new string(UnicodeTable.ArrowRight, 1);
-            return titleRight;
+            return _titleRight;
         }
-        set { titleRight = value; }
+        set => _titleRight = value;
     }
 
-    public string Description { get; set; }
+    public string? Description { get; set; }
 
     public MenuItemType Type { get; set; }
 
-    private readonly ObservableList<MenuItemBase> items = new ObservableList<MenuItemBase>(new List<MenuItemBase>());
+    private readonly ObservableList<MenuItemBase> _items = new ObservableList<MenuItemBase>(new List<MenuItemBase>());
 
-    public IList<MenuItemBase> Items
-    {
-        get { return items; }
-    }
+    public IList<MenuItemBase> Items => _items;
 
     protected override Size MeasureOverride(Size availableSize)
     {
         int length = 2;
-        if (!string.IsNullOrEmpty(Title)) length += getTitleLength(Title);
+        if (!string.IsNullOrEmpty(Title)) length += GetTitleLength(Title);
         if (!string.IsNullOrEmpty(TitleRight)) length += TitleRight.Length;
         if (!string.IsNullOrEmpty(Title) && !string.IsNullOrEmpty(TitleRight))
             length++;
@@ -267,8 +258,11 @@ public class MenuItem : MenuItemBase, ICommandSource
     /// <summary>
     /// Counts length of string to be rendered with underscore prefixes on.
     /// </summary>
-    private static int getTitleLength(String title)
+    private static int GetTitleLength(string? title)
     {
+        if (string.IsNullOrEmpty(title))
+            return 0;
+
         bool underscore = false;
         int len = 0;
         foreach (char c in title)
@@ -298,7 +292,7 @@ public class MenuItem : MenuItemBase, ICommandSource
     {
         Attr captionAttrs;
         Attr specialAttrs;
-        if (HasFocus || this.expanded)
+        if (HasFocus || Expanded)
         {
             captionAttrs = Colors.Blend(Color.Black, Color.DarkGreen);
             specialAttrs = Colors.Blend(Color.DarkRed, Color.DarkGreen);
@@ -309,13 +303,13 @@ public class MenuItem : MenuItemBase, ICommandSource
             specialAttrs = Colors.Blend(Color.DarkRed, Color.Gray);
         }
 
-        if (disabled)
+        if (_disabled)
             captionAttrs = Colors.Blend(Color.DarkGray, Color.Gray);
 
         buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', captionAttrs);
         if (null != Title)
         {
-            renderString(Title, buffer, 1, 0, ActualWidth, captionAttrs,
+            RenderString(Title, buffer, 1, 0, ActualWidth, captionAttrs,
                 Disabled ? captionAttrs : specialAttrs);
         }
 
@@ -329,10 +323,13 @@ public class MenuItem : MenuItemBase, ICommandSource
     /// symbol will use specialAttrs instead. To render underscore pass two underscores.
     /// Example: "_File" renders File when 'F' is rendered using specialAttrs.
     /// </summary>
-    private static int renderString(string s, RenderingBuffer buffer,
+    private static int RenderString(string? s, RenderingBuffer buffer,
         int x, int y, int maxWidth, Attr attr,
         Attr specialAttr)
     {
+        if (string.IsNullOrEmpty(s))
+            return 0;
+
         bool underscore = false;
         int j = 0;
         for (int i = 0; i < s.Length && j < maxWidth; i++)
@@ -349,10 +346,8 @@ public class MenuItem : MenuItemBase, ICommandSource
                     underscore = true;
                     continue;
                 }
-                else
-                {
-                    c = s[i];
-                }
+
+                c = s[i];
             }
 
             Attr a;
@@ -383,7 +378,7 @@ public class MenuItem : MenuItemBase, ICommandSource
 
         public static readonly RoutedEvent ControlKeyPressedEvent = EventManager.RegisterRoutedEvent(
             "ControlKeyPressed",
-            RoutingStrategy.Bubble, typeof(KeyEventHandler), typeof(MenuItem.Popup));
+            RoutingStrategy.Bubble, typeof(KeyEventHandler), typeof(Popup));
 
         /// <summary>
         /// Call this method to remove all menu items that are used as child items.
@@ -416,7 +411,7 @@ public class MenuItem : MenuItemBase, ICommandSource
             Content = panel;
 
             // If click on the transparent header, close the popup
-            AddHandler(PreviewMouseDownEvent, new MouseButtonEventHandler((sender, args) =>
+            AddHandler(PreviewMouseDownEvent, new MouseButtonEventHandler((_, args) =>
             {
                 if (Content != null && !Content.RenderSlotRect.Contains(args.GetPosition(this)))
                 {
@@ -428,7 +423,7 @@ public class MenuItem : MenuItemBase, ICommandSource
                 }
             }));
 
-            EventManager.AddHandler(panel, PreviewMouseMoveEvent, new MouseEventHandler(onPanelMouseMove));
+            EventManager.AddHandler(panel, PreviewMouseMoveEvent, new MouseEventHandler(OnPanelMouseMove));
         }
 
         protected override void OnPreviewKeyDown(object sender, KeyEventArgs args)
@@ -466,7 +461,7 @@ public class MenuItem : MenuItemBase, ICommandSource
             }
         }
 
-        private void onPanelMouseMove(object sender, MouseEventArgs e)
+        private void OnPanelMouseMove(object sender, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
@@ -559,54 +554,55 @@ public class MenuItem : MenuItemBase, ICommandSource
 
     internal void Close()
     {
-        Assert(expanded);
-        popup.Close();
+        Assert(Expanded);
+        _popup?.Close();
     }
 
     internal void Expand()
     {
-        openMenu();
+        OpenMenu();
     }
 
-    private ICommand command;
+    private ICommand? command;
 
-    public ICommand Command
+    public ICommand? Command
     {
-        get { return command; }
+        get => command;
         set
         {
             if (command != value)
             {
                 if (command != null)
                 {
-                    command.CanExecuteChanged -= onCommandCanExecuteChanged;
+                    command.CanExecuteChanged -= OnCommandCanExecuteChanged;
                 }
 
                 command = value;
-                command.CanExecuteChanged += onCommandCanExecuteChanged;
+                if (command != null) 
+                    command.CanExecuteChanged += OnCommandCanExecuteChanged;
 
-                refreshCanExecute();
+                RefreshCanExecute();
             }
         }
     }
 
-    private void onCommandCanExecuteChanged(object sender, EventArgs args)
+    private void OnCommandCanExecuteChanged(object? sender, EventArgs args)
     {
-        refreshCanExecute();
+        RefreshCanExecute();
     }
 
-    private void refreshCanExecute()
+    private void RefreshCanExecute()
     {
         if (command == null)
         {
-            this.Disabled = false;
+            Disabled = false;
             return;
         }
 
-        this.Disabled = !command.CanExecute(CommandParameter);
+        Disabled = !command.CanExecute(CommandParameter);
     }
 
-    public object CommandParameter { get; set; }
+    public object? CommandParameter { get; set; }
 
     internal void RaiseClick()
     {
@@ -653,12 +649,9 @@ public class Menu : Control
     private readonly ObservableList<MenuItemBase> items = new ObservableList<MenuItemBase>(
         new List<MenuItemBase>());
 
-    public IList<MenuItemBase> Items
-    {
-        get { return items; }
-    }
+    public IList<MenuItemBase> Items => items;
 
-    private void getGestures(MenuItem item, Dictionary<KeyGesture, MenuItem> map)
+    private void GetGestures(MenuItem item, Dictionary<KeyGesture?, MenuItem> map)
     {
         if (item.Gesture != null)
             map.Add(item.Gesture, item);
@@ -669,7 +662,7 @@ public class Menu : Control
             {
                 if (itemBase is MenuItem)
                 {
-                    getGestures((MenuItem)itemBase, map);
+                    GetGestures((MenuItem)itemBase, map);
                 }
             }
         }
@@ -677,40 +670,40 @@ public class Menu : Control
 
     public void RefreshKeyGestures()
     {
-        gestures = null;
+        _gestures = null;
     }
 
-    private Dictionary<KeyGesture, MenuItem> gestures;
+    private Dictionary<KeyGesture?, MenuItem>? _gestures;
 
-    private Dictionary<KeyGesture, MenuItem> getGesturesMap()
+    private Dictionary<KeyGesture?, MenuItem> GetGesturesMap()
     {
-        if (gestures == null)
+        if (_gestures == null)
         {
-            gestures = new Dictionary<KeyGesture, MenuItem>();
-            foreach (MenuItemBase itemBase in this.Items)
+            _gestures = new Dictionary<KeyGesture?, MenuItem>();
+            foreach (MenuItemBase itemBase in Items)
             {
                 if (itemBase is MenuItem)
                 {
-                    getGestures((MenuItem)itemBase, gestures);
+                    GetGestures((MenuItem)itemBase, _gestures);
                 }
             }
         }
 
-        return gestures;
+        return _gestures;
     }
 
     public bool TryMatchGesture(KeyEventArgs args)
     {
-        Dictionary<KeyGesture, MenuItem> map = getGesturesMap();
-        KeyGesture match = map.Keys.FirstOrDefault(gesture => gesture.Matches(args));
+        Dictionary<KeyGesture?, MenuItem> map = GetGesturesMap();
+        KeyGesture? match = map.Keys.FirstOrDefault(gesture => gesture.Matches(args));
         if (match == null) return false;
 
-        this.CloseAllSubmenus();
+        CloseAllSubmenus();
 
         // Activate matches menu item
         MenuItem menuItem = map[match];
         List<MenuItem> path = new List<MenuItem>();
-        MenuItem currentItem = menuItem;
+        MenuItem? currentItem = menuItem;
         while (currentItem != null)
         {
             path.Add(currentItem);
@@ -721,7 +714,7 @@ public class Menu : Control
 
         // Open all menu items in path successively
         int i = 0;
-        Action action = null;
+        Action? action = null;
         action = new Action(() =>
         {
             if (i < path.Count)
@@ -756,7 +749,8 @@ public class Menu : Control
                     i++;
                     if (i < path.Count)
                     {
-                        action();
+                        if (action != null)
+                            action();
                     }
                 };
                 item.LayoutRevalidated += handler;
@@ -774,12 +768,12 @@ public class Menu : Control
     {
         List<MenuItem> expandedSubmenus = new List<MenuItem>();
         MenuItem currentItem =
-            (MenuItem)this.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
+            (MenuItem)Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
         while (null != currentItem)
         {
             expandedSubmenus.Add(currentItem);
             currentItem =
-                (MenuItem)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).expanded);
+                (MenuItem)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
         }
 
         expandedSubmenus.Reverse();
@@ -793,10 +787,10 @@ public class Menu : Control
     {
         Panel stackPanel = new Panel();
         stackPanel.Orientation = Orientation.Horizontal;
-        this.AddChild(stackPanel);
+        AddChild(stackPanel);
 
         // Subscribe to Items change and add to Children them
-        this.items.ListChanged += (sender, args) =>
+        items.ListChanged += (sender, args) =>
         {
             switch (args.Type)
             {
@@ -830,11 +824,11 @@ public class Menu : Control
                 }
             }
         };
-        this.IsFocusScope = true;
+        IsFocusScope = true;
 
-        this.AddHandler(KeyDownEvent, new KeyEventHandler(onKeyDown));
-        this.AddHandler(PreviewMouseMoveEvent, new MouseEventHandler(onPreviewMouseMove));
-        this.AddHandler(PreviewMouseDownEvent, new MouseEventHandler(onPreviewMouseDown));
+        AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown));
+        AddHandler(PreviewMouseMoveEvent, new MouseEventHandler(OnPreviewMouseMove));
+        AddHandler(PreviewMouseDownEvent, new MouseEventHandler(OnPreviewMouseDown));
     }
 
     protected override void OnParentChanged()
@@ -864,26 +858,26 @@ public class Menu : Control
                     else if (args.wVirtualKeyCode == VirtualKeys.Left)
                         ConsoleApplication.Instance.FocusManager.MoveFocusPrev();
                     MenuItem focusedItem =
-                        (MenuItem)this.Items.SingleOrDefault(item => item is MenuItem && item.HasFocus);
+                        (MenuItem)Items.SingleOrDefault(item => item is MenuItem && item.HasFocus);
                     focusedItem.Expand();
                 }));
         }
     }
 
-    private void onPreviewMouseMove(object sender, MouseEventArgs args)
+    private void OnPreviewMouseMove(object sender, MouseEventArgs args)
     {
         if (args.LeftButton == MouseButtonState.Pressed)
         {
-            onPreviewMouseDown(sender, args);
+            OnPreviewMouseDown(sender, args);
         }
     }
 
-    private void onPreviewMouseDown(object sender, MouseEventArgs e)
+    private void OnPreviewMouseDown(object sender, MouseEventArgs e)
     {
         PassFocusToChildUnderPoint(e);
     }
 
-    private void onKeyDown(object sender, KeyEventArgs args)
+    private void OnKeyDown(object sender, KeyEventArgs args)
     {
         if (args.wVirtualKeyCode == VirtualKeys.Right)
         {
@@ -900,13 +894,13 @@ public class Menu : Control
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        this.Children[0].Measure(availableSize);
-        return this.Children[0].DesiredSize;
+        Children[0].Measure(availableSize);
+        return Children[0].DesiredSize;
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        this.Children[0].Arrange(new Rect(new Point(0, 0), finalSize));
+        Children[0].Arrange(new Rect(new Point(0, 0), finalSize));
         return finalSize;
     }
 

@@ -103,7 +103,7 @@ public class ObservableList<T> : IObservableList, IList<T>, IList
         _list.Remove(item);
         if (-1 != index)
         {
-            RaiseListElementsRemoved(index, 1, [item]);
+            RaiseListElementsRemoved(index, 1, new () {item});
             return true;
         }
 
@@ -138,9 +138,9 @@ public class ObservableList<T> : IObservableList, IList<T>, IList
 
     public void RemoveAt(int index)
     {
-        T removedItem = _list[index];
+        T? removedItem = _list[index];
         _list.RemoveAt(index);
-        RaiseListElementsRemoved(index, 1, [removedItem]);
+        RaiseListElementsRemoved(index, 1, new() { removedItem });
     }
 
     object? IList.this[int index]
@@ -161,7 +161,7 @@ public class ObservableList<T> : IObservableList, IList<T>, IList
         {
             T removedItem = _list[index];
             _list[index] = value;
-            RaiseListElementReplaced(index, [removedItem]);
+            RaiseListElementReplaced(index, new() { removedItem });
         }
     }
 
@@ -172,12 +172,12 @@ public class ObservableList<T> : IObservableList, IList<T>, IList
 
     private void RaiseListElementsRemoved(int index, int length, List<object?> removedItems)
     {
-        OnListChanged(new ListChangedEventArgs(ListChangedEventType.ItemsRemoved, index, length, [removedItems]));
+        OnListChanged(new ListChangedEventArgs(ListChangedEventType.ItemsRemoved, index, length, new() { removedItems }));
     }
 
     private void RaiseListElementReplaced(int index, List<object?> removedItems)
     {
-        OnListChanged(new ListChangedEventArgs(ListChangedEventType.ItemReplaced, index, 1, [removedItems]));
+        OnListChanged(new ListChangedEventArgs(ListChangedEventType.ItemReplaced, index, 1, new() { removedItems }));
     }
 
     public event ListChangedHandler? ListChanged;

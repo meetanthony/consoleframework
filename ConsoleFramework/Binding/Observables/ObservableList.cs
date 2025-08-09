@@ -64,7 +64,7 @@ public class ObservableList : IObservableList, IList
         int index = _list.IndexOf(item);
         _list.Remove(item);
         if (-1 != index)
-            RaiseListElementsRemoved(index, 1, [item]);
+            RaiseListElementsRemoved(index, 1, new() { item });
     }
 
     public void CopyTo(Array array, int index)
@@ -97,7 +97,7 @@ public class ObservableList : IObservableList, IList
     {
         object? removedItem = _list[index];
         _list.RemoveAt(index);
-        RaiseListElementsRemoved(index, 1, [removedItem]);
+        RaiseListElementsRemoved(index, 1, new() { removedItem });
     }
 
     public Object? this[int index]
@@ -107,7 +107,7 @@ public class ObservableList : IObservableList, IList
         {
             object? removedItem = _list[index];
             _list[index] = value;
-            RaiseListElementReplaced(index, [removedItem]);
+            RaiseListElementReplaced(index, new() { removedItem });
         }
     }
 

@@ -158,7 +158,7 @@ public class GridLengthTypeConverter : ITypeConverter
     }
 }
 
-[ContentProperty("Controls")]
+[ContentProperty(nameof(Controls))]
 public class Grid : Control
 {
     private readonly List<ColumnDefinition> _columnDefinitions = new List<ColumnDefinition>();

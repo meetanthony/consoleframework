@@ -15,7 +15,7 @@ public interface IItemsSource
     IList<TreeItem> GetItems();
 }
 
-[ContentProperty("Items")]
+[ContentProperty(nameof(Items))]
 public class TreeItem : INotifyPropertyChanged
 {
     /// <summary>
@@ -32,7 +32,7 @@ public class TreeItem : INotifyPropertyChanged
             if (Items.Count != 0)
                 return string.Format("{0}{1} {2}", new string(' ', Level * 2),
                     (Expanded ? UnicodeTable.ArrowDown : UnicodeTable.ArrowRight), Title);
-            return string.Format("{0}{1}", new string(' ', (Level + 1) * 2), Title);
+            return $"{new string(' ', (Level + 1) * 2)}{Title}";
         }
     }
 
@@ -107,7 +107,7 @@ public class TreeItem : INotifyPropertyChanged
     }
 }
 
-[ContentProperty("Items")]
+[ContentProperty(nameof(Items))]
 public class TreeView : Control
 {
     private readonly ObservableList<TreeItem> items = new ObservableList<TreeItem>(

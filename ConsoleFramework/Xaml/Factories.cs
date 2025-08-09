@@ -39,7 +39,7 @@ class Primitive<T> : IFactory
 /// arguments and properties values. In XAML it can be used with convenient alias "object".
 /// You can read documentation to find usage examples.
 /// </summary>
-[ContentProperty("ParametersAndProperties")]
+[ContentProperty(nameof(ParametersAndProperties))]
 class ObjectFactory : IFactory
 {
     /// <summary>

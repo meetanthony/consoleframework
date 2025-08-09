@@ -5,7 +5,7 @@ using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls;
 
-[ContentProperty("Caption")]
+[ContentProperty(nameof(Caption))]
 public class Button : ButtonBase
 {
     private string? _caption;

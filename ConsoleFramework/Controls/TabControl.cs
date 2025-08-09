@@ -9,35 +9,38 @@ using ConsoleFramework.Xaml;
 
 namespace ConsoleFramework.Controls;
 
+[ContentProperty(nameof(Title))]
 public class TabDefinition
 {
+    public TabDefinition(string title)
+    {
+        Title = title;
+    }
+
     public string Title { get; set; }
 }
 
 /// <summary>
 /// Control that presents a tabbed layout.
 /// </summary>
-[ContentProperty("Controls")]
+[ContentProperty(nameof(Controls))]
 public class TabControl : Control
 {
-    private readonly List<TabDefinition> tabDefinitions = new List<TabDefinition>();
-    private readonly UIElementCollection controls;
-
     public TabControl()
     {
-        controls = new UIElementCollection(this);
-        AddHandler(MouseDownEvent, new MouseButtonEventHandler(mouseDown));
+        Controls = new UIElementCollection(this);
+        AddHandler(MouseDownEvent, new MouseButtonEventHandler(MouseDownHandler));
     }
 
-    private void mouseDown(object sender, MouseButtonEventArgs args)
+    private void MouseDownHandler(object sender, MouseButtonEventArgs args)
     {
         Point pos = args.GetPosition(this);
         if (pos.y > 2) return;
 
         int x = 0;
-        for (int i = 0; i < tabDefinitions.Count; i++)
+        for (int i = 0; i < TabDefinitions.Count; i++)
         {
-            TabDefinition tabDefinition = tabDefinitions[i];
+            TabDefinition tabDefinition = TabDefinitions[i];
             if (pos.X > x && pos.X <= x + tabDefinition.Title.Length + 2)
             {
                 activeTabIndex = i;
@@ -51,26 +54,20 @@ public class TabControl : Control
         args.Handled = true;
     }
 
-    public List<TabDefinition> TabDefinitions
-    {
-        get { return tabDefinitions; }
-    }
+    public List<TabDefinition> TabDefinitions { get; } = new List<TabDefinition>();
 
-    public UIElementCollection Controls
-    {
-        get { return controls; }
-    }
+    public UIElementCollection Controls { get; }
 
     private int activeTabIndex;
 
     public int ActiveTabIndex
     {
-        get { return activeTabIndex; }
+        get => activeTabIndex;
         set
         {
             if (value != activeTabIndex)
             {
-                if (value < 0 || value >= tabDefinitions.Count)
+                if (value < 0 || value >= TabDefinitions.Count)
                     throw new ArgumentException("Tab index out of bounds");
                 activeTabIndex = value;
                 Invalidate();
@@ -86,7 +83,7 @@ public class TabControl : Control
             Math.Max(availableSize.Height - 4, 0));
         int maxDesiredWidth = 0;
         int maxDesiredHeight = 0;
-        for (int i = 0; i < Math.Min(Children.Count, tabDefinitions.Count); i++)
+        for (int i = 0; i < Math.Min(Children.Count, TabDefinitions.Count); i++)
         {
             Control child = Children[i];
             child.Measure(childrenAvailableSize);
@@ -95,7 +92,7 @@ public class TabControl : Control
         }
 
         // Get tab header desired size
-        var tabHeaderWidth = getTabHeaderWidth();
+        var tabHeaderWidth = GetTabHeaderWidth();
 
         // Calculate final size = min(availableSize, controlWithChildrenDesiredSize)
         Size controlWithChildrenDesiredSize = new Size(
@@ -127,10 +124,10 @@ public class TabControl : Control
         return finalAvailableSize;
     }
 
-    private int getTabHeaderWidth()
+    private int GetTabHeaderWidth()
     {
         // Two spaces around + one vertical border per tab, plus extra one vertical border
-        return 1 + tabDefinitions.Sum(tabDefinition => tabDefinition.Title.Length + 2 + 1);
+        return 1 + TabDefinitions.Sum(tabDefinition => tabDefinition.Title.Length + 2 + 1);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
@@ -155,7 +152,7 @@ public class TabControl : Control
         return finalSize;
     }
 
-    private void renderBorderSafe(RenderingBuffer buffer, int x, int y, int x2, int y2)
+    private void RenderBorderSafe(RenderingBuffer buffer, int x, int y, int x2, int y2)
     {
         if (ActualWidth > x && ActualHeight > y)
             buffer.SetPixel(x, y, UnicodeTable.SingleFrameTopLeftCorner);
@@ -193,7 +190,7 @@ public class TabControl : Control
         if (ActualWidth > 2 && ActualHeight > 3)
             buffer.SetOpacityRect(1, 3, ActualWidth - 2, ActualHeight - 4, 2);
 
-        renderBorderSafe(buffer, 0, 2, Math.Max(getTabHeaderWidth() - 1, ActualWidth - 1), ActualHeight - 1);
+        RenderBorderSafe(buffer, 0, 2, Math.Max(GetTabHeaderWidth() - 1, ActualWidth - 1), ActualHeight - 1);
 
         // Start to render header
         buffer.FillRectangle(0, 0, ActualWidth, Math.Min(2, ActualHeight), ' ', attr);
@@ -201,7 +198,7 @@ public class TabControl : Control
         int x = 0;
 
         // Render tabs before active tab
-        for (int tab = 0; tab < tabDefinitions.Count; x += TabDefinitions[tab++].Title.Length + 3)
+        for (int tab = 0; tab < TabDefinitions.Count; x += TabDefinitions[tab++].Title.Length + 3)
         {
             var tabDefinition = TabDefinitions[tab];
             if (tab <= activeTabIndex)
@@ -234,7 +231,7 @@ public class TabControl : Control
             if (tab == activeTabIndex)
             {
                 buffer.SetPixelSafe(x + tabDefinition.Title.Length + 3, 2,
-                    activeTabIndex == tabDefinitions.Count - 1 && ActualWidth - 1 == x + tabDefinition.Title.Length + 3
+                    activeTabIndex == TabDefinitions.Count - 1 && ActualWidth - 1 == x + tabDefinition.Title.Length + 3
                         ? UnicodeTable.SingleFrameVertical
                         : UnicodeTable.SingleFrameBottomLeftCorner);
             }

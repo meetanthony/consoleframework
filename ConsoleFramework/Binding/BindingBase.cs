@@ -212,7 +212,7 @@ public class BindingBase
 
                 //
                 if (_adapter == null)
-                    _targetPropertyInfo?.GetSetMethod()?.Invoke(Target, [converted]);
+                    _targetPropertyInfo?.GetSetMethod()?.Invoke(Target, new []{converted});
                 else if (converted != null)
                     _adapter.SetValue(Target, _targetProperty, converted);
             }
@@ -364,7 +364,7 @@ public class BindingBase
                         if (UpdateSourceIfBindingFails)
                         {
                             // Will update source using null or default(T) if T is primitive
-                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, [null]);
+                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, new Object?[] { null });
                         }
 
                         return;
@@ -385,14 +385,14 @@ public class BindingBase
                         if (UpdateSourceIfBindingFails)
                         {
                             // Will update source using null or default(T) if T is primitive
-                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, [null]);
+                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, new Object?[]{null});
                         }
 
                         return;
                     }
                 }
 
-                _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, [convertedValue]);
+                _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, new []{convertedValue});
                 if (null != OnBinding)
                     OnBinding.Invoke(new BindingResult(false));
                 //

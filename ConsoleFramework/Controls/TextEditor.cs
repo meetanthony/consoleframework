@@ -146,8 +146,8 @@ public class TextEditorController
     public TextEditorController(TextHolder textHolder, Point cursorPos, Rect window)
     {
         this.textHolder = textHolder;
-        this.CursorPos = cursorPos;
-        this.Window = window;
+        CursorPos = cursorPos;
+        Window = window;
     }
 
     public interface ICommand
@@ -790,23 +790,23 @@ public class TextHolder
 /// <summary>
 /// Multiline text editor.
 /// </summary>
-[ContentProperty("Text")]
+[ContentProperty(nameof(Text))]
 public class TextEditor : Control
 {
-    private TextEditorController controller;
-    private char[,] buffer;
-    private ScrollBar horizontalScrollbar;
-    private ScrollBar verticalScrollbar;
+    private readonly TextEditorController _controller;
+    private char[,]? _buffer;
+    private readonly ScrollBar _horizontalScrollbar;
+    private readonly ScrollBar _verticalScrollbar;
 
     public string Text
     {
-        get => controller.Text;
+        get => _controller.Text;
         set
         {
-            if (value != controller.Text)
+            if (value != _controller.Text)
             {
-                controller.Text = value;
-                CursorPosition = controller.CursorPos;
+                _controller.Text = value;
+                CursorPosition = _controller.CursorPos;
                 Invalidate();
             }
         }
@@ -814,108 +814,108 @@ public class TextEditor : Control
 
     // TODO : Scrollbars always visible
 
-    private void applyCommand(TextEditorController.ICommand cmd)
+    private void ApplyCommand(TextEditorController.ICommand cmd)
     {
-        var oldCursorPos = controller.CursorPos;
-        if (cmd.Do(controller))
+        var oldCursorPos = _controller.CursorPos;
+        if (cmd.Do(_controller))
         {
             Invalidate();
         }
 
-        if (oldCursorPos != controller.CursorPos)
+        if (oldCursorPos != _controller.CursorPos)
         {
-            CursorPosition = controller.CursorPos;
+            CursorPosition = _controller.CursorPos;
         }
     }
 
     public TextEditor()
     {
-        controller = new TextEditorController("", 0, 0);
+        _controller = new TextEditorController("", 0, 0);
         KeyDown += OnKeyDown;
         MouseDown += OnMouseDown;
         CursorVisible = true;
         CursorPosition = new Point(0, 0);
         Focusable = true;
 
-        horizontalScrollbar = new ScrollBar
+        _horizontalScrollbar = new ScrollBar
         {
             Orientation = Orientation.Horizontal,
             Visibility = Visibility.Hidden
         };
-        verticalScrollbar = new ScrollBar
+        _verticalScrollbar = new ScrollBar
         {
             Orientation = Orientation.Vertical,
             Visibility = Visibility.Hidden
         };
-        AddChild(horizontalScrollbar);
-        AddChild(verticalScrollbar);
+        AddChild(_horizontalScrollbar);
+        AddChild(_verticalScrollbar);
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        verticalScrollbar.Measure(new Size(1, availableSize.Height));
-        horizontalScrollbar.Measure(new Size(availableSize.Width, 1));
+        _verticalScrollbar.Measure(new Size(1, availableSize.Height));
+        _horizontalScrollbar.Measure(new Size(availableSize.Width, 1));
         return new Size(0, 0);
     }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (controller.LinesCount > finalSize.Height)
+        if (_controller.LinesCount > finalSize.Height)
         {
-            verticalScrollbar.Visibility = Visibility.Visible;
-            verticalScrollbar.MaxValue =
-                controller.LinesCount + TextEditorController.LINES_BOTTOM_MAX_GAP - controller.Window.Height;
-            verticalScrollbar.Value = controller.Window.Top;
-            verticalScrollbar.Invalidate();
+            _verticalScrollbar.Visibility = Visibility.Visible;
+            _verticalScrollbar.MaxValue =
+                _controller.LinesCount + TextEditorController.LINES_BOTTOM_MAX_GAP - _controller.Window.Height;
+            _verticalScrollbar.Value = _controller.Window.Top;
+            _verticalScrollbar.Invalidate();
         }
         else
         {
-            verticalScrollbar.Visibility = Visibility.Collapsed;
-            verticalScrollbar.Value = 0;
-            verticalScrollbar.MaxValue = 10;
+            _verticalScrollbar.Visibility = Visibility.Collapsed;
+            _verticalScrollbar.Value = 0;
+            _verticalScrollbar.MaxValue = 10;
         }
 
-        if (controller.ColumnsCount >= finalSize.Width)
+        if (_controller.ColumnsCount >= finalSize.Width)
         {
-            horizontalScrollbar.Visibility = Visibility.Visible;
-            horizontalScrollbar.MaxValue =
-                controller.ColumnsCount + TextEditorController.COLUMNS_RIGHT_MAX_GAP - controller.Window.Width;
-            horizontalScrollbar.Value = controller.Window.Left;
-            horizontalScrollbar.Invalidate();
+            _horizontalScrollbar.Visibility = Visibility.Visible;
+            _horizontalScrollbar.MaxValue =
+                _controller.ColumnsCount + TextEditorController.COLUMNS_RIGHT_MAX_GAP - _controller.Window.Width;
+            _horizontalScrollbar.Value = _controller.Window.Left;
+            _horizontalScrollbar.Invalidate();
         }
         else
         {
-            horizontalScrollbar.Visibility = Visibility.Collapsed;
-            horizontalScrollbar.Value = 0;
-            horizontalScrollbar.MaxValue = 10;
+            _horizontalScrollbar.Visibility = Visibility.Collapsed;
+            _horizontalScrollbar.Value = 0;
+            _horizontalScrollbar.MaxValue = 10;
         }
 
-        horizontalScrollbar.Arrange(new Rect(
+        _horizontalScrollbar.Arrange(new Rect(
             0,
             Math.Max(0, finalSize.Height - 1),
             Math.Max(0, finalSize.Width -
-                        (verticalScrollbar.Visibility == Visibility.Visible
-                         || horizontalScrollbar.Visibility != Visibility.Visible
+                        (_verticalScrollbar.Visibility == Visibility.Visible
+                         || _horizontalScrollbar.Visibility != Visibility.Visible
                             ? 1
                             : 0)),
             1
         ));
-        verticalScrollbar.Arrange(new Rect(
+        _verticalScrollbar.Arrange(new Rect(
             Math.Max(0, finalSize.Width - 1),
             0,
             1,
             Math.Max(0, finalSize.Height -
-                        (horizontalScrollbar.Visibility == Visibility.Visible
-                         || verticalScrollbar.Visibility != Visibility.Visible
+                        (_horizontalScrollbar.Visibility == Visibility.Visible
+                         || _verticalScrollbar.Visibility != Visibility.Visible
                             ? 1
                             : 0))
         ));
         Size contentSize = new Size(
-            Math.Max(0, finalSize.Width - (verticalScrollbar.Visibility == Visibility.Visible ? 1 : 0)),
-            Math.Max(0, finalSize.Height - (horizontalScrollbar.Visibility == Visibility.Visible ? 1 : 0))
+            Math.Max(0, finalSize.Width - (_verticalScrollbar.Visibility == Visibility.Visible ? 1 : 0)),
+            Math.Max(0, finalSize.Height - (_horizontalScrollbar.Visibility == Visibility.Visible ? 1 : 0))
         );
-        controller.Window = new Rect(controller.Window.TopLeft, contentSize);
-        buffer = new char[contentSize.Height, contentSize.Width];
+        _controller.Window = new Rect(_controller.Window.TopLeft, contentSize);
+        _buffer = new char[contentSize.Height, contentSize.Width];
         return finalSize;
     }
 
@@ -924,18 +924,23 @@ public class TextEditor : Control
         var attrs = Colors.Blend(Color.Green, Color.DarkBlue);
         buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', attrs);
 
-        controller.WriteToWindow(this.buffer);
-        Size contentSize = controller.Window.Size;
+        if (_buffer == null)
+        {
+            throw new InvalidOperationException("Call MeasureOverride before Render");
+        }
+
+        _controller.WriteToWindow(_buffer);
+        Size contentSize = _controller.Window.Size;
         for (int y = 0; y < contentSize.Height; y++)
         {
             for (int x = 0; x < contentSize.Width; x++)
             {
-                buffer.SetPixel(x, y, this.buffer[y, x]);
+                buffer.SetPixel(x, y, _buffer[y, x]);
             }
         }
 
-        if (verticalScrollbar.Visibility == Visibility.Visible
-            && horizontalScrollbar.Visibility == Visibility.Visible)
+        if (_verticalScrollbar.Visibility == Visibility.Visible
+            && _horizontalScrollbar.Visibility == Visibility.Visible)
         {
             buffer.SetPixel(buffer.Width - 1, buffer.Height - 1,
                 UnicodeTable.SingleFrameBottomRightCorner,
@@ -947,10 +952,10 @@ public class TextEditor : Control
     {
         Point position = mouseButtonEventArgs.GetPosition(this);
         Point constrained = new Point(
-            Math.Max(0, Math.Min(controller.Window.Size.Width - 1, position.X)),
-            Math.Max(0, Math.Min(controller.Window.Size.Height - 1, position.Y))
+            Math.Max(0, Math.Min(_controller.Window.Size.Width - 1, position.X)),
+            Math.Max(0, Math.Min(_controller.Window.Size.Height - 1, position.Y))
         );
-        applyCommand(new TextEditorController.TrySetCursorCmd(constrained));
+        ApplyCommand(new TextEditorController.TrySetCursorCmd(constrained));
         mouseButtonEventArgs.Handled = true;
     }
 
@@ -966,43 +971,43 @@ public class TextEditor : Control
         );
         if (!char.IsControl(keyInfo.KeyChar))
         {
-            applyCommand(new TextEditorController.AppendStringCmd(new string(keyInfo.KeyChar, 1)));
+            ApplyCommand(new TextEditorController.AppendStringCmd(new string(keyInfo.KeyChar, 1)));
         }
 
         switch (keyInfo.Key)
         {
             case ConsoleKey.Enter:
-                applyCommand(new TextEditorController.AppendStringCmd(Environment.NewLine));
+                ApplyCommand(new TextEditorController.AppendStringCmd(Environment.NewLine));
                 break;
             case ConsoleKey.UpArrow:
-                applyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Up));
+                ApplyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Up));
                 break;
             case ConsoleKey.DownArrow:
-                applyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Down));
+                ApplyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Down));
                 break;
             case ConsoleKey.LeftArrow:
-                applyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Left));
+                ApplyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Left));
                 break;
             case ConsoleKey.RightArrow:
-                applyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Right));
+                ApplyCommand(new TextEditorController.MoveCursorCmd(TextEditorController.Direction.Right));
                 break;
             case ConsoleKey.Backspace:
-                applyCommand(new TextEditorController.DeleteLeftSymbolCmd());
+                ApplyCommand(new TextEditorController.DeleteLeftSymbolCmd());
                 break;
             case ConsoleKey.Delete:
-                applyCommand(new TextEditorController.DeleteRightSymbolCmd());
+                ApplyCommand(new TextEditorController.DeleteRightSymbolCmd());
                 break;
             case ConsoleKey.PageDown:
-                applyCommand(new TextEditorController.PageDownCmd());
+                ApplyCommand(new TextEditorController.PageDownCmd());
                 break;
             case ConsoleKey.PageUp:
-                applyCommand(new TextEditorController.PageUpCmd());
+                ApplyCommand(new TextEditorController.PageUpCmd());
                 break;
             case ConsoleKey.Home:
-                applyCommand(new TextEditorController.HomeCommand());
+                ApplyCommand(new TextEditorController.HomeCommand());
                 break;
             case ConsoleKey.End:
-                applyCommand(new TextEditorController.EndCommand());
+                ApplyCommand(new TextEditorController.EndCommand());
                 break;
         }
     }

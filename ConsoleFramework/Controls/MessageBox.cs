@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using ConsoleFramework.Core;
 using ConsoleFramework.Events;
 
@@ -39,11 +36,11 @@ public class MessageBox : Window
 
     public string Text
     {
-        get { return textBlock.Text; }
-        set { textBlock.Text = value; }
+        get => textBlock.Text;
+        set => textBlock.Text = value;
     }
 
-    public static void Show(string title, string text, MessageBoxClosedEventHandler onClosed)
+    public static void Show(string title, string text, MessageBoxClosedEventHandler? onClosed)
     {
         Control rootControl = ConsoleApplication.Instance.RootControl;
         if (!(rootControl is WindowsHost))
@@ -52,7 +49,7 @@ public class MessageBox : Window
         MessageBox messageBox = new MessageBox();
         messageBox.Title = title;
         messageBox.Text = text;
-        messageBox.AddHandler(ClosedEvent, new EventHandler((sender, args) =>
+        messageBox.AddHandler(ClosedEvent, new EventHandler((_, _) =>
         {
             if (null != onClosed)
             {
