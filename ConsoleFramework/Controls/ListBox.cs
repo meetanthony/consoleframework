@@ -24,7 +24,7 @@ public class ListBox : Control
 
     public ObservableList<String> Items => items;
 
-    private int? selectedItemIndex = null;
+    private int? selectedItemIndex;
 
     public event EventHandler? SelectedItemIndexChanged;
 
@@ -207,12 +207,13 @@ public class ListBox : Control
     /// </summary>
     private void CurrentItemShouldBeVisibleAtBottom()
     {
+        var indexValue = SelectedItemIndex ?? 0;
         // Notify any ScrollViewer that wraps this control to scroll visible part
         this.RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
             new ContentShouldBeScrolledEventArgs(this,
                 ScrollViewer.ContentShouldBeScrolledEvent,
                 null, null, null,
-                Math.Max(0, SelectedItemIndex.Value)));
+                Math.Max(0, indexValue)));
     }
 
     /// <summary>
@@ -222,12 +223,13 @@ public class ListBox : Control
     /// </summary>
     private void CurrentItemShouldBeVisibleAtTop()
     {
+        var indexValue = SelectedItemIndex ?? 0;
         // Notify any ScrollViewer that wraps this control to scroll visible part
         this.RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
             new ContentShouldBeScrolledEventArgs(this,
                 ScrollViewer.ContentShouldBeScrolledEvent,
                 null, null,
-                Math.Max(0, SelectedItemIndex.Value),
+                Math.Max(0, indexValue),
                 null));
     }
 
