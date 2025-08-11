@@ -651,7 +651,7 @@ public class Menu : Control
 
     public IList<MenuItemBase> Items => items;
 
-    private void GetGestures(MenuItem item, Dictionary<KeyGesture?, MenuItem> map)
+    private void GetGestures(MenuItem item, Dictionary<KeyGesture, MenuItem> map)
     {
         if (item.Gesture != null)
             map.Add(item.Gesture, item);
@@ -673,13 +673,13 @@ public class Menu : Control
         _gestures = null;
     }
 
-    private Dictionary<KeyGesture?, MenuItem>? _gestures;
+    private Dictionary<KeyGesture, MenuItem>? _gestures;
 
-    private Dictionary<KeyGesture?, MenuItem> GetGesturesMap()
+    private Dictionary<KeyGesture, MenuItem> GetGesturesMap()
     {
         if (_gestures == null)
         {
-            _gestures = new Dictionary<KeyGesture?, MenuItem>();
+            _gestures = new Dictionary<KeyGesture, MenuItem>();
             foreach (MenuItemBase itemBase in Items)
             {
                 if (itemBase is MenuItem)
@@ -694,7 +694,7 @@ public class Menu : Control
 
     public bool TryMatchGesture(KeyEventArgs args)
     {
-        Dictionary<KeyGesture?, MenuItem> map = GetGesturesMap();
+        Dictionary<KeyGesture, MenuItem> map = GetGesturesMap();
         KeyGesture? match = map.Keys.FirstOrDefault(gesture => gesture.Matches(args));
         if (match == null) return false;
 

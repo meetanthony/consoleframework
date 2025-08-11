@@ -9,7 +9,7 @@ public class KeyGesture
 {
     private readonly string _displayString;
     private readonly VirtualKeys _key;
-    private static readonly ITypeConverter _keyGestureConverter = new KeyGestureConverter();
+    private static readonly ITypeConverter KeyGestureConverter = new KeyGestureConverter();
     private readonly ModifierKeys _modifiers;
 
     public KeyGesture(VirtualKeys key) : this(key, ModifierKeys.None)
@@ -22,22 +22,22 @@ public class KeyGesture
 
     public KeyGesture(VirtualKeys key, ModifierKeys modifiers, string displayString)
     {
-        if (displayString == null) throw new ArgumentNullException("displayString");
+        if (displayString == null) throw new ArgumentNullException(nameof(displayString));
         if (!IsValid(key, modifiers))
             throw new InvalidOperationException("KeyGesture is invalid");
-        this._modifiers = modifiers;
-        this._key = key;
-        this._displayString = displayString;
+        _modifiers = modifiers;
+        _key = key;
+        _displayString = displayString;
     }
 
     public string GetDisplayString()
     {
-        if (!string.IsNullOrEmpty(this._displayString))
+        if (!string.IsNullOrEmpty(_displayString))
         {
-            return this._displayString;
+            return _displayString;
         }
 
-        return (string)_keyGestureConverter.ConvertTo(this, typeof(string));
+        return (string)KeyGestureConverter.ConvertTo(this, typeof(string));
     }
 
     // todo : check incompatible combinations
@@ -49,9 +49,9 @@ public class KeyGesture
     public bool Matches(KeyEventArgs args)
     {
         VirtualKeys wVirtualKeyCode = args.wVirtualKeyCode;
-        if (this.Key != wVirtualKeyCode) return false;
+        if (Key != wVirtualKeyCode) return false;
         ControlKeyState controlKeyState = args.dwControlKeyState;
-        ModifierKeys modifierKeys = this.Modifiers;
+        ModifierKeys modifierKeys = Modifiers;
 
         // Проверяем все возможные модификаторы по очереди
 
@@ -94,14 +94,14 @@ public class KeyGesture
 
         if ((modifierKeys & ModifierKeys.Shift) != 0)
         {
-            if ((controlKeyState & (ControlKeyState.SHIFT_PRESSED)) == 0)
+            if ((controlKeyState & ControlKeyState.SHIFT_PRESSED) == 0)
             {
                 return false;
             }
         }
         else
         {
-            if ((controlKeyState & (ControlKeyState.SHIFT_PRESSED)) != 0)
+            if ((controlKeyState & ControlKeyState.SHIFT_PRESSED) != 0)
             {
                 return false;
             }
@@ -110,18 +110,9 @@ public class KeyGesture
         return true;
     }
 
-    public string DisplayString
-    {
-        get { return this._displayString; }
-    }
+    public string DisplayString => _displayString;
 
-    public VirtualKeys Key
-    {
-        get { return this._key; }
-    }
+    public VirtualKeys Key => _key;
 
-    public ModifierKeys Modifiers
-    {
-        get { return this._modifiers; }
-    }
+    public ModifierKeys Modifiers => _modifiers;
 }
