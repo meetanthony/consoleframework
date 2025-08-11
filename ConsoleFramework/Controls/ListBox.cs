@@ -344,7 +344,7 @@ public class ListBox : Control
         Attr disabledAttr = Colors.Blend(Color.Gray, Color.DarkCyan);
         for (int y = 0; y < ActualHeight; y++)
         {
-            string item = y < items.Count ? items[y] : null;
+            string? item = y < items.Count ? items[y] : null;
 
             if (item != null)
             {
