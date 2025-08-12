@@ -203,7 +203,7 @@ public sealed class FocusManager
     /// </summary>
     /// <param name="scope"></param>
     /// <param name="control"></param>
-    public void SetFocus(Control scope, Control control)
+    public void SetFocus(Control scope, Control? control)
     {
         if (scope == null)
             throw new ArgumentNullException("scope");

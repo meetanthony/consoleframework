@@ -715,7 +715,7 @@ public class Menu : Control
         // Open all menu items in path successively
         int i = 0;
         Action? action = null;
-        action = new Action(() =>
+        action = () =>
         {
             if (i < path.Count)
             {
@@ -733,16 +733,22 @@ public class Menu : Control
                 }
                 else
                 {
-                    // Set focus to PopupWindow -> item
-                    ConsoleApplication.Instance.FocusManager.SetFocus(
-                        item.Parent.Parent, item);
+                    var parent = item.Parent;
+                    if (parent != null)
+                    {
+                        parent = item.Parent;
+                        if (parent != null)
+                            // Set focus to PopupWindow -> item
+                            ConsoleApplication.Instance.FocusManager.SetFocus(
+                                parent, item);
+                    }
                 }
 
                 item.Invalidate();
-                EventHandler handler = null;
+                EventHandler? handler = null;
 
                 // Wait for layout to be revalidated and expand it
-                handler = (o, eventArgs) =>
+                handler = (_, _) =>
                 {
                     item.Expand();
                     item.LayoutRevalidated -= handler;
@@ -755,7 +761,7 @@ public class Menu : Control
                 };
                 item.LayoutRevalidated += handler;
             }
-        });
+        };
         action();
 
         return true;
@@ -767,13 +773,13 @@ public class Menu : Control
     public void CloseAllSubmenus()
     {
         List<MenuItem> expandedSubmenus = new List<MenuItem>();
-        MenuItem currentItem =
-            (MenuItem)Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
+        MenuItem? currentItem =
+            (MenuItem?)Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
         while (null != currentItem)
         {
             expandedSubmenus.Add(currentItem);
             currentItem =
-                (MenuItem)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
+                (MenuItem?)currentItem.Items.SingleOrDefault(item => item is MenuItem && ((MenuItem)item).Expanded);
         }
 
         expandedSubmenus.Reverse();
@@ -790,7 +796,7 @@ public class Menu : Control
         AddChild(stackPanel);
 
         // Subscribe to Items change and add to Children them
-        items.ListChanged += (sender, args) =>
+        items.ListChanged += (_, args) =>
         {
             switch (args.Type)
             {
@@ -845,10 +851,10 @@ public class Menu : Control
             // в WindowsHost, но не в Menu. А нам нужно повесить обработчик, который закроет
             // все показанные попапы.
             EventManager.AddHandler(Parent, MenuItem.ClickEvent,
-                new RoutedEventHandler((sender, args) => CloseAllSubmenus()), true);
+                new RoutedEventHandler((_, _) => CloseAllSubmenus()), true);
 
             EventManager.AddHandler(Parent, MenuItem.Popup.ControlKeyPressedEvent,
-                new KeyEventHandler((sender, args) =>
+                new KeyEventHandler((_, args) =>
                 {
                     CloseAllSubmenus();
                     //
@@ -857,9 +863,9 @@ public class Menu : Control
                         ConsoleApplication.Instance.FocusManager.MoveFocusNext();
                     else if (args.wVirtualKeyCode == VirtualKeys.Left)
                         ConsoleApplication.Instance.FocusManager.MoveFocusPrev();
-                    MenuItem focusedItem =
-                        (MenuItem)Items.SingleOrDefault(item => item is MenuItem && item.HasFocus);
-                    focusedItem.Expand();
+                    MenuItem? focusedItem =
+                        (MenuItem?)Items.SingleOrDefault(item => item is MenuItem && item.HasFocus);
+                    focusedItem?.Expand();
                 }));
         }
     }
