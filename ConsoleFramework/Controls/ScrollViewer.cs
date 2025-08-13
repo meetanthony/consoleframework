@@ -32,25 +32,13 @@ public class ContentShouldBeScrolledEventArgs : RoutedEventArgs
         this.mostBottomVisibleY = mostBottomVisibleY;
     }
 
-    public int? MostLeftVisibleX
-    {
-        get { return mostLeftVisibleX; }
-    }
+    public int? MostLeftVisibleX => mostLeftVisibleX;
 
-    public int? MostRightVisibleX
-    {
-        get { return mostRightVisibleX; }
-    }
+    public int? MostRightVisibleX => mostRightVisibleX;
 
-    public int? MostTopVisibleY
-    {
-        get { return mostTopVisibleY; }
-    }
+    public int? MostTopVisibleY => mostTopVisibleY;
 
-    public int? MostBottomVisibleY
-    {
-        get { return mostBottomVisibleY; }
-    }
+    public int? MostBottomVisibleY => mostBottomVisibleY;
 }
 
 public delegate void ContentShouldBeScrolledEventHandler(object sender,
@@ -76,74 +64,74 @@ public class ScrollViewer : Control
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(OnMouseDown));
         HorizontalScrollEnabled = true;
         VerticalScrollEnabled = true;
-        AddHandler(ContentShouldBeScrolledEvent, new ContentShouldBeScrolledEventHandler(onContentShouldBeScrolled));
+        AddHandler(ContentShouldBeScrolledEvent, new ContentShouldBeScrolledEventHandler(OnContentShouldBeScrolled));
     }
 
-    private void onContentShouldBeScrolled(object sender, ContentShouldBeScrolledEventArgs args)
+    private void OnContentShouldBeScrolled(object sender, ContentShouldBeScrolledEventArgs args)
     {
         if (args.MostLeftVisibleX.HasValue)
         {
-            if (this.deltaX <= args.MostLeftVisibleX.Value &&
-                this.deltaX + getEffectiveWidth() > args.MostLeftVisibleX.Value)
+            if (deltaX <= args.MostLeftVisibleX.Value &&
+                deltaX + GetEffectiveWidth() > args.MostLeftVisibleX.Value)
             {
                 // This X coord is already visible - do nothing
             }
             else
             {
-                this.deltaX = Math.Min(args.MostLeftVisibleX.Value,
-                    Content.RenderSize.Width - getEffectiveWidth());
+                deltaX = Math.Min(args.MostLeftVisibleX.Value,
+                    Content.RenderSize.Width - GetEffectiveWidth());
             }
         }
         else if (args.MostRightVisibleX.HasValue)
         {
-            if (this.deltaX <= args.MostRightVisibleX.Value &&
-                this.deltaX + getEffectiveWidth() > args.MostRightVisibleX.Value)
+            if (deltaX <= args.MostRightVisibleX.Value &&
+                deltaX + GetEffectiveWidth() > args.MostRightVisibleX.Value)
             {
                 // This X coord is already visible - do nothing
             }
             else
             {
-                this.deltaX = Math.Max(args.MostRightVisibleX.Value - getEffectiveWidth() + 1,
+                deltaX = Math.Max(args.MostRightVisibleX.Value - GetEffectiveWidth() + 1,
                     0);
             }
         }
 
         if (args.MostTopVisibleY.HasValue)
         {
-            if (this.deltaY <= args.MostTopVisibleY.Value &&
-                this.deltaY + getEffectiveHeight() > args.MostTopVisibleY.Value)
+            if (deltaY <= args.MostTopVisibleY.Value &&
+                deltaY + GetEffectiveHeight() > args.MostTopVisibleY.Value)
             {
                 // This Y coord is already visible - do nothing
             }
             else
             {
-                this.deltaY = Math.Min(args.MostTopVisibleY.Value,
-                    Content.RenderSize.Height - getEffectiveHeight());
+                deltaY = Math.Min(args.MostTopVisibleY.Value,
+                    Content.RenderSize.Height - GetEffectiveHeight());
             }
         }
         else if (args.MostBottomVisibleY.HasValue)
         {
-            if (this.deltaY <= args.MostBottomVisibleY.Value &&
-                this.deltaY + getEffectiveHeight() > args.MostBottomVisibleY.Value)
+            if (deltaY <= args.MostBottomVisibleY.Value &&
+                deltaY + GetEffectiveHeight() > args.MostBottomVisibleY.Value)
             {
                 // This Y coord is already visible - do nothing
             }
             else
             {
-                this.deltaY = Math.Max(args.MostBottomVisibleY.Value - getEffectiveHeight() + 1,
+                deltaY = Math.Max(args.MostBottomVisibleY.Value - GetEffectiveHeight() + 1,
                     0);
             }
         }
 
-        this.Invalidate();
+        Invalidate();
     }
 
-    private int getEffectiveWidth()
+    private int GetEffectiveWidth()
     {
         return VerticalScrollVisible ? RenderSize.Width - 1 : RenderSize.Width;
     }
 
-    private int getEffectiveHeight()
+    private int GetEffectiveHeight()
     {
         return HorizontalScrollVisible ? RenderSize.Height - 1 : RenderSize.Height;
     }
@@ -156,10 +144,7 @@ public class ScrollViewer : Control
         Right
     }
 
-    public bool ContentFullyVisible
-    {
-        get { return !verticalScrollVisible && !horizontalScrollVisible; }
-    }
+    public bool ContentFullyVisible => !verticalScrollVisible && !horizontalScrollVisible;
 
     public void ScrollContent(Direction direction, int delta)
     {
@@ -213,25 +198,13 @@ public class ScrollViewer : Control
             }
     }
 
-    public int DeltaX
-    {
-        get { return deltaX; }
-    }
+    public int DeltaX => deltaX;
 
-    public int DeltaY
-    {
-        get { return deltaY; }
-    }
+    public int DeltaY => deltaY;
 
-    public bool HorizontalScrollVisible
-    {
-        get { return horizontalScrollVisible; }
-    }
+    public bool HorizontalScrollVisible => horizontalScrollVisible;
 
-    public bool VerticalScrollVisible
-    {
-        get { return verticalScrollVisible; }
-    }
+    public bool VerticalScrollVisible => verticalScrollVisible;
 
     public bool VerticalScrollEnabled { get; set; }
 
@@ -345,11 +318,11 @@ public class ScrollViewer : Control
         args.Handled = true;
     }
 
-    private Control content;
+    private Control? content;
 
-    public Control Content
+    public Control? Content
     {
-        get { return content; }
+        get => content;
         set
         {
             if (content != null)
