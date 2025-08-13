@@ -62,7 +62,7 @@ public class TextBlock : Control
         {
             for (int y = 0; y < ActualHeight; ++y)
             {
-                if (y == 0 && x < _text.Length)
+                if (_text != null && y == 0 && x < _text.Length)
                 {
                     buffer.SetPixel(x, y, _text[x], attr);
                 }

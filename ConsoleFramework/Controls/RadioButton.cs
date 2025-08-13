@@ -23,28 +23,22 @@ public class RadioGroup : Panel
         }
     }
 
-    public RadioButton SelectedItem
-    {
-        get
-        {
-            return selectedItemIndex.HasValue ? (RadioButton)((Control)this).Children[selectedItemIndex.Value] : null;
-        }
-    }
+    public RadioButton? SelectedItem => selectedItemIndex.HasValue ? (RadioButton)((Control)this).Children[selectedItemIndex.Value] : null;
 
     public RadioGroup()
     {
-        Children.ControlAdded += onControlAdded;
-        Children.ControlRemoved -= onControlRemoved;
+        Children.ControlAdded += OnControlAdded;
+        Children.ControlRemoved -= OnControlRemoved;
     }
 
-    private void onControlRemoved(Control control)
+    private void OnControlRemoved(Control control)
     {
         if (!(control is RadioButton)) return;
         var radioButton = (RadioButton)control;
         radioButton.OnClick -= radioButton_OnClick;
     }
 
-    private void onControlAdded(Control control)
+    private void OnControlAdded(Control control)
     {
         if (!(control is RadioButton)) return;
         var radioButton = (RadioButton)control;

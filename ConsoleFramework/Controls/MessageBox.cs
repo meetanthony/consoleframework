@@ -34,7 +34,7 @@ public class MessageBox : Window
         Close();
     }
 
-    public string Text
+    public string? Text
     {
         get => textBlock.Text;
         set => textBlock.Text = value;

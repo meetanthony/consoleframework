@@ -39,7 +39,7 @@ public class ScrollBar : Control
         }
     }
 
-    private int value = 0;
+    private int value;
 
     public int Value
     {
@@ -84,15 +84,15 @@ public class ScrollBar : Control
     {
         if (Orientation == Orientation.Horizontal)
         {
-            renderHorizontal(buffer);
+            RenderHorizontal(buffer);
         }
         else
         {
-            renderVertical(buffer);
+            RenderVertical(buffer);
         }
     }
 
-    private void renderHorizontal(RenderingBuffer buffer)
+    private void RenderHorizontal(RenderingBuffer buffer)
     {
         Attr attr = Colors.Blend(Color.DarkCyan, Color.DarkBlue);
         if (ActualWidth >= 1)
@@ -108,11 +108,11 @@ public class ScrollBar : Control
         if (ActualWidth >= 3)
         {
             buffer.FillRectangle(1, 0, ActualWidth - 2, ActualHeight, UnicodeTable.MediumShade, attr); // ▒
-            buffer.FillRectangle(getCurrentPage() + 1, 0, 1, ActualHeight, UnicodeTable.BlackSquare, attr); // ■
+            buffer.FillRectangle(GetCurrentPage() + 1, 0, 1, ActualHeight, UnicodeTable.BlackSquare, attr); // ■
         }
     }
 
-    private void renderVertical(RenderingBuffer buffer)
+    private void RenderVertical(RenderingBuffer buffer)
     {
         Attr attr = Colors.Blend(Color.DarkCyan, Color.DarkBlue);
         if (ActualHeight >= 1)
@@ -128,11 +128,11 @@ public class ScrollBar : Control
         if (ActualHeight >= 3)
         {
             buffer.FillRectangle(0, 1, ActualWidth, ActualHeight - 2, UnicodeTable.MediumShade, attr); // ▒
-            buffer.FillRectangle(0, getCurrentPage() + 1, ActualWidth, 1, UnicodeTable.BlackSquare, attr); // ■
+            buffer.FillRectangle(0, GetCurrentPage() + 1, ActualWidth, 1, UnicodeTable.BlackSquare, attr); // ■
         }
     }
 
-    private int getPagesCount()
+    private int GetPagesCount()
     {
         if (Orientation == Orientation.Horizontal)
         {
@@ -145,8 +145,8 @@ public class ScrollBar : Control
     /// <summary>
     /// Returns page which scroller points to
     /// </summary>
-    private int getCurrentPage()
+    private int GetCurrentPage()
     {
-        return (int)Math.Truncate(1.0 * Value / MaxValue * (getPagesCount() - 1));
+        return (int)Math.Truncate(1.0 * Value / MaxValue * (GetPagesCount() - 1));
     }
 }
