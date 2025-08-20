@@ -164,8 +164,8 @@ public class Grid : Control
     private readonly List<ColumnDefinition> _columnDefinitions = new List<ColumnDefinition>();
     private readonly List<RowDefinition> _rowDefinitions = new List<RowDefinition>();
     private readonly UIElementCollection _children;
-    private int[] _columnsWidths;
-    private int[] _rowsHeights;
+    private int[] _columnsWidths = [];
+    private int[] _rowsHeights = [];
 
     public List<ColumnDefinition> ColumnDefinitions => _columnDefinitions;
 
@@ -351,7 +351,9 @@ public class Grid : Control
             for (int y = 0; y < RowDefinitions.Count; y++)
             {
                 int height = _rowsHeights[y];
-                matrix[x, y].Measure(new Size(width, height));
+                var control = matrix[x, y];
+                if (control != null)
+                    control.Measure(new Size(width, height));
             }
         }
 
