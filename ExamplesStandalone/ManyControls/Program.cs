@@ -15,27 +15,28 @@ public class Program
 {
     class MyDataContext : INotifyPropertyChanged
     {
-        private string str;
+        private string? _str;
 
-        public String Str
+        public String? Str
         {
-            get { return str; }
+            get => _str;
             set
             {
-                if (str != value)
+                if (_str != value)
                 {
-                    str = value;
-                    raisePropertyChanged("Str");
+                    _str = value;
+                    RaisePropertyChanged(nameof(Str));
                 }
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected virtual void raisePropertyChanged(string propertyName)
+        protected virtual void RaisePropertyChanged(string propertyName)
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            var handler = PropertyChanged;
+            if (handler != null)
+                handler(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 
@@ -57,19 +58,25 @@ public class Program
 
         var assembly = typeInfo.Assembly;
         var resourceName = "ManyControls.GridTest.xaml";
-        Window createdFromXaml;
-        using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-        using (StreamReader reader = new StreamReader(stream))
+        Window? createdFromXaml = null;
+        using (Stream? stream = assembly.GetManifestResourceStream(resourceName))
         {
-            string result = reader.ReadToEnd();
-            MyDataContext dataContext = new MyDataContext();
-            dataContext.Str = "Введите заголовок";
-            createdFromXaml = XamlParser.CreateFromXaml<Window>(result, dataContext, new List<string>()
+            if (stream != null)
             {
-                "clr-namespace:Xaml;assembly=ConsoleFramework",
-                "clr-namespace:ConsoleFramework.Xaml;assembly=ConsoleFramework",
-                "clr-namespace:ConsoleFramework.Controls;assembly=ConsoleFramework",
-            });
+                using (StreamReader reader = new StreamReader(stream))
+                {
+                    string result = reader.ReadToEnd();
+                    MyDataContext dataContext = new MyDataContext();
+                    dataContext.Str = "Введите заголовок";
+                    createdFromXaml = XamlParser.CreateFromXaml<Window>(result, dataContext,
+                        new List<string>()
+                    {
+                        "clr-namespace:Xaml;assembly=ConsoleFramework",
+                        "clr-namespace:ConsoleFramework.Xaml;assembly=ConsoleFramework",
+                        "clr-namespace:ConsoleFramework.Controls;assembly=ConsoleFramework",
+                    });
+                }
+            }
         }
 //            ConsoleApplication.Instance.Run(createdFromXaml);
 //            return;
@@ -213,7 +220,8 @@ public class Program
                 Content = groupBox
             });
             windowsHost.Show(window1);
-            windowsHost.Show(createdFromXaml);
+            if (createdFromXaml != null)
+                windowsHost.Show(createdFromXaml);
             //textBox.SetFocus(); todo : научиться задавать фокусный элемент до добавления в визуальное дерево
             //application.TerminalSizeChanged += ( sender, eventArgs ) => {
             //    application.CanvasSize = new Size(eventArgs.Width, eventArgs.Height);
