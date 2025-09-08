@@ -93,7 +93,7 @@ public class VisualTreeHelper
     /// <typeparam name="T"></typeparam>
     /// <param name="control"></param>
     /// <returns></returns>
-    public static T? FindClosestParent<T>(Control control) where T : Control
+    public static T? FindClosestParent<T>(Control? control) where T : Control
     {
         Control? tmp = control;
         while (tmp != null && !(tmp is T))
@@ -144,7 +144,7 @@ public class VisualTreeHelper
         if (control.Visibility != Visibility.Visible)
             return null;
         int opacity = ConsoleApplication.Instance.Renderer
-            .getControlOpacityAt(control, localPoint.X, localPoint.Y);
+            .GetControlOpacityAt(control, localPoint.X, localPoint.Y);
         if (opacity >= 4 && opacity <= 7)
         {
             return null;
