@@ -12,9 +12,9 @@
             <RowDefinition />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBox HorizontalAlignment="Center" MaxWidth="10" Text="Text"></TextBox>
-        <TextBox HorizontalAlignment="Stretch" Text="Text"></TextBox>
+        <TextBox HorizontalAlignment="Center" MaxWidth="10" Text="Text"/>
+        <TextBox HorizontalAlignment="Stretch" Text="Text"/>
         <CheckBox></CheckBox>
-        <Button Margin="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Caption="Long Button"></Button>
+        <Button Margin="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Caption="Long Button"/>
     </Grid>
 </Window>

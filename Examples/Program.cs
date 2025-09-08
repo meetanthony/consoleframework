@@ -10,7 +10,6 @@ using ConsoleFramework;
 using ConsoleFramework.Controls;
 using ConsoleFramework.Core;
 using ConsoleFramework.Xaml;
-using Xaml;
 
 namespace Examples
 {
