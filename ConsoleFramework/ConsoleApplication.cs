@@ -184,27 +184,26 @@ public sealed class ConsoleApplication : IDisposable
     public static Control LoadFromXaml(string xamlResourceName, object dataContext)
     {
         var assembly = Assembly.GetEntryAssembly();
-        using (Stream stream = assembly.GetManifestResourceStream(xamlResourceName))
-        {
-            if (null == stream)
-            {
-                throw new ArgumentException("Resource not found.", nameof(xamlResourceName));
-            }
+        if (assembly == null)
+            throw new Exception();
 
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                string result = reader.ReadToEnd();
-                Control control = XamlParser.CreateFromXaml<Control>(result, dataContext, new List<string>()
-                {
-                    "clr-namespace:Xaml;assembly=ConsoleFramework",
-                    "clr-namespace:ConsoleFramework.Xaml;assembly=ConsoleFramework",
-                    "clr-namespace:ConsoleFramework.Controls;assembly=ConsoleFramework",
-                });
-                control.DataContext = dataContext;
-                control.Created();
-                return control;
-            }
+        using Stream? stream = assembly.GetManifestResourceStream(xamlResourceName);
+        if (null == stream)
+        {
+            throw new ArgumentException("Resource not found.", nameof(xamlResourceName));
         }
+
+        using StreamReader reader = new StreamReader(stream);
+        string result = reader.ReadToEnd();
+        Control control = XamlParser.CreateFromXaml<Control>(result, dataContext, new List<string>()
+        {
+            "clr-namespace:Xaml;assembly=ConsoleFramework",
+            "clr-namespace:ConsoleFramework.Xaml;assembly=ConsoleFramework",
+            "clr-namespace:ConsoleFramework.Controls;assembly=ConsoleFramework",
+        });
+        control.DataContext = dataContext;
+        control.Created();
+        return control;
     }
 
     private static readonly bool UsingLinux;
@@ -225,43 +224,23 @@ public sealed class ConsoleApplication : IDisposable
         _invokeWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
     }
 
-    private static volatile ConsoleApplication? _instance;
-    private static readonly object SyncRoot = new object();
-
     /// <summary>
     /// Instance of Application object.
     /// </summary>
-    public static ConsoleApplication Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                lock (SyncRoot)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = new ConsoleApplication();
-                    }
-                }
-            }
-
-            return _instance;
-        }
-    }
+    public static readonly ConsoleApplication Instance = new ConsoleApplication();
 
     private IntPtr _stdInputHandle;
     private IntPtr _stdOutputHandle;
-    private readonly EventWaitHandle _exitWaitHandle;
+    private readonly EventWaitHandle? _exitWaitHandle;
     private readonly EventWaitHandle _invokeWaitHandle;
     private int? _mainThreadId;
 
     private struct ActionInfo
     {
         public readonly Action Action;
-        public readonly EventWaitHandle WaitHandle;
+        public readonly EventWaitHandle? WaitHandle;
 
-        public ActionInfo(Action action, EventWaitHandle waitHandle)
+        public ActionInfo(Action action, EventWaitHandle? waitHandle)
         {
             Action = action;
             WaitHandle = waitHandle;
