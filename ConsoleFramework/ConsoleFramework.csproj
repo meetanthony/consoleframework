@@ -17,11 +17,11 @@
         <Version>0.0.3</Version>
         <PackageProjectUrl>https://github.com/elw00d/consoleframework</PackageProjectUrl>
         <PackageIconUrl>http://elw00d.github.io/consoleframework/favicon.png</PackageIconUrl>
-        <Authors/>
+        <Authors />
     </PropertyGroup>
     <ItemGroup>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="System.Threading.Thread" Version="4.3.0"/>
+        <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
     </ItemGroup>
 </Project>
