@@ -7,23 +7,23 @@ namespace ConsoleFramework.Controls;
 
 public class RadioGroup : Panel
 {
-    private int? selectedItemIndex;
+    private int? _selectedItemIndex;
 
     public int? SelectedItemIndex
     {
-        get { return selectedItemIndex; }
+        get => _selectedItemIndex;
         set
         {
-            if (selectedItemIndex != value)
+            if (_selectedItemIndex != value)
             {
-                selectedItemIndex = value;
-                RaisePropertyChanged("SelectedItemIndex");
-                RaisePropertyChanged("SelectedItem");
+                _selectedItemIndex = value;
+                RaisePropertyChanged(nameof(SelectedItemIndex));
+                RaisePropertyChanged(nameof(SelectedItem));
             }
         }
     }
 
-    public RadioButton? SelectedItem => selectedItemIndex.HasValue ? (RadioButton)((Control)this).Children[selectedItemIndex.Value] : null;
+    public RadioButton? SelectedItem => _selectedItemIndex.HasValue ? (RadioButton)((Control)this).Children[_selectedItemIndex.Value] : null;
 
     public RadioGroup()
     {
@@ -44,7 +44,7 @@ public class RadioGroup : Panel
         var radioButton = (RadioButton)control;
         radioButton.OnClick += radioButton_OnClick;
         int index = ((Control)this).Children.IndexOf(radioButton);
-        radioButton.Checked = selectedItemIndex != null && (selectedItemIndex == index);
+        radioButton.Checked = _selectedItemIndex != null && (_selectedItemIndex == index);
     }
 
     private void radioButton_OnClick(object sender, RoutedEventArgs args)
@@ -67,11 +67,9 @@ public class RadioButton : CheckBox
 {
     public override void Render(RenderingBuffer buffer)
     {
-        Attr captionAttrs;
-        if (HasFocus)
-            captionAttrs = Colors.Blend(Color.White, Color.DarkGreen);
-        else
-            captionAttrs = Colors.Blend(Color.Black, Color.DarkGreen);
+        var captionAttrs = Colors.Blend(
+            HasFocus ? Color.White : Color.Black,
+            Color.DarkGreen);
 
         Attr buttonAttrs = captionAttrs;
         //            if ( pressed )

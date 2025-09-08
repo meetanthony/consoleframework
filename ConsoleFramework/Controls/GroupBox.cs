@@ -48,7 +48,7 @@ public class GroupBox : Control
         }
     }
 
-    private bool _fitSizeToContent = false;
+    private bool _fitSizeToContent;
 
     /// <summary>
     /// If true, child will always win in layout battle.

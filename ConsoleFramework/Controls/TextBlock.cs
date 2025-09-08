@@ -19,16 +19,16 @@ public class TextBlock : Control
         Initialize();
     }
 
-    private Color color = Color.Black;
+    private Color _color = Color.Black;
 
     public Color Color
     {
-        get => color;
+        get => _color;
         set
         {
-            if (color != value)
+            if (_color != value)
             {
-                color = value;
+                _color = value;
                 Invalidate();
             }
         }
@@ -56,7 +56,7 @@ public class TextBlock : Control
 
     public override void Render(RenderingBuffer buffer)
     {
-        Attr attr = Colors.Blend(color, Color.DarkYellow);
+        Attr attr = Colors.Blend(_color, Color.DarkYellow);
         buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', attr);
         for (int x = 0; x < ActualWidth; ++x)
         {

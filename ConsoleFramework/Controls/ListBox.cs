@@ -20,26 +20,26 @@ public class ListBox : Control
     /// </summary>
     public int? PageSize { get; set; }
 
-    private readonly ObservableList<string> items = new ObservableList<string>(new List<string>());
+    private readonly ObservableList<string> _items = new ObservableList<string>(new List<string>());
 
-    public ObservableList<String> Items => items;
+    public ObservableList<String> Items => _items;
 
-    private int? selectedItemIndex;
+    private int? _selectedItemIndex;
 
     public event EventHandler? SelectedItemIndexChanged;
 
-    private readonly List<int> disabledItemsIndexes = new List<int>();
+    private readonly List<int> _disabledItemsIndexes = new List<int>();
 
-    public List<int> DisabledItemsIndexes => disabledItemsIndexes;
+    public List<int> DisabledItemsIndexes => _disabledItemsIndexes;
 
     public int? SelectedItemIndex
     {
-        get => selectedItemIndex;
+        get => _selectedItemIndex;
         set
         {
-            if (selectedItemIndex != value)
+            if (_selectedItemIndex != value)
             {
-                selectedItemIndex = value;
+                _selectedItemIndex = value;
                 if (null != SelectedItemIndexChanged)
                     SelectedItemIndexChanged(this, EventArgs.Empty);
                 Invalidate();
@@ -54,7 +54,7 @@ public class ListBox : Control
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(OnMouseDown));
         AddHandler(MouseMoveEvent, new MouseEventHandler(OnMouseMove));
         AddHandler(MouseWheelEvent, new MouseWheelEventHandler(OnMouseWheel));
-        this.items.ListChanged += (sender, args) =>
+        _items.ListChanged += (sender, args) =>
         {
             // Shift indexes of disabled items
             switch (args.Type)
@@ -66,15 +66,15 @@ public class ListBox : Control
                     {
                         if (index >= args.Index)
                         {
-                            this.DisabledItemsIndexes.Remove(index);
-                            this.DisabledItemsIndexes.Add(index + args.Count);
+                            DisabledItemsIndexes.Remove(index);
+                            DisabledItemsIndexes.Add(index + args.Count);
                         }
                     }
 
                     // Selected item should stay the same after insertion
-                    if (selectedItemIndex.HasValue && selectedItemIndex.Value >= args.Index)
+                    if (_selectedItemIndex.HasValue && _selectedItemIndex.Value >= args.Index)
                     {
-                        SelectedItemIndex = Math.Min(items.Count - 1, selectedItemIndex.Value + args.Count);
+                        SelectedItemIndex = Math.Min(_items.Count - 1, _selectedItemIndex.Value + args.Count);
                     }
 
                     break;
@@ -86,17 +86,17 @@ public class ListBox : Control
                     {
                         if (index >= args.Index)
                         {
-                            this.DisabledItemsIndexes.Remove(index);
-                            this.DisabledItemsIndexes.Add(index - args.Count);
+                            DisabledItemsIndexes.Remove(index);
+                            DisabledItemsIndexes.Add(index - args.Count);
                         }
                     }
 
                     // When removing, selectedItemIndex should be unchanged. If it is impossible
                     // (for example, if selectedItemIndex points to disabled item now) we should reset it to null
-                    if (selectedItemIndex.HasValue)
+                    if (_selectedItemIndex.HasValue)
                     {
-                        if (selectedItemIndex >= items.Count
-                            || disabledItemsIndexes.Contains(selectedItemIndex.Value))
+                        if (_selectedItemIndex >= _items.Count
+                            || _disabledItemsIndexes.Contains(_selectedItemIndex.Value))
                         {
                             SelectedItemIndex = null;
                         }
@@ -136,7 +136,7 @@ public class ListBox : Control
         if (args.LeftButton == MouseButtonState.Pressed)
         {
             int index = args.GetPosition(this).Y;
-            if (!disabledItemsIndexes.Contains(index) && SelectedItemIndex != index)
+            if (!_disabledItemsIndexes.Contains(index) && SelectedItemIndex != index)
             {
                 SelectedItemIndex = index;
                 Invalidate();
@@ -149,13 +149,13 @@ public class ListBox : Control
     private void OnMouseDown(object sender, MouseButtonEventArgs args)
     {
         int index = args.GetPosition(this).Y;
-        if (!disabledItemsIndexes.Contains(index) && SelectedItemIndex != index)
+        if (!_disabledItemsIndexes.Contains(index) && SelectedItemIndex != index)
         {
             SelectedItemIndex = index;
             Invalidate();
         }
 
-        if (disabledItemsIndexes.Contains(index))
+        if (_disabledItemsIndexes.Contains(index))
             args.Handled = true;
     }
 
@@ -166,13 +166,13 @@ public class ListBox : Control
         {
             int firstEnabledIndex = 0;
             bool found = false;
-            for (int i = 0; i < items.Count && !found; i++)
+            for (int i = 0; i < _items.Count && !found; i++)
             {
-                if (!disabledItemsIndexes.Contains(firstEnabledIndex)) found = true;
-                else firstEnabledIndex = (firstEnabledIndex + 1) % items.Count;
+                if (!_disabledItemsIndexes.Contains(firstEnabledIndex)) found = true;
+                else firstEnabledIndex = (firstEnabledIndex + 1) % _items.Count;
             }
 
-            if (found && selectedItemIndex != firstEnabledIndex)
+            if (found && _selectedItemIndex != firstEnabledIndex)
             {
                 SelectedItemIndex = firstEnabledIndex;
             }
@@ -184,13 +184,13 @@ public class ListBox : Control
                 int newIndex = Math.Max(0, SelectedItemIndex.Value - pageSize.Value);
 
                 // If it is disabled, take the first non-disabled item before
-                while (disabledItemsIndexes.Contains(newIndex)
+                while (_disabledItemsIndexes.Contains(newIndex)
                        && newIndex > 0)
                 {
                     newIndex--;
                 }
 
-                if (!disabledItemsIndexes.Contains(newIndex))
+                if (!_disabledItemsIndexes.Contains(newIndex))
                 {
                     SelectedItemIndex = newIndex;
                 }
@@ -209,7 +209,7 @@ public class ListBox : Control
     {
         var indexValue = SelectedItemIndex ?? 0;
         // Notify any ScrollViewer that wraps this control to scroll visible part
-        this.RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
+        RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
             new ContentShouldBeScrolledEventArgs(this,
                 ScrollViewer.ContentShouldBeScrolledEvent,
                 null, null, null,
@@ -225,7 +225,7 @@ public class ListBox : Control
     {
         var indexValue = SelectedItemIndex ?? 0;
         // Notify any ScrollViewer that wraps this control to scroll visible part
-        this.RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
+        RaiseEvent(ScrollViewer.ContentShouldBeScrolledEvent,
             new ContentShouldBeScrolledEventArgs(this,
                 ScrollViewer.ContentShouldBeScrolledEvent,
                 null, null,
@@ -236,14 +236,14 @@ public class ListBox : Control
     private void PageDownCore(int? pageSize)
     {
         if (AllItemsAreDisabled) return;
-        int itemIndex = SelectedItemIndex.HasValue ? SelectedItemIndex.Value : 0;
+        int itemIndex = SelectedItemIndex ?? 0;
         if (pageSize == null)
         {
-            if (!AllItemsAreDisabled && itemIndex != items.Count - 1)
+            if (!AllItemsAreDisabled && itemIndex != _items.Count - 1)
             {
                 // Take the last non-disabled item
-                int firstEnabledItemIndex = items.Count - 1;
-                while (disabledItemsIndexes.Contains(firstEnabledItemIndex))
+                int firstEnabledItemIndex = _items.Count - 1;
+                while (_disabledItemsIndexes.Contains(firstEnabledItemIndex))
                 {
                     firstEnabledItemIndex--;
                 }
@@ -253,18 +253,18 @@ public class ListBox : Control
         }
         else
         {
-            if (itemIndex != items.Count - 1)
+            if (itemIndex != _items.Count - 1)
             {
-                int newIndex = Math.Min(items.Count - 1, itemIndex + pageSize.Value);
+                int newIndex = Math.Min(_items.Count - 1, itemIndex + pageSize.Value);
 
                 // If it is disabled, take the first non-disabled item after
-                while (disabledItemsIndexes.Contains(newIndex)
-                       && newIndex < items.Count - 1)
+                while (_disabledItemsIndexes.Contains(newIndex)
+                       && newIndex < _items.Count - 1)
                 {
                     newIndex++;
                 }
 
-                if (!disabledItemsIndexes.Contains(newIndex))
+                if (!_disabledItemsIndexes.Contains(newIndex))
                 {
                     SelectedItemIndex = newIndex;
                 }
@@ -276,7 +276,7 @@ public class ListBox : Control
 
     private void OnKeyDown(object sender, KeyEventArgs args)
     {
-        if (items.Count == 0)
+        if (_items.Count == 0)
         {
             args.Handled = true;
             return;
@@ -298,12 +298,12 @@ public class ListBox : Control
             do
             {
                 if (SelectedItemIndex == 0 || SelectedItemIndex == null)
-                    SelectedItemIndex = items.Count - 1;
+                    SelectedItemIndex = _items.Count - 1;
                 else
                 {
                     SelectedItemIndex--;
                 }
-            } while (disabledItemsIndexes.Contains(SelectedItemIndex.Value));
+            } while (_disabledItemsIndexes.Contains(SelectedItemIndex.Value));
 
             CurrentItemShouldBeVisibleAtTop();
         }
@@ -314,8 +314,8 @@ public class ListBox : Control
             do
             {
                 if (SelectedItemIndex == null) SelectedItemIndex = 0;
-                SelectedItemIndex = (SelectedItemIndex + 1) % items.Count;
-            } while (disabledItemsIndexes.Contains(SelectedItemIndex.Value));
+                SelectedItemIndex = (SelectedItemIndex + 1) % _items.Count;
+            } while (_disabledItemsIndexes.Contains(SelectedItemIndex.Value));
 
             CurrentItemShouldBeVisibleAtBottom();
         }
@@ -323,17 +323,17 @@ public class ListBox : Control
         args.Handled = true;
     }
 
-    private bool AllItemsAreDisabled => disabledItemsIndexes.Count == items.Count;
+    private bool AllItemsAreDisabled => _disabledItemsIndexes.Count == _items.Count;
 
     protected override Size MeasureOverride(Size availableSize)
     {
         // если maxLen < availableSize.Width, то возвращается maxLen
         // если maxLen > availableSize.Width, возвращаем availableSize.Width,
         // а содержимое не влезающих строк будет выведено с многоточием
-        if (items.Count == 0) return new Size(0, 0);
-        int maxLen = items.Max(s => s.Length);
+        if (_items.Count == 0) return new Size(0, 0);
+        int maxLen = _items.Max(s => s.Length);
         // 1 пиксель слева и 1 справа
-        Size size = new Size(Math.Min(maxLen + 2, availableSize.Width), items.Count);
+        Size size = new Size(Math.Min(maxLen + 2, availableSize.Width), _items.Count);
         return size;
     }
 
@@ -344,11 +344,11 @@ public class ListBox : Control
         Attr disabledAttr = Colors.Blend(Color.Gray, Color.DarkCyan);
         for (int y = 0; y < ActualHeight; y++)
         {
-            string? item = y < items.Count ? items[y] : null;
+            string? item = y < _items.Count ? _items[y] : null;
 
             if (item != null)
             {
-                Attr currentAttr = disabledItemsIndexes.Contains(y)
+                Attr currentAttr = _disabledItemsIndexes.Contains(y)
                     ? disabledAttr
                     : (SelectedItemIndex == y ? selectedAttr : attr);
 

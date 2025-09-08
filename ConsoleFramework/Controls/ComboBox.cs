@@ -106,7 +106,7 @@ public class ComboBox : Control
             }
         }
 
-        protected override void Initialize()
+        protected override void InitEvents()
         {
             AddHandler(ActivatedEvent, new EventHandler(OnActivated));
             AddHandler(KeyDownEvent, new KeyEventHandler(OnKeyDown), true);

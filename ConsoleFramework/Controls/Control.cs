@@ -604,25 +604,25 @@ public partial class Control : INotifyPropertyChanged
         /// </summary>
         internal MinMax(int minHeight, int maxHeight, int minWidth, int maxWidth, int? width, int? height)
         {
-            this.MaxHeight = maxHeight;
-            this.MinHeight = minHeight;
+            MaxHeight = maxHeight;
+            MinHeight = minHeight;
             int? l = height;
 
             int tmpHeight = l ?? int.MaxValue;
-            this.MaxHeight = Math.Max(Math.Min(tmpHeight, this.MaxHeight), this.MinHeight);
+            MaxHeight = Math.Max(Math.Min(tmpHeight, MaxHeight), MinHeight);
 
             tmpHeight = l ?? 0;
-            this.MinHeight = Math.Max(Math.Min(this.MaxHeight, tmpHeight), this.MinHeight);
+            MinHeight = Math.Max(Math.Min(MaxHeight, tmpHeight), MinHeight);
 
-            this.MaxWidth = maxWidth;
-            this.MinWidth = minWidth;
+            MaxWidth = maxWidth;
+            MinWidth = minWidth;
             l = width;
 
             int tmpWidth = l ?? int.MaxValue;
-            this.MaxWidth = Math.Max(Math.Min(tmpWidth, this.MaxWidth), this.MinWidth);
+            MaxWidth = Math.Max(Math.Min(tmpWidth, MaxWidth), MinWidth);
 
             tmpWidth = l ?? 0;
-            this.MinWidth = Math.Max(Math.Min(this.MaxWidth, tmpWidth), this.MinWidth);
+            MinWidth = Math.Max(Math.Min(MaxWidth, tmpWidth), MinWidth);
         }
 
         internal readonly int MinWidth;
@@ -677,7 +677,7 @@ public partial class Control : INotifyPropertyChanged
             default:
                 int result = -v;
                 // Check case when -v transforms into one of the "special" values
-                Assert(result != int.MinValue && result != int.MaxValue);
+                Assert(result != int.MaxValue);
                 return result;
         }
     }
@@ -1173,7 +1173,7 @@ public partial class Control : INotifyPropertyChanged
                 for (;;)
                 {
                     Vector actualOffset = currentControl.ActualOffset;
-                    point.Offset(-actualOffset.X, -actualOffset.y);
+                    point.Offset(-actualOffset.X, -actualOffset.Y);
                     if (currentControl.Parent == null)
                     {
                         break;
@@ -1191,7 +1191,7 @@ public partial class Control : INotifyPropertyChanged
                 for (;;)
                 {
                     Vector actualOffset = currentControl.ActualOffset;
-                    point.Offset(actualOffset.X, actualOffset.y);
+                    point.Offset(actualOffset.X, actualOffset.Y);
                     if (currentControl.Parent == null)
                         break;
                     currentControl = currentControl.Parent;
@@ -1214,7 +1214,7 @@ public partial class Control : INotifyPropertyChanged
             while (currentControl != ancestor && currentControl != null)
             {
                 Vector actualOffset = currentControl.ActualOffset;
-                point.Offset(actualOffset.X, actualOffset.y);
+                point.Offset(actualOffset.X, actualOffset.Y);
                 currentControl = currentControl.Parent;
             }
 
@@ -1223,7 +1223,7 @@ public partial class Control : INotifyPropertyChanged
             while (currentControl != ancestor && currentControl != null)
             {
                 Vector actualOffset = currentControl.ActualOffset;
-                point.Offset(-actualOffset.X, -actualOffset.y);
+                point.Offset(-actualOffset.X, -actualOffset.Y);
                 currentControl = currentControl.Parent;
             }
 
@@ -1294,12 +1294,12 @@ public partial class Control : INotifyPropertyChanged
         // hit testing - calculate position in child according to specified layout attributes
         Vector actualOffset = ActualOffset;
         Rect renderSlotRect = RenderSlotRect;
-        Rect virtualSlotRect = new Rect(new Point(actualOffset.x, actualOffset.y), RenderSize);
+        Rect virtualSlotRect = new Rect(new Point(actualOffset.X, actualOffset.Y), RenderSize);
         if (!LayoutClip.IsEmpty)
         {
             Rect layoutClip = LayoutClip;
             Point location = layoutClip.Location;
-            location.Offset(actualOffset.x, actualOffset.y);
+            location.Offset(actualOffset.X, actualOffset.Y);
             layoutClip.Location = location;
             virtualSlotRect.Intersect(layoutClip);
         }
@@ -1327,12 +1327,12 @@ public partial class Control : INotifyPropertyChanged
         // hit testing - calculate position in child according to specified layout attributes
         Vector actualOffset = child.ActualOffset;
         Rect renderSlotRect = child.RenderSlotRect;
-        Rect virtualSlotRect = new Rect(new Point(actualOffset.x, actualOffset.y), child.RenderSize);
+        Rect virtualSlotRect = new Rect(new Point(actualOffset.X, actualOffset.Y), child.RenderSize);
         if (!child.LayoutClip.IsEmpty)
         {
             Rect layoutClip = child.LayoutClip;
             Point location = layoutClip.Location;
-            location.Offset(actualOffset.x, actualOffset.y);
+            location.Offset(actualOffset.X, actualOffset.Y);
             layoutClip.Location = location;
             virtualSlotRect.Intersect(layoutClip);
         }
@@ -1411,7 +1411,7 @@ public partial class Control : INotifyPropertyChanged
         ConsoleApplication.Instance.ShowCursor();
     }
 
-    private bool _cursorVisible = false;
+    private bool _cursorVisible;
 
     internal bool CursorVisible
     {
@@ -1500,7 +1500,7 @@ public partial class Control : INotifyPropertyChanged
     /// При восстановлении фокуса на самом окне WindowsHost использует это поле для
     /// восстановления фокуса на том элементе, на котором он был.
     /// </summary>
-    internal Control? StoredFocus = null;
+    internal Control? StoredFocus;
 
     /// <summary>
     /// Определяет дочерний элемент, находящийся под курсором мыши,

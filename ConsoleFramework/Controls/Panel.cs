@@ -25,27 +25,27 @@ public class Panel : Control
 {
     public Panel()
     {
-        Children = new UIElementCollection(this);
+        Children = new UiElementCollection(this);
     }
 
     public Attr Background { get; set; }
 
-    private Orientation orientation = Orientation.Vertical;
+    private Orientation _orientation = Orientation.Vertical;
 
     public Orientation Orientation
     {
-        get => orientation;
+        get => _orientation;
         set
         {
-            if (orientation != value)
+            if (_orientation != value)
             {
-                orientation = value;
-                this.Invalidate();
+                _orientation = value;
+                Invalidate();
             }
         }
     }
 
-    public new UIElementCollection Children { get; }
+    public new UiElementCollection Children { get; }
 
     /// <summary>
     /// Размещает элементы вертикально, самым простым методом.
@@ -54,7 +54,7 @@ public class Panel : Control
     /// <returns></returns>
     protected override Size MeasureOverride(Size availableSize)
     {
-        if (orientation == Orientation.Vertical)
+        if (_orientation == Orientation.Vertical)
         {
             int totalHeight = 0;
             int maxWidth = 0;
@@ -95,7 +95,7 @@ public class Panel : Control
 
     protected override Size ArrangeOverride(Size finalSize)
     {
-        if (orientation == Orientation.Vertical)
+        if (_orientation == Orientation.Vertical)
         {
             int totalHeight = 0;
             int maxWidth = 0;
@@ -149,9 +149,10 @@ public class Panel : Control
         {
             for (int y = 0; y < ActualHeight; ++y)
             {
-                buffer.SetPixel(x, y, ' ', Attr.BACKGROUND_BLUE |
-                                           Attr.BACKGROUND_GREEN | Attr.BACKGROUND_RED | Attr.FOREGROUND_BLUE |
-                                           Attr.FOREGROUND_GREEN | Attr.FOREGROUND_RED | Attr.FOREGROUND_INTENSITY);
+                buffer.SetPixel(x, y, ' ',
+                    Attr.BACKGROUND_BLUE |
+                    Attr.BACKGROUND_GREEN | Attr.BACKGROUND_RED | Attr.FOREGROUND_BLUE |
+                    Attr.FOREGROUND_GREEN | Attr.FOREGROUND_RED | Attr.FOREGROUND_INTENSITY);
                 buffer.SetOpacity(x, y, 4);
             }
         }

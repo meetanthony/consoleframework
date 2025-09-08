@@ -28,14 +28,14 @@ public class TabControl : Control
 {
     public TabControl()
     {
-        Controls = new UIElementCollection(this);
+        Controls = new UiElementCollection(this);
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(MouseDownHandler));
     }
 
     private void MouseDownHandler(object sender, MouseButtonEventArgs args)
     {
         Point pos = args.GetPosition(this);
-        if (pos.y > 2) return;
+        if (pos.Y > 2) return;
 
         int x = 0;
         for (int i = 0; i < TabDefinitions.Count; i++)
@@ -43,7 +43,7 @@ public class TabControl : Control
             TabDefinition tabDefinition = TabDefinitions[i];
             if (pos.X > x && pos.X <= x + tabDefinition.Title.Length + 2)
             {
-                activeTabIndex = i;
+                _activeTabIndex = i;
                 Invalidate();
                 break;
             }
@@ -56,20 +56,20 @@ public class TabControl : Control
 
     public List<TabDefinition> TabDefinitions { get; } = new List<TabDefinition>();
 
-    public UIElementCollection Controls { get; }
+    public UiElementCollection Controls { get; }
 
-    private int activeTabIndex;
+    private int _activeTabIndex;
 
     public int ActiveTabIndex
     {
-        get => activeTabIndex;
+        get => _activeTabIndex;
         set
         {
-            if (value != activeTabIndex)
+            if (value != _activeTabIndex)
             {
                 if (value < 0 || value >= TabDefinitions.Count)
                     throw new ArgumentException("Tab index out of bounds");
-                activeTabIndex = value;
+                _activeTabIndex = value;
                 Invalidate();
             }
         }
@@ -108,7 +108,7 @@ public class TabControl : Control
         for (int i = 0; i < Children.Count; i++)
         {
             Control child = Children[i];
-            if (activeTabIndex == i)
+            if (_activeTabIndex == i)
             {
                 child.Measure(new Size(
                     Math.Max(0, finalAvailableSize.Width - 2),
@@ -135,7 +135,7 @@ public class TabControl : Control
         for (int i = 0; i < Children.Count; i++)
         {
             Control child = Children[i];
-            if (activeTabIndex == i)
+            if (_activeTabIndex == i)
             {
                 child.Arrange(new Rect(
                     new Point(1, 3),
@@ -201,37 +201,37 @@ public class TabControl : Control
         for (int tab = 0; tab < TabDefinitions.Count; x += TabDefinitions[tab++].Title.Length + 3)
         {
             var tabDefinition = TabDefinitions[tab];
-            if (tab <= activeTabIndex)
+            if (tab <= _activeTabIndex)
             {
                 buffer.SetPixelSafe(x, 0, UnicodeTable.SingleFrameTopLeftCorner);
                 buffer.SetPixelSafe(x, 1, UnicodeTable.SingleFrameVertical);
             }
 
-            if (tab == activeTabIndex)
+            if (tab == _activeTabIndex)
             {
                 buffer.SetPixelSafe(x, 2,
-                    activeTabIndex == 0 ? UnicodeTable.SingleFrameVertical : UnicodeTable.SingleFrameBottomRightCorner);
+                    _activeTabIndex == 0 ? UnicodeTable.SingleFrameVertical : UnicodeTable.SingleFrameBottomRightCorner);
             }
 
             for (int i = 0; i < tabDefinition.Title.Length + 2; i++)
             {
                 buffer.SetPixelSafe(x + 1 + i, 0, UnicodeTable.SingleFrameHorizontal);
-                if (tab == activeTabIndex)
+                if (tab == _activeTabIndex)
                     buffer.SetPixelSafe(x + 1 + i, 2, ' ');
             }
 
             buffer.RenderStringSafe(" " + tabDefinition.Title + " ", x + 1, 1,
-                activeTabIndex == tab ? attr : inactiveAttr);
-            if (tab >= activeTabIndex)
+                _activeTabIndex == tab ? attr : inactiveAttr);
+            if (tab >= _activeTabIndex)
             {
                 buffer.SetPixelSafe(x + tabDefinition.Title.Length + 3, 0, UnicodeTable.SingleFrameTopRightCorner);
                 buffer.SetPixelSafe(x + tabDefinition.Title.Length + 3, 1, UnicodeTable.SingleFrameVertical);
             }
 
-            if (tab == activeTabIndex)
+            if (tab == _activeTabIndex)
             {
                 buffer.SetPixelSafe(x + tabDefinition.Title.Length + 3, 2,
-                    activeTabIndex == TabDefinitions.Count - 1 && ActualWidth - 1 == x + tabDefinition.Title.Length + 3
+                    _activeTabIndex == TabDefinitions.Count - 1 && ActualWidth - 1 == x + tabDefinition.Title.Length + 3
                         ? UnicodeTable.SingleFrameVertical
                         : UnicodeTable.SingleFrameBottomLeftCorner);
             }

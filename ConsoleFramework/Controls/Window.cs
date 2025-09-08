@@ -26,16 +26,16 @@ public class Window : Control
     public static RoutedEvent ClosingEvent = EventManager.RegisterRoutedEvent("Closing", RoutingStrategy.Direct,
         typeof(CancelEventHandler), typeof(Window));
 
-    public string ChildToFocus { get; set; }
+    //public string ChildToFocus { get; set; }
 
     public Window()
     {
-        this.IsFocusScope = true;
+        IsFocusScope = true;
         AddHandler(PreviewMouseDownEvent, new MouseButtonEventHandler(Window_OnPreviewMouseDown));
         Initialize();
     }
 
-    protected virtual void Initialize()
+    private void Initialize()
     {
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(Window_OnMouseDown));
         AddHandler(MouseUpEvent, new MouseButtonEventHandler(Window_OnMouseUp));
@@ -43,8 +43,15 @@ public class Window : Control
         AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown));
         AddHandler(ActivatedEvent, new EventHandler(Window_OnActivated));
         AddHandler(DeactivatedEvent, new EventHandler(Window_OnDeactivated));
+
+        InitEvents();
     }
 
+    protected virtual void InitEvents()
+    {
+        
+    }
+    
     /// <summary>
     /// Handles the mouse click: founds the end Focusable element which
     /// is placed under mouse and sets the focus to it.
@@ -80,11 +87,12 @@ public class Window : Control
                 RemoveChild(Children[0]);
             }
 
-            AddChild(value);
+            if (value != null)
+                AddChild(value);
         }
     }
 
-    private string _title;
+    private string _title = String.Empty;
 
     public string Title
     {
@@ -100,12 +108,12 @@ public class Window : Control
         }
     }
 
-    private ColorPair _activeBorderColors;
+    private ColorPair? _activeBorderColors;
 
     /// <summary>
     /// Special colors for active window. Not set by default.
     /// </summary>
-    public ColorPair ActiveBorderColors
+    public ColorPair? ActiveBorderColors
     {
         get => _activeBorderColors;
         set
@@ -118,9 +126,9 @@ public class Window : Control
         }
     }
 
-    protected WindowsHost GetWindowsHost()
+    protected WindowsHost? GetWindowsHost()
     {
-        return (WindowsHost)Parent;
+        return Parent as WindowsHost;
     }
 
     public static Size EmptyWindowSize = new Size(12, 3);
@@ -192,7 +200,7 @@ public class Window : Control
 
     public bool IsActiveWindow()
     {
-        return GetWindowsHost().TopWindow == this;
+        return GetWindowsHost()?.TopWindow == this;
     }
 
     public override void Render(RenderingBuffer buffer)
@@ -204,10 +212,10 @@ public class Window : Control
         }
 
         // background
-        buffer.FillRectangle(0, 0, this.ActualWidth, this.ActualHeight, ' ', borderAttrs);
+        buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', borderAttrs);
         // Borders
         Point bottomRight = new Point(ActualWidth - 3, ActualHeight - 2);
-        RenderBorders(buffer, new Point(0, 0), bottomRight, this._moving || this._resizing, borderAttrs);
+        RenderBorders(buffer, new Point(0, 0), bottomRight, _moving || _resizing, borderAttrs);
         // Additional green right bottom corner if resizing
         if (_resizing)
         {
@@ -237,7 +245,7 @@ public class Window : Control
         {
             int titleStartX = 7;
             bool renderTitle = false;
-            string renderTitleString = null;
+            string renderTitleString = String.Empty;
             int availablePixelsCount = ActualWidth - titleStartX * 2;
             if (availablePixelsCount > 0)
             {
@@ -276,15 +284,15 @@ public class Window : Control
         }
     }
 
-    private bool _closing = false;
-    private bool _showClosingGlyph = false;
+    private bool _closing;
+    private bool _showClosingGlyph;
 
-    private bool _moving = false;
+    private bool _moving;
     private int _movingStartX;
     private int _movingStartY;
     private Point _movingStartPoint;
 
-    private bool _resizing = false;
+    private bool _resizing;
     private int _resizingStartWidth;
     private int _resizingStartHeight;
     private Point _resizingStartPoint;
@@ -296,7 +304,7 @@ public class Window : Control
         {
             Point point = args.GetPosition(this);
             Point parentPoint = args.GetPosition(GetWindowsHost());
-            if (point.y == 0 && point.x == 3)
+            if (point.Y == 0 && point.X == 3)
             {
                 _closing = true;
                 _showClosingGlyph = true;
@@ -305,7 +313,7 @@ public class Window : Control
                 Invalidate();
                 args.Handled = true;
             }
-            else if (point.y == 0)
+            else if (point.Y == 0)
             {
                 _moving = true;
                 _movingStartPoint = parentPoint;
@@ -316,7 +324,7 @@ public class Window : Control
                 Invalidate();
                 args.Handled = true;
             }
-            else if (point.x == ActualWidth - 3 && point.y == ActualHeight - 2)
+            else if (point.X == ActualWidth - 3 && point.Y == ActualHeight - 2)
             {
                 _resizing = true;
                 _resizingStartPoint = parentPoint;
@@ -332,7 +340,7 @@ public class Window : Control
 
     public void Close()
     {
-        this.HandleClosing();
+        HandleClosing();
     }
 
     protected void HandleClosing()
@@ -343,7 +351,7 @@ public class Window : Control
 
         if (!args.Cancel)
         {
-            GetWindowsHost().CloseWindow(this);
+            GetWindowsHost()?.CloseWindow(this);
         }
     }
 
@@ -352,9 +360,9 @@ public class Window : Control
         if (_closing)
         {
             Point point = args.GetPosition(this);
-            if (point.x == 3 && point.y == 0)
+            if (point.X == 3 && point.Y == 0)
             {
-                this.HandleClosing();
+                HandleClosing();
             }
 
             _closing = false;
@@ -387,7 +395,7 @@ public class Window : Control
         {
             Point point = args.GetPosition(this);
             bool anyChanged = false;
-            if (point.x == 3 && point.y == 0)
+            if (point.X == 3 && point.Y == 0)
             {
                 if (!_showClosingGlyph)
                 {
@@ -412,30 +420,30 @@ public class Window : Control
         if (_moving)
         {
             Point parentPoint = args.GetPosition(GetWindowsHost());
-            Vector vector = new Vector(parentPoint.X - _movingStartPoint.x, parentPoint.Y - _movingStartPoint.y);
+            Vector vector = new Vector(parentPoint.X - _movingStartPoint.X, parentPoint.Y - _movingStartPoint.Y);
             X = _movingStartX + vector.X;
             Y = _movingStartY + vector.Y;
-            GetWindowsHost().Invalidate();
+            GetWindowsHost()?.Invalidate();
             args.Handled = true;
         }
 
         if (_resizing)
         {
             Point parentPoint = args.GetPosition(GetWindowsHost());
-            int deltaWidth = parentPoint.X - _resizingStartPoint.x;
-            int deltaHeight = parentPoint.Y - _resizingStartPoint.y;
+            int deltaWidth = parentPoint.X - _resizingStartPoint.X;
+            int deltaHeight = parentPoint.Y - _resizingStartPoint.Y;
             int width = _resizingStartWidth + deltaWidth;
             int height = _resizingStartHeight + deltaHeight;
             bool anyChanged = false;
             if (width >= 4)
             {
-                this.Width = width;
+                Width = width;
                 anyChanged = true;
             }
 
             if (height >= 3)
             {
-                this.Height = height;
+                Height = height;
                 anyChanged = true;
             }
 
@@ -445,12 +453,12 @@ public class Window : Control
         }
     }
 
-    public void Window_OnActivated(object sender, EventArgs args)
+    public void Window_OnActivated(object? sender, EventArgs args)
     {
         Invalidate();
     }
 
-    public void Window_OnDeactivated(object sender, EventArgs args)
+    public void Window_OnDeactivated(object? sender, EventArgs args)
     {
         Invalidate();
     }

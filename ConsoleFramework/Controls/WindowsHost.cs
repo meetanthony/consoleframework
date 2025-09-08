@@ -14,18 +14,18 @@ namespace ConsoleFramework.Controls;
 /// </summary>
 public class WindowsHost : Control
 {
-    private Menu mainMenu;
+    private Menu? _mainMenu;
 
-    public Menu MainMenu
+    public Menu? MainMenu
     {
-        get { return mainMenu; }
+        get => _mainMenu;
         set
         {
-            if (mainMenu != value)
+            if (_mainMenu != value)
             {
-                if (mainMenu != null)
+                if (_mainMenu != null)
                 {
-                    RemoveChild(mainMenu);
+                    RemoveChild(_mainMenu);
                 }
 
                 if (value != null)
@@ -33,18 +33,18 @@ public class WindowsHost : Control
                     InsertChildAt(0, value);
                 }
 
-                mainMenu = value;
+                _mainMenu = value;
             }
         }
     }
 
     public WindowsHost()
     {
-        AddHandler(PreviewMouseDownEvent, new MouseButtonEventHandler(onPreviewMouseDown), true);
-        AddHandler(PreviewMouseMoveEvent, new MouseEventHandler(onPreviewMouseMove), true);
-        AddHandler(PreviewMouseUpEvent, new MouseEventHandler(onPreviewMouseUp), true);
-        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(onPreviewKeyDown));
-        AddHandler(PreviewMouseWheelEvent, new MouseWheelEventHandler(onPreviewMouseWheel));
+        AddHandler(PreviewMouseDownEvent, new MouseButtonEventHandler(OnPreviewMouseDown), true);
+        AddHandler(PreviewMouseMoveEvent, new MouseEventHandler(OnPreviewMouseMove), true);
+        AddHandler(PreviewMouseUpEvent, new MouseEventHandler(OnPreviewMouseUp), true);
+        AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown));
+        AddHandler(PreviewMouseWheelEvent, new MouseWheelEventHandler(OnPreviewMouseWheel));
     }
 
     /// <summary>
@@ -52,12 +52,12 @@ public class WindowsHost : Control
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="args"></param>
-    private void onPreviewMouseWheel(object sender, MouseWheelEventArgs args)
+    private void OnPreviewMouseWheel(object sender, MouseWheelEventArgs args)
     {
         int windowsStartIndex = 0;
-        if (mainMenu != null)
+        if (_mainMenu != null)
         {
-            Assert(Children[0] == mainMenu);
+            Assert(Children[0] == _mainMenu);
             windowsStartIndex++;
         }
 
@@ -72,11 +72,11 @@ public class WindowsHost : Control
         }
     }
 
-    private void onPreviewKeyDown(object sender, KeyEventArgs args)
+    private void OnPreviewKeyDown(object sender, KeyEventArgs args)
     {
-        if (mainMenu != null)
+        if (_mainMenu != null)
         {
-            if (mainMenu.TryMatchGesture(args))
+            if (_mainMenu.TryMatchGesture(args))
             {
                 args.Handled = true;
             }
@@ -86,10 +86,10 @@ public class WindowsHost : Control
     protected override Size MeasureOverride(Size availableSize)
     {
         int windowsStartIndex = 0;
-        if (mainMenu != null)
+        if (_mainMenu != null)
         {
-            Assert(Children[0] == mainMenu);
-            mainMenu.Measure(new Size(availableSize.Width, 1));
+            Assert(Children[0] == _mainMenu);
+            _mainMenu.Measure(new Size(availableSize.Width, 1));
             windowsStartIndex++;
         }
 
@@ -109,10 +109,10 @@ public class WindowsHost : Control
     protected override Size ArrangeOverride(Size finalSize)
     {
         int windowsStartIndex = 0;
-        if (mainMenu != null)
+        if (_mainMenu != null)
         {
-            Assert(Children[0] == mainMenu);
-            mainMenu.Arrange(new Rect(0, 0, finalSize.Width, 1));
+            Assert(Children[0] == _mainMenu);
+            _mainMenu.Arrange(new Rect(0, 0, finalSize.Width, 1));
             windowsStartIndex++;
         }
 
@@ -156,7 +156,7 @@ public class WindowsHost : Control
     /// Делает указанное окно активным. Если оно до этого не было активным, то
     /// по Z-индексу оно будет перемещено на самый верх, и получит клавиатурный фокус ввода.
     /// </summary>
-    private void activateWindow(Window window)
+    private void ActivateWindow(Window window)
     {
         int index = Children.IndexOf(window);
         if (-1 == index)
@@ -184,32 +184,32 @@ public class WindowsHost : Control
         }
     }
 
-    private bool isTopWindowModal()
+    private bool IsTopWindowModal()
     {
         int windowsStartIndex = 0;
-        if (mainMenu != null)
+        if (_mainMenu != null)
         {
-            Assert(Children[0] == mainMenu);
+            Assert(Children[0] == _mainMenu);
             windowsStartIndex++;
         }
 
         if (Children.Count == windowsStartIndex) return false;
-        return windowInfos[(Window)Children[Children.Count - 1]].Modal;
+        return _windowInfos[(Window)Children[Children.Count - 1]].Modal;
     }
 
-    private void onPreviewMouseMove(object sender, MouseEventArgs args)
+    private void OnPreviewMouseMove(object sender, MouseEventArgs args)
     {
-        onPreviewMouseEvents(args, 2);
+        OnPreviewMouseEvents(args, 2);
     }
 
-    private void onPreviewMouseDown(object sender, MouseEventArgs args)
+    private void OnPreviewMouseDown(object sender, MouseEventArgs args)
     {
-        onPreviewMouseEvents(args, 0);
+        OnPreviewMouseEvents(args, 0);
     }
 
-    private void onPreviewMouseUp(object sender, MouseEventArgs args)
+    private void OnPreviewMouseUp(object sender, MouseEventArgs args)
     {
-        onPreviewMouseEvents(args, 1);
+        OnPreviewMouseEvents(args, 1);
     }
 
     /// <summary>
@@ -222,17 +222,17 @@ public class WindowsHost : Control
     /// eventType = 1 - PreviewMouseUp
     /// eventType = 2 - PreviewMouseMove
     /// </summary>
-    private void onPreviewMouseEvents(MouseEventArgs args, int eventType)
+    private void OnPreviewMouseEvents(MouseEventArgs args, int eventType)
     {
         bool handle = false;
         check:
-        if (isTopWindowModal())
+        if (IsTopWindowModal())
         {
             Window modalWindow = (Window)Children[Children.Count - 1];
             Window windowClicked = VisualTreeHelper.FindClosestParent<Window>((Control)args.Source);
             if (windowClicked != modalWindow)
             {
-                if (windowInfos[modalWindow].OutsideClickClosesWindow
+                if (_windowInfos[modalWindow].OutsideClickClosesWindow
                     && (eventType == 0 || eventType == 2 && args.LeftButton == MouseButtonState.Pressed))
                 {
                     // закрываем текущее модальное окно
@@ -262,27 +262,27 @@ public class WindowsHost : Control
 
         if (handle && (eventType == 0 || eventType == 2 && args.LeftButton == MouseButtonState.Pressed))
         {
-            Window windowClicked = VisualTreeHelper.FindClosestParent<Window>((Control)args.Source);
+            Window? windowClicked = VisualTreeHelper.FindClosestParent<Window>(args.Source as Control);
             if (null != windowClicked)
             {
-                activateWindow(windowClicked);
+                ActivateWindow(windowClicked);
             }
             else
             {
-                Menu menu = VisualTreeHelper.FindClosestParent<Menu>((Control)args.Source);
+                Menu? menu = VisualTreeHelper.FindClosestParent<Menu>(args.Source as Control);
                 if (null != menu)
                 {
-                    activateMenu();
+                    ActivateMenu();
                 }
             }
         }
     }
 
-    private void activateMenu()
+    private void ActivateMenu()
     {
-        Assert(mainMenu != null);
-        if (ConsoleApplication.Instance.FocusManager.CurrentScope != mainMenu)
-            ConsoleApplication.Instance.FocusManager.SetFocusScope(mainMenu);
+        Assert(_mainMenu != null);
+        if (ConsoleApplication.Instance.FocusManager.CurrentScope != _mainMenu)
+            ConsoleApplication.Instance.FocusManager.SetFocusScope(_mainMenu);
     }
 
     private void initializeFocusOnActivatedWindow(Window window)
@@ -303,14 +303,14 @@ public class WindowsHost : Control
         }
     }
 
-    private readonly Dictionary<Window, WindowInfo> windowInfos = new Dictionary<Window, WindowInfo>();
+    private readonly Dictionary<Window, WindowInfo> _windowInfos = new Dictionary<Window, WindowInfo>();
 
     /// <summary>
     /// Adds window to window host children and shows it as modal window.
     /// </summary>
     public void ShowModal(Window window, bool outsideClickWillCloseWindow = false)
     {
-        showCore(window, true, outsideClickWillCloseWindow);
+        ShowCore(window, true, outsideClickWillCloseWindow);
     }
 
     /// <summary>
@@ -318,17 +318,17 @@ public class WindowsHost : Control
     /// </summary>
     public void Show(Window window)
     {
-        showCore(window, false, false);
+        ShowCore(window, false, false);
     }
 
-    public Window TopWindow => getTopWindow();
+    public Window? TopWindow => GetTopWindow();
 
-    private Window getTopWindow()
+    private Window? GetTopWindow()
     {
         int windowsStartIndex = 0;
-        if (mainMenu != null)
+        if (_mainMenu != null)
         {
-            Assert(Children[0] == mainMenu);
+            Assert(Children[0] == _mainMenu);
             windowsStartIndex++;
         }
 
@@ -340,9 +340,9 @@ public class WindowsHost : Control
         return null;
     }
 
-    private void showCore(Window window, bool modal, bool outsideClickWillCloseWindow)
+    private void ShowCore(Window window, bool modal, bool outsideClickWillCloseWindow)
     {
-        Control topWindow = getTopWindow();
+        Control? topWindow = GetTopWindow();
         if (null != topWindow)
         {
             topWindow.RaiseEvent(Window.DeactivatedEvent,
@@ -352,7 +352,7 @@ public class WindowsHost : Control
         AddChild(window);
         window.RaiseEvent(Window.ActivatedEvent, new RoutedEventArgs(window, Window.ActivatedEvent));
         initializeFocusOnActivatedWindow(window);
-        windowInfos.Add(window, new WindowInfo(modal, outsideClickWillCloseWindow));
+        _windowInfos.Add(window, new WindowInfo(modal, outsideClickWillCloseWindow));
     }
 
     /// <summary>
@@ -360,7 +360,7 @@ public class WindowsHost : Control
     /// </summary>
     public void CloseWindow(Window window)
     {
-        windowInfos.Remove(window);
+        _windowInfos.Remove(window);
         window.RaiseEvent(Window.DeactivatedEvent, new RoutedEventArgs(window, Window.DeactivatedEvent));
         RemoveChild(window);
         window.RaiseEvent(Window.ClosedEvent, new RoutedEventArgs(window, Window.ClosedEvent));
@@ -368,9 +368,9 @@ public class WindowsHost : Control
         IList<Control> childrenOrderedByZIndex = GetChildrenOrderedByZIndex();
 
         int windowsStartIndex = 0;
-        if (mainMenu != null)
+        if (_mainMenu != null)
         {
-            Assert(Children[0] == mainMenu);
+            Assert(Children[0] == _mainMenu);
             windowsStartIndex++;
         }
 

@@ -11,23 +11,37 @@ public partial class Control
 
     public delegate void ControlRemovedEventHandler(Control control);
 
-    public class UIElementCollection : IList
+    public class UiElementCollection : IList
     {
-        private readonly IList list = new ObservableList<Control>(new List<Control>());
-        private readonly Control parent;
+        private readonly IList _list;
+        private readonly Control _parent;
 
-        public event ControlAddedEventHandler ControlAdded;
-        public event ControlAddedEventHandler ControlRemoved;
+        public event ControlAddedEventHandler? ControlAdded;
+        public event ControlAddedEventHandler? ControlRemoved;
 
-        public UIElementCollection(Control parent)
+        private void OnControlAdded(Control control)
         {
-            this.parent = parent;
-            ObservableList<Control> observableList = new ObservableList<Control>(new List<Control>());
-            this.list = observableList;
-            observableList.ListChanged += onListChanged;
+            if (ControlAdded == null)
+                return;
+            ControlAdded(control);
+        }
+        
+        private void OnControlRemoved(Control control)
+        {
+            if (ControlRemoved == null)
+                return;
+            ControlRemoved(control);
         }
 
-        private void onListChanged(object sender, ListChangedEventArgs args)
+        public UiElementCollection(Control parent)
+        {
+            _parent = parent;
+            ObservableList<Control> observableList = new ObservableList<Control>(new List<Control>());
+            _list = observableList;
+            observableList.ListChanged += OnListChanged;
+        }
+
+        private void OnListChanged(object sender, ListChangedEventArgs args)
         {
             switch (args.Type)
             {
@@ -35,9 +49,11 @@ public partial class Control
                 {
                     for (int i = 0; i < args.Count; i++)
                     {
-                        var control = (Control)list[args.Index + i];
-                        parent.InsertChildAt(args.Index + i, control);
-                        if (ControlAdded != null) ControlAdded.Invoke(control);
+                        if (_list[args.Index + i] is Control control)
+                        {
+                            _parent.InsertChildAt(args.Index + i, control);
+                            OnControlAdded(control);
+                        }
                     }
 
                     break;
@@ -45,21 +61,23 @@ public partial class Control
                 case ListChangedEventType.ItemsRemoved:
                     for (int i = 0; i < args.Count; i++)
                     {
-                        Control control = parent.Children[args.Index];
-                        parent.RemoveChild(control);
-                        if (ControlRemoved != null) ControlRemoved.Invoke(control);
+                        Control control = _parent.Children[args.Index];
+                        _parent.RemoveChild(control);
+                        OnControlRemoved(control);
                     }
 
                     break;
                 case ListChangedEventType.ItemReplaced:
                 {
-                    var removedControl = parent.Children[args.Index];
-                    parent.RemoveChild(removedControl);
-                    if (ControlRemoved != null) ControlRemoved.Invoke(removedControl);
+                    var removedControl = _parent.Children[args.Index];
+                    _parent.RemoveChild(removedControl);
+                    OnControlRemoved(removedControl);
 
-                    var addedControl = (Control)list[args.Index];
-                    parent.InsertChildAt(args.Index, addedControl);
-                    if (ControlAdded != null) ControlAdded.Invoke(addedControl);
+                    if (_list[args.Index] is Control addedControl)
+                    {
+                        _parent.InsertChildAt(args.Index, addedControl);
+                        OnControlAdded(addedControl);
+                    }
                     break;
                 }
             }
@@ -67,78 +85,63 @@ public partial class Control
 
         public IEnumerator GetEnumerator()
         {
-            return list.GetEnumerator();
+            return _list.GetEnumerator();
         }
 
         public void CopyTo(Array array, int index)
         {
-            list.CopyTo(array, index);
+            _list.CopyTo(array, index);
         }
 
-        public int Count
+        public int Count => _list.Count;
+
+        public object SyncRoot => _list.SyncRoot;
+
+        public bool IsSynchronized => _list.IsSynchronized;
+
+        public int Add(object? value)
         {
-            get { return list.Count; }
+            return _list.Add(value);
         }
 
-        public object SyncRoot
+        public bool Contains(object? value)
         {
-            get { return list.SyncRoot; }
-        }
-
-        public bool IsSynchronized
-        {
-            get { return list.IsSynchronized; }
-        }
-
-        public int Add(object value)
-        {
-            return list.Add(value);
-        }
-
-        public bool Contains(object value)
-        {
-            return list.Contains(value);
+            return _list.Contains(value);
         }
 
         public void Clear()
         {
-            list.Clear();
+            _list.Clear();
         }
 
-        public int IndexOf(object value)
+        public int IndexOf(object? value)
         {
-            return list.IndexOf(value);
+            return _list.IndexOf(value);
         }
 
-        public void Insert(int index, object value)
+        public void Insert(int index, object? value)
         {
-            list.Insert(index, value);
+            _list.Insert(index, value);
         }
 
-        public void Remove(object value)
+        public void Remove(object? value)
         {
-            list.Remove(value);
+            _list.Remove(value);
         }
 
         public void RemoveAt(int index)
         {
-            list.RemoveAt(index);
+            _list.RemoveAt(index);
         }
 
-        public object this[int index]
+        public object? this[int index]
         {
-            get { return list[index]; }
-            set { list[index] = value; }
+            get => _list[index];
+            set => _list[index] = value;
         }
 
-        public bool IsReadOnly
-        {
-            get { return list.IsReadOnly; }
-        }
+        public bool IsReadOnly => _list.IsReadOnly;
 
-        public bool IsFixedSize
-        {
-            get { return list.IsFixedSize; }
-        }
+        public bool IsFixedSize => _list.IsFixedSize;
     }
 }

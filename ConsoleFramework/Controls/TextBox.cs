@@ -23,19 +23,19 @@ public class TextBox : Control
     private void OnMouseDown(object sender, MouseButtonEventArgs args)
     {
         Point point = args.GetPosition(this);
-        if (point.X > 0 && point.X - 1 < getSize())
+        if (point.X > 0 && point.X - 1 < GetSize())
         {
             int x = point.X - 1;
-            if (!String.IsNullOrEmpty(text))
+            if (!String.IsNullOrEmpty(_text))
             {
-                if (x <= text.Length)
-                    cursorPosition = x;
+                if (x <= _text.Length)
+                    _cursorPosition = x;
                 else
                 {
-                    cursorPosition = text.Length;
+                    _cursorPosition = _text.Length;
                 }
 
-                CursorPosition = new Point(cursorPosition + 1, 0);
+                CursorPosition = new Point(_cursorPosition + 1, 0);
             }
 
             args.Handled = true;
@@ -55,10 +55,10 @@ public class TextBox : Control
         if (!char.IsControl(keyInfo.KeyChar))
         {
             // insert keychar into a text string according to cursorPosition and offset
-            if (text != null)
+            if (_text != null)
             {
-                string leftPart = text.Substring(0, cursorPosition + displayOffset);
-                string rightPart = text.Substring(cursorPosition + displayOffset);
+                string leftPart = _text.Substring(0, _cursorPosition + _displayOffset);
+                string rightPart = _text.Substring(_cursorPosition + _displayOffset);
                 Text = leftPart + keyInfo.KeyChar + rightPart;
             }
             else
@@ -66,24 +66,24 @@ public class TextBox : Control
                 Text = keyInfo.KeyChar.ToString();
             }
 
-            if (cursorPosition + 1 < ActualWidth - 2)
+            if (_cursorPosition + 1 < ActualWidth - 2)
             {
-                cursorPosition++;
-                CursorPosition = new Point(cursorPosition + 1, 0);
+                _cursorPosition++;
+                CursorPosition = new Point(_cursorPosition + 1, 0);
             }
             else
             {
-                displayOffset++;
+                _displayOffset++;
             }
         }
         else
         {
             if (keyInfo.Key == ConsoleKey.Delete)
             {
-                if (!String.IsNullOrEmpty(text) && displayOffset + cursorPosition < text.Length)
+                if (!String.IsNullOrEmpty(_text) && _displayOffset + _cursorPosition < _text.Length)
                 {
-                    string leftPart = text.Substring(0, cursorPosition + displayOffset);
-                    string rightPart = text.Substring(cursorPosition + displayOffset + 1);
+                    string leftPart = _text.Substring(0, _cursorPosition + _displayOffset);
+                    string rightPart = _text.Substring(_cursorPosition + _displayOffset + 1);
                     Text = leftPart + rightPart;
                     //
                 }
@@ -95,19 +95,19 @@ public class TextBox : Control
 
             if (keyInfo.Key == ConsoleKey.Backspace)
             {
-                if (!String.IsNullOrEmpty(text) && (displayOffset != 0 || cursorPosition != 0))
+                if (!String.IsNullOrEmpty(_text) && (_displayOffset != 0 || _cursorPosition != 0))
                 {
-                    string leftPart = text.Substring(0, cursorPosition + displayOffset - 1);
-                    string rightPart = text.Substring(cursorPosition + displayOffset);
+                    string leftPart = _text.Substring(0, _cursorPosition + _displayOffset - 1);
+                    string rightPart = _text.Substring(_cursorPosition + _displayOffset);
                     Text = leftPart + rightPart;
-                    if (displayOffset > 0)
-                        displayOffset--;
+                    if (_displayOffset > 0)
+                        _displayOffset--;
                     else
                     {
-                        if (cursorPosition > 0)
+                        if (_cursorPosition > 0)
                         {
-                            cursorPosition--;
-                            CursorPosition = new Point(cursorPosition + 1, 0);
+                            _cursorPosition--;
+                            CursorPosition = new Point(_cursorPosition + 1, 0);
                         }
                     }
                 }
@@ -124,18 +124,18 @@ public class TextBox : Control
                     // todo :
                 }
 
-                if (!String.IsNullOrEmpty(text) && (displayOffset != 0 || cursorPosition != 0))
+                if (!String.IsNullOrEmpty(_text) && (_displayOffset != 0 || _cursorPosition != 0))
                 {
-                    if (cursorPosition > 0)
+                    if (_cursorPosition > 0)
                     {
-                        cursorPosition--;
-                        CursorPosition = new Point(cursorPosition + 1, 0);
+                        _cursorPosition--;
+                        CursorPosition = new Point(_cursorPosition + 1, 0);
                     }
                     else
                     {
-                        if (displayOffset > 0)
+                        if (_displayOffset > 0)
                         {
-                            displayOffset--;
+                            _displayOffset--;
                             Invalidate();
                         }
                     }
@@ -148,18 +148,18 @@ public class TextBox : Control
 
             if (keyInfo.Key == ConsoleKey.RightArrow)
             {
-                if (!String.IsNullOrEmpty(text) && displayOffset + cursorPosition < text.Length)
+                if (!String.IsNullOrEmpty(_text) && _displayOffset + _cursorPosition < _text.Length)
                 {
-                    if (cursorPosition + 1 < ActualWidth - 2)
+                    if (_cursorPosition + 1 < ActualWidth - 2)
                     {
-                        cursorPosition++;
-                        CursorPosition = new Point(cursorPosition + 1, 0);
+                        _cursorPosition++;
+                        CursorPosition = new Point(_cursorPosition + 1, 0);
                     }
                     else
                     {
-                        if (displayOffset + cursorPosition < text.Length)
+                        if (_displayOffset + _cursorPosition < _text.Length)
                         {
-                            displayOffset++;
+                            _displayOffset++;
                             Invalidate();
                         }
                     }
@@ -172,11 +172,11 @@ public class TextBox : Control
 
             if (keyInfo.Key == ConsoleKey.Home)
             {
-                if (displayOffset != 0 || cursorPosition != 0)
+                if (_displayOffset != 0 || _cursorPosition != 0)
                 {
-                    displayOffset = 0;
-                    cursorPosition = 0;
-                    CursorPosition = new Point(cursorPosition + 1, 0);
+                    _displayOffset = 0;
+                    _cursorPosition = 0;
+                    CursorPosition = new Point(_cursorPosition + 1, 0);
                     Invalidate();
                 }
                 else
@@ -187,11 +187,11 @@ public class TextBox : Control
 
             if (keyInfo.Key == ConsoleKey.End)
             {
-                if (!String.IsNullOrEmpty(text) && cursorPosition + displayOffset < ActualWidth - 2)
+                if (!String.IsNullOrEmpty(_text) && _cursorPosition + _displayOffset < ActualWidth - 2)
                 {
-                    displayOffset = text.Length >= ActualWidth - 2 ? text.Length - (ActualWidth - 2) + 1 : 0;
-                    cursorPosition = text.Length >= ActualWidth - 2 ? ActualWidth - 2 - 1 : text.Length;
-                    CursorPosition = new Point(cursorPosition + 1, 0);
+                    _displayOffset = _text.Length >= ActualWidth - 2 ? _text.Length - (ActualWidth - 2) + 1 : 0;
+                    _cursorPosition = _text.Length >= ActualWidth - 2 ? ActualWidth - 2 - 1 : _text.Length;
+                    CursorPosition = new Point(_cursorPosition + 1, 0);
                     Invalidate();
                 }
                 else
@@ -203,16 +203,16 @@ public class TextBox : Control
         //Debugger.Log(0, "", String.Format("cursorPos : {0} offset {1}\n", cursorPosition, displayOffset));
     }
 
-    private string text;
+    private string? _text;
 
-    public string Text
+    public string? Text
     {
-        get { return text; }
+        get => _text;
         set
         {
-            if (text != value)
+            if (_text != value)
             {
-                text = value;
+                _text = value;
                 Invalidate();
                 RaisePropertyChanged("Text");
             }
@@ -225,15 +225,15 @@ public class TextBox : Control
 
     public char? PasswordChar { get; set; }
 
-    private int getSize()
+    private int GetSize()
     {
         if (Size.HasValue) return Size.Value;
-        return text != null ? text.Length + 1 : 1;
+        return _text != null ? _text.Length + 1 : 1;
     }
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        Size desired = new Size(getSize() + 2, 1);
+        Size desired = new Size(GetSize() + 2, 1);
         return new Size(
             Math.Min(desired.Width, availableSize.Width),
             Math.Min(desired.Height, availableSize.Height)
@@ -241,32 +241,32 @@ public class TextBox : Control
     }
 
     // this fields describe the whole state of textbox
-    private int displayOffset;
+    private int _displayOffset;
 
-    private int cursorPosition;
+    private int _cursorPosition;
 
     // -1 if no selection started
-    private int startSelection;
+    private int _startSelection;
 
     public override void Render(RenderingBuffer buffer)
     {
         Attr attr = Colors.Blend(Color.White, Color.DarkBlue);
         buffer.FillRectangle(0, 0, ActualWidth, ActualHeight, ' ', attr);
-        if (null != text)
+        if (null != _text)
         {
-            for (int i = displayOffset; i < text.Length; i++)
+            for (int i = _displayOffset; i < _text.Length; i++)
             {
-                if (i - displayOffset < ActualWidth - 2 && i - displayOffset >= 0)
+                if (i - _displayOffset < ActualWidth - 2 && i - _displayOffset >= 0)
                 {
-                    buffer.SetPixel(1 + i - displayOffset, 0, PasswordChar.HasValue ? PasswordChar.Value : text[i]);
+                    buffer.SetPixel(1 + i - _displayOffset, 0, PasswordChar.HasValue ? PasswordChar.Value : _text[i]);
                 }
             }
         }
 
         Attr arrowsAttr = Colors.Blend(Color.Green, Color.DarkBlue);
-        if (displayOffset > 0)
+        if (_displayOffset > 0)
             buffer.SetPixel(0, 0, '<', arrowsAttr);
-        if (!String.IsNullOrEmpty(text) && ActualWidth - 2 + displayOffset < text.Length)
+        if (!String.IsNullOrEmpty(_text) && ActualWidth - 2 + _displayOffset < _text.Length)
             buffer.SetPixel(ActualWidth - 1, 0, '>', arrowsAttr);
     }
 }

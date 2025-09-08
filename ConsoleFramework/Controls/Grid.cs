@@ -163,7 +163,7 @@ public class Grid : Control
 {
     private readonly List<ColumnDefinition> _columnDefinitions = new List<ColumnDefinition>();
     private readonly List<RowDefinition> _rowDefinitions = new List<RowDefinition>();
-    private readonly UIElementCollection _children;
+    private readonly UiElementCollection _children;
     private int[] _columnsWidths = [];
     private int[] _rowsHeights = [];
 
@@ -171,11 +171,11 @@ public class Grid : Control
 
     public List<RowDefinition> RowDefinitions => _rowDefinitions;
 
-    public UIElementCollection Controls => _children;
+    public UiElementCollection Controls => _children;
 
     public Grid()
     {
-        _children = new UIElementCollection(this);
+        _children = new UiElementCollection(this);
     }
 
     protected override Size MeasureOverride(Size availableSize)

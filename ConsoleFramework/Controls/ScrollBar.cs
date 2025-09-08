@@ -24,47 +24,47 @@ public class ScrollBar : Control
         EventManager.RegisterRoutedEvent("ScrollBarValueChanged", RoutingStrategy.Bubble,
             typeof(ScrollBarValueChangedEventHandler), typeof(ScrollBar));
 
-    private Orientation orientation = Orientation.Horizontal;
+    private Orientation _orientation = Orientation.Horizontal;
 
     public Orientation Orientation
     {
-        get => orientation;
+        get => _orientation;
         set
         {
-            if (orientation != value)
+            if (_orientation != value)
             {
-                orientation = value;
+                _orientation = value;
                 Invalidate();
             }
         }
     }
 
-    private int value;
+    private int _value;
 
     public int Value
     {
-        get => value;
+        get => _value;
         set
         {
-            if (value != this.value)
+            if (value != _value)
             {
-                this.value = Math.Min(maxValue, value);
+                _value = Math.Min(_maxValue, value);
                 Invalidate();
             }
         }
     }
 
-    private int maxValue = 100;
+    private int _maxValue = 100;
 
     public int MaxValue
     {
-        get => maxValue;
+        get => _maxValue;
         set
         {
-            if (value != maxValue)
+            if (value != _maxValue)
             {
-                maxValue = value;
-                this.value = Math.Min(this.value, maxValue);
+                _maxValue = value;
+                _value = Math.Min(_value, _maxValue);
                 Invalidate();
             }
         }

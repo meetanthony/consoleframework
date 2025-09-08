@@ -372,9 +372,9 @@ public class MenuItem : MenuItemBase, ICommandSource
 
     internal class Popup : Window
     {
-        private readonly bool shadow;
-        private readonly int parentItemWidth; // Размер непрозрачной для нажатий мыши области в 1ой строке окна
-        private readonly Panel panel;
+        private readonly bool _shadow;
+        private readonly int _parentItemWidth; // Размер непрозрачной для нажатий мыши области в 1ой строке окна
+        private readonly Panel _panel;
 
         public static readonly RoutedEvent ControlKeyPressedEvent = EventManager.RegisterRoutedEvent(
             "ControlKeyPressed",
@@ -386,7 +386,7 @@ public class MenuItem : MenuItemBase, ICommandSource
         /// </summary>
         public void DisconnectMenuItems()
         {
-            panel.Children.Clear();
+            _panel.Children.Clear();
         }
 
         /// <summary>
@@ -399,16 +399,16 @@ public class MenuItem : MenuItemBase, ICommandSource
         /// </summary>
         public Popup(IEnumerable<MenuItemBase> menuItems, bool shadow, int parentItemWidth)
         {
-            this.parentItemWidth = parentItemWidth;
-            this.shadow = shadow;
-            panel = new Panel();
-            panel.Orientation = Orientation.Vertical;
+            _parentItemWidth = parentItemWidth;
+            _shadow = shadow;
+            _panel = new Panel();
+            _panel.Orientation = Orientation.Vertical;
             foreach (MenuItemBase item in menuItems)
             {
-                panel.Children.Add(item);
+                _panel.Children.Add(item);
             }
 
-            Content = panel;
+            Content = _panel;
 
             // If click on the transparent header, close the popup
             AddHandler(PreviewMouseDownEvent, new MouseButtonEventHandler((_, args) =>
@@ -423,7 +423,7 @@ public class MenuItem : MenuItemBase, ICommandSource
                 }
             }));
 
-            EventManager.AddHandler(panel, PreviewMouseMoveEvent, new MouseEventHandler(OnPanelMouseMove));
+            EventManager.AddHandler(_panel, PreviewMouseMoveEvent, new MouseEventHandler(OnPanelMouseMove));
         }
 
         protected override void OnPreviewKeyDown(object sender, KeyEventArgs args)
@@ -469,7 +469,7 @@ public class MenuItem : MenuItemBase, ICommandSource
             }
         }
 
-        protected override void Initialize()
+        protected override void InitEvents()
         {
             AddHandler(PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown), true);
         }
@@ -483,14 +483,14 @@ public class MenuItem : MenuItemBase, ICommandSource
 
             // Первые width пикселей первой строки - прозрачные, но события мыши не пропускают
             // По нажатию на них мы закрываем всплывающее окно вручную
-            buffer.SetOpacityRect(0, 0, Math.Min(ActualWidth, parentItemWidth), 1, 2);
+            buffer.SetOpacityRect(0, 0, Math.Min(ActualWidth, _parentItemWidth), 1, 2);
             // Оставшиеся пиксели первой строки - пропускают события мыши
             // И WindowsHost закроет всплывающее окно автоматически при нажатии или
             // перемещении нажатого курсора над этим местом
-            if (ActualWidth > parentItemWidth)
-                buffer.SetOpacityRect(parentItemWidth, 0, ActualWidth - parentItemWidth, 1, 6);
+            if (ActualWidth > _parentItemWidth)
+                buffer.SetOpacityRect(_parentItemWidth, 0, ActualWidth - _parentItemWidth, 1, 6);
 
-            if (shadow)
+            if (_shadow)
             {
                 buffer.SetOpacity(0, ActualHeight - 1, 2 + 4);
                 buffer.SetOpacity(ActualWidth - 1, 1, 2 + 4);
@@ -502,7 +502,7 @@ public class MenuItem : MenuItemBase, ICommandSource
             }
 
             RenderBorders(buffer, new Point(1, 1),
-                shadow
+                _shadow
                     ? new Point(ActualWidth - 3, ActualHeight - 2)
                     : new Point(ActualWidth - 2, ActualHeight - 1),
                 true, borderAttrs);
@@ -511,7 +511,7 @@ public class MenuItem : MenuItemBase, ICommandSource
         protected override Size MeasureOverride(Size availableSize)
         {
             if (Content == null) return new Size(0, 0);
-            if (shadow)
+            if (_shadow)
             {
                 // 1 строку и 1 столбец оставляем для прозрачного пространства, остальное занимает Content
                 Content.Measure(new Size(availableSize.Width - 3, availableSize.Height - 4));
@@ -531,7 +531,7 @@ public class MenuItem : MenuItemBase, ICommandSource
         {
             if (Content != null)
             {
-                if (shadow)
+                if (_shadow)
                 {
                     // 1 pixel from all borders - for popup padding
                     // 1 pixel from top - for transparent region
@@ -563,23 +563,23 @@ public class MenuItem : MenuItemBase, ICommandSource
         OpenMenu();
     }
 
-    private ICommand? command;
+    private ICommand? _command;
 
     public ICommand? Command
     {
-        get => command;
+        get => _command;
         set
         {
-            if (command != value)
+            if (_command != value)
             {
-                if (command != null)
+                if (_command != null)
                 {
-                    command.CanExecuteChanged -= OnCommandCanExecuteChanged;
+                    _command.CanExecuteChanged -= OnCommandCanExecuteChanged;
                 }
 
-                command = value;
-                if (command != null) 
-                    command.CanExecuteChanged += OnCommandCanExecuteChanged;
+                _command = value;
+                if (_command != null) 
+                    _command.CanExecuteChanged += OnCommandCanExecuteChanged;
 
                 RefreshCanExecute();
             }
@@ -593,13 +593,13 @@ public class MenuItem : MenuItemBase, ICommandSource
 
     private void RefreshCanExecute()
     {
-        if (command == null)
+        if (_command == null)
         {
             Disabled = false;
             return;
         }
 
-        Disabled = !command.CanExecute(CommandParameter);
+        Disabled = !_command.CanExecute(CommandParameter);
     }
 
     public object? CommandParameter { get; set; }
@@ -607,9 +607,9 @@ public class MenuItem : MenuItemBase, ICommandSource
     internal void RaiseClick()
     {
         RaiseEvent(ClickEvent, new RoutedEventArgs(this, ClickEvent));
-        if (command != null && command.CanExecute(CommandParameter))
+        if (_command != null && _command.CanExecute(CommandParameter))
         {
-            command.Execute(CommandParameter);
+            _command.Execute(CommandParameter);
         }
     }
 }
@@ -646,10 +646,10 @@ public class Separator : MenuItemBase
 
 public class Menu : Control
 {
-    private readonly ObservableList<MenuItemBase> items = new ObservableList<MenuItemBase>(
+    private readonly ObservableList<MenuItemBase> _items = new ObservableList<MenuItemBase>(
         new List<MenuItemBase>());
 
-    public IList<MenuItemBase> Items => items;
+    public IList<MenuItemBase> Items => _items;
 
     private void GetGestures(MenuItem item, Dictionary<KeyGesture, MenuItem> map)
     {
@@ -796,7 +796,7 @@ public class Menu : Control
         AddChild(stackPanel);
 
         // Subscribe to Items change and add to Children them
-        items.ListChanged += (_, args) =>
+        _items.ListChanged += (_, args) =>
         {
             switch (args.Type)
             {
@@ -804,7 +804,7 @@ public class Menu : Control
                 {
                     for (int i = 0; i < args.Count; i++)
                     {
-                        MenuItemBase item = items[args.Index + i];
+                        MenuItemBase item = _items[args.Index + i];
                         if (item is Separator)
                             throw new InvalidOperationException("Separator cannot be added to root menu.");
                         if (((MenuItem)item).Type == MenuItemType.Submenu)
@@ -820,7 +820,7 @@ public class Menu : Control
                     break;
                 case ListChangedEventType.ItemReplaced:
                 {
-                    MenuItemBase item = items[args.Index];
+                    MenuItemBase item = _items[args.Index];
                     if (item is Separator)
                         throw new InvalidOperationException("Separator cannot be added to root menu.");
                     if (((MenuItem)item).Type == MenuItemType.Submenu)

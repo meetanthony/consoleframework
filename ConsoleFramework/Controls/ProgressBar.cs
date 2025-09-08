@@ -7,20 +7,20 @@ namespace ConsoleFramework.Controls;
 
 public class ProgressBar : Control
 {
-    private int percent;
+    private int _percent;
 
     /// <summary>
     /// Percent (from 0 to 100).
     /// </summary>
     public int Percent
     {
-        get => percent;
+        get => _percent;
         set
         {
-            if (percent != value)
+            if (_percent != value)
             {
-                percent = value;
-                RaisePropertyChanged("Percent");
+                _percent = value;
+                RaisePropertyChanged(nameof(Percent));
             }
         }
     }
