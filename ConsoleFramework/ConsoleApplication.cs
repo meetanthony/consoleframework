@@ -1,8 +1,4 @@
-﻿#if !WIN32 && !DOTNETCORE
-    #define MONO
-#endif
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -14,26 +10,8 @@ using ConsoleFramework.Events;
 using ConsoleFramework.Native;
 using ConsoleFramework.Rendering;
 using ConsoleFramework.Xaml;
-#if MONO
-using Mono.Unix;
-using Mono.Unix.Native;
-#endif
 
 namespace ConsoleFramework;
-
-public class TerminalSizeChangedEventArgs : EventArgs
-{
-    public readonly int Width;
-    public readonly int Height;
-
-    public TerminalSizeChangedEventArgs(int width, int height)
-    {
-        Width = width;
-        Height = height;
-    }
-}
-
-public delegate void TerminalSizeChangedHandler(object sender, TerminalSizeChangedEventArgs args);
 
 /// <summary>
 /// Console application entry point.
@@ -129,7 +107,7 @@ public sealed class ConsoleApplication : IDisposable
     /// <summary>
     /// Fires when console buffer size is changed.
     /// </summary>
-    public event TerminalSizeChangedHandler TerminalSizeChanged;
+    public event TerminalSizeChangedHandler? TerminalSizeChanged;
 
     /// <summary>
     /// Default TerminalSizeChanged event handler. Invoked when
@@ -138,9 +116,9 @@ public sealed class ConsoleApplication : IDisposable
     /// </summary>
     public void OnTerminalSizeChangedDefault(object sender, TerminalSizeChangedEventArgs args)
     {
-        if (!this._userCanvasSize.IsEmpty) throw new InvalidOperationException("Assertion failed.");
-        if (!this._userRootElementRect.IsEmpty) throw new InvalidOperationException("Assertion failed.");
-        if (this.TerminalSizeChanged != null) throw new InvalidOperationException("Assertion failed.");
+        if (!_userCanvasSize.IsEmpty) throw new InvalidOperationException("Assertion failed.");
+        if (!_userRootElementRect.IsEmpty) throw new InvalidOperationException("Assertion failed.");
+        if (TerminalSizeChanged != null) throw new InvalidOperationException("Assertion failed.");
 
         _canvas.Size = new Size(args.Width, args.Height);
         _renderer.RootElementRect = new Rect(_canvas.Size);
@@ -234,45 +212,20 @@ public sealed class ConsoleApplication : IDisposable
 
     static ConsoleApplication()
     {
-#if DOTNETCORE
         UsingLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
         IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-#else
-            switch (Environment.OSVersion.Platform)
-            {
-                case PlatformID.Win32NT:
-                case PlatformID.Win32S:
-                case PlatformID.Win32Windows:
-                case PlatformID.WinCE:
-                    usingLinux = false;
-                    break;
-                case PlatformID.Unix:
-                    usingLinux = true;
-    #if MONO
-                    Utsname uname;
-                    Syscall.uname(out uname);
-                    if (uname.sysname == "Darwin") {
-                        isDarwin = true;
-                    }
-    #endif
-                    break;
-                case PlatformID.MacOSX:
-                case PlatformID.Xbox:
-                    throw new NotSupportedException();
-            }
-#endif
     }
 
     private ConsoleApplication()
     {
-        _eventManager = new EventManager();
-        _focusManager = new FocusManager(_eventManager);
+        EventManager = new EventManager();
+        FocusManager = new FocusManager(EventManager);
 
         _exitWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
         _invokeWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
     }
 
-    private static volatile ConsoleApplication _instance;
+    private static volatile ConsoleApplication? _instance;
     private static readonly object SyncRoot = new object();
 
     /// <summary>
@@ -310,8 +263,8 @@ public sealed class ConsoleApplication : IDisposable
 
         public ActionInfo(Action action, EventWaitHandle waitHandle)
         {
-            this.Action = action;
-            this.WaitHandle = waitHandle;
+            Action = action;
+            WaitHandle = waitHandle;
         }
     }
 
@@ -337,42 +290,28 @@ public sealed class ConsoleApplication : IDisposable
 
     private readonly Renderer _renderer = new Renderer();
 
-    public Renderer Renderer
-    {
-        get { return _renderer; }
-    }
+    public Renderer Renderer => _renderer;
 
     /// <summary>
     /// Returns the root control of the application.
     /// </summary>
-    public Control RootControl
-    {
-        get { return _mainControl; }
-    }
+    public Control RootControl => _mainControl;
 
     private Control _mainControl;
-    private readonly EventManager _eventManager;
-    private readonly FocusManager _focusManager;
 
-    public FocusManager FocusManager
-    {
-        get { return _focusManager; }
-    }
+    public FocusManager FocusManager { get; }
 
-    public EventManager EventManager
-    {
-        get { return _eventManager; }
-    }
+    public EventManager EventManager { get; }
 
     internal void SetCursorPosition(Point position)
     {
         if (!UsingLinux)
         {
-            Win32.SetConsoleCursorPosition(_stdOutputHandle, new COORD((short)position.x, (short)position.y));
+            Win32.SetConsoleCursorPosition(_stdOutputHandle, new COORD((short)position.X, (short)position.Y));
         }
         else
         {
-            NCurses.move(position.y, position.x);
+            NCurses.move(position.Y, position.X);
             NCurses.refresh();
         }
     }
@@ -449,8 +388,8 @@ public sealed class ConsoleApplication : IDisposable
         }
         finally
         {
-            this._running = false;
-            this._mainThreadId = null;
+            _running = false;
+            _mainThreadId = null;
         }
     }
 
@@ -471,7 +410,7 @@ public sealed class ConsoleApplication : IDisposable
 
     private void RunLinux(Control control)
     {
-        this._mainControl = control;
+        _mainControl = control;
 
         if (_userCanvasSize.IsEmpty)
         {
@@ -493,13 +432,7 @@ public sealed class ConsoleApplication : IDisposable
         _mainControl.Invalidate();
 
         // Terminal initialization sequence
-
-#if MONO
-            // This is magic workaround to avoid messing up terminal after program finish
-            // The bug is described at https://bugzilla.xamarin.com/show_bug.cgi?id=15118
-            bool ignored = Console.KeyAvailable;
-#endif
-
+        
         // Because .NET Core runtime changes locale to something wrong on startup,
         // we have to change it to default system locale
         // See https://stackoverflow.com/a/6249265
@@ -550,29 +483,12 @@ public sealed class ConsoleApplication : IDisposable
 
             try
             {
-#if MONO
-                    // Catch SIGWINCH to handle terminal resizing
-                    UnixSignal[] signals = new UnixSignal [] {
-                        new UnixSignal (Signum.SIGWINCH)
-                    };
-                    Thread signal_thread = new Thread (delegate () {
-                        while (true) {
-                            // Wait for a signal to be delivered
-                            int index = UnixSignal.WaitAny (signals, -1);
-                            Signum signal = signals [index].Signum;
-                            Libc.writeInt64 (pipeFds[1], 2);
-                        }
-                    }
-                    );
-                    signal_thread.IsBackground = false;
-                    signal_thread.Start ();
-#elif DOTNETCORE
                 Libc.signal(28, arg => { Libc.writeInt64(_pipeFds[1], 2); });
-#endif
+
                 TermKeyKey key = new TermKeyKey();
                 //
-                this._running = true;
-                this._mainThreadId = Thread.CurrentThread.ManagedThreadId;
+                _running = true;
+                _mainThreadId = Thread.CurrentThread.ManagedThreadId;
                 //
                 int nextwait = -1;
                 while (true)
@@ -605,9 +521,6 @@ public sealed class ConsoleApplication : IDisposable
                         if (u == 1)
                         {
                             // Exit from application
-#if MONO
-                                signal_thread.Abort ();
-#endif
                             break;
                         }
 
@@ -876,7 +789,7 @@ public sealed class ConsoleApplication : IDisposable
 
     private void RunWindows(Control control)
     {
-        this._mainControl = control;
+        _mainControl = control;
         //
         _stdInputHandle = Win32.GetStdHandle(StdHandleType.STD_INPUT_HANDLE);
         _stdOutputHandle = Win32.GetStdHandle(StdHandleType.STD_OUTPUT_HANDLE);
@@ -928,8 +841,8 @@ public sealed class ConsoleApplication : IDisposable
         HideCursor();
 
 
-        this._running = true;
-        this._mainThreadId = Thread.CurrentThread.ManagedThreadId;
+        _running = true;
+        _mainThreadId = Thread.CurrentThread.ManagedThreadId;
         //
         while (true)
         {
@@ -1094,7 +1007,7 @@ public sealed class ConsoleApplication : IDisposable
             return;
         }
 
-        _eventManager.ParseInputEvent(inputRecord, _mainControl);
+        EventManager.ParseInputEvent(inputRecord, _mainControl);
     }
 
     /// <summary>
@@ -1104,7 +1017,7 @@ public sealed class ConsoleApplication : IDisposable
     /// <returns></returns>
     public bool IsUiThread()
     {
-        return Thread.CurrentThread.ManagedThreadId == this._mainThreadId;
+        return Thread.CurrentThread.ManagedThreadId == _mainThreadId;
     }
 
     /// <summary>
@@ -1115,7 +1028,7 @@ public sealed class ConsoleApplication : IDisposable
     public void RunOnUiThread(Action action)
     {
         // If run loop is not started, do nothing
-        if (!this._running)
+        if (!_running)
         {
             return;
         }
@@ -1154,7 +1067,7 @@ public sealed class ConsoleApplication : IDisposable
     public void Post(Action action)
     {
         // If run loop is not started, nothing to do
-        if (!this._running)
+        if (!_running)
         {
             return;
         }
@@ -1196,7 +1109,7 @@ public sealed class ConsoleApplication : IDisposable
             Timer[] array = new Timer[1];
             Timer timer = new Timer(state =>
             {
-                this.Post(action);
+                Post(action);
                 lock (_timersLock)
                 {
                     _activeTimers.Remove(array[0]);
@@ -1217,7 +1130,7 @@ public sealed class ConsoleApplication : IDisposable
     /// </summary>
     public void BeginCaptureInput(Control control)
     {
-        _eventManager.BeginCaptureInput(control);
+        EventManager.BeginCaptureInput(control);
     }
 
     /// <summary>
@@ -1225,7 +1138,7 @@ public sealed class ConsoleApplication : IDisposable
     /// </summary>
     public void EndCaptureInput(Control control)
     {
-        _eventManager.EndCaptureInput(control);
+        EventManager.EndCaptureInput(control);
     }
 
     private void Dispose(bool isDisposing)
