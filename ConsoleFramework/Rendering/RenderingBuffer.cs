@@ -130,11 +130,11 @@ public sealed class RenderingBuffer
         for (int x = finalRect.Left; x < finalRect.Right; x++)
         {
             int parentX = x;
-            int childX = parentX - actualOffset.x;
+            int childX = parentX - actualOffset.X;
             for (int y = finalRect.Top; y < finalRect.Bottom; y++)
             {
                 int parentY = y;
-                int childY = parentY - actualOffset.y;
+                int childY = parentY - actualOffset.Y;
 
                 CHAR_INFO charInfo = childBuffer.buffer[childX, childY];
                 int opacity = childBuffer.opacityMatrix[childX, childY];
@@ -289,14 +289,14 @@ public sealed class RenderingBuffer
         rectToCopy.Intersect(canvasRect);
         rectToCopy.Intersect(bufferRect);
         //
-        for (int x = 0; x < rectToCopy.width; x++)
+        for (int x = 0; x < rectToCopy.Width; x++)
         {
-            int bufferX = x + rectToCopy.x;
-            int canvasX = x + rectToCopy.x + offset.x;
-            for (int y = 0; y < rectToCopy.height; y++)
+            int bufferX = x + rectToCopy.X;
+            int canvasX = x + rectToCopy.X + offset.X;
+            for (int y = 0; y < rectToCopy.Height; y++)
             {
-                int bufferY = y + rectToCopy.y;
-                int canvasY = y + rectToCopy.y + offset.y;
+                int bufferY = y + rectToCopy.Y;
+                int canvasY = y + rectToCopy.Y + offset.Y;
                 CHAR_INFO charInfo = buffer[bufferX, bufferY];
                 canvas[canvasX][canvasY].Assign(charInfo);
             }
@@ -340,11 +340,11 @@ public sealed class RenderingBuffer
     /// </summary>
     public bool ContainsOpacity(Rect affectedRect)
     {
-        for (int x = 0; x < affectedRect.width; x++)
+        for (int x = 0; x < affectedRect.Width; x++)
         {
-            for (int y = 0; y < affectedRect.height; y++)
+            for (int y = 0; y < affectedRect.Height; y++)
             {
-                if (opacityMatrix[x + affectedRect.x, y + affectedRect.y] != 0)
+                if (opacityMatrix[x + affectedRect.X, y + affectedRect.Y] != 0)
                 {
                     return true;
                 }

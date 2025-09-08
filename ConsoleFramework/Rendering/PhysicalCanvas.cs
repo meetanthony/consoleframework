@@ -12,19 +12,19 @@ namespace ConsoleFramework.Rendering;
 /// </summary>
 public class PhysicalCanvas
 {
-    private readonly IntPtr stdOutputHandle = IntPtr.Zero;
+    private readonly IntPtr _stdOutputHandle = IntPtr.Zero;
 
     public PhysicalCanvas(int width, int height)
     {
-        this.size = new Size(width, height);
-        this.buffer = new CHAR_INFO[height, width];
+        _size = new Size(width, height);
+        buffer = new CHAR_INFO[height, width];
     }
 
     public PhysicalCanvas(int width, int height, IntPtr stdOutputHandle)
     {
-        this.size = new Size(width, height);
-        this.stdOutputHandle = stdOutputHandle;
-        this.buffer = new CHAR_INFO[height, width];
+        _size = new Size(width, height);
+        _stdOutputHandle = stdOutputHandle;
+        buffer = new CHAR_INFO[height, width];
     }
 
     /// <summary>
@@ -37,26 +37,26 @@ public class PhysicalCanvas
     /// </summary>
     private readonly Dictionary<int, NestedIndexer> cachedIndexers = new Dictionary<int, NestedIndexer>();
 
-    private Size size;
+    private Size _size;
 
     public Size Size
     {
-        get { return size; }
+        get => _size;
         set
         {
-            if (value != size)
+            if (value != _size)
             {
                 CHAR_INFO[,] oldBuffer = buffer;
                 buffer = new CHAR_INFO[value.Height, value.Width];
-                for (int x = 0, w = Math.Min(size.Width, value.Width); x < w; x++)
+                for (int x = 0, w = Math.Min(_size.Width, value.Width); x < w; x++)
                 {
-                    for (int y = 0, h = Math.Min(size.Height, value.Height); y < h; y++)
+                    for (int y = 0, h = Math.Min(_size.Height, value.Height); y < h; y++)
                     {
                         buffer[y, x] = oldBuffer[y, x];
                     }
                 }
 
-                size = value;
+                _size = value;
             }
         }
     }
@@ -80,7 +80,7 @@ public class PhysicalCanvas
         {
             get
             {
-                if (index < 0 || index >= canvas.size.Height)
+                if (index < 0 || index >= canvas._size.Height)
                 {
                     throw new IndexOutOfRangeException("index exceeds specified buffer height.");
                 }
@@ -115,7 +115,7 @@ public class PhysicalCanvas
 
             public char UnicodeChar
             {
-                get { return canvas.buffer[y, x].UnicodeChar; }
+                get => canvas.buffer[y, x].UnicodeChar;
                 set
                 {
                     CHAR_INFO charInfo = canvas.buffer[y, x];
@@ -126,7 +126,7 @@ public class PhysicalCanvas
 
             public char AsciiChar
             {
-                get { return canvas.buffer[y, x].AsciiChar; }
+                get => canvas.buffer[y, x].AsciiChar;
                 set
                 {
                     CHAR_INFO charInfo = canvas.buffer[y, x];
@@ -137,7 +137,7 @@ public class PhysicalCanvas
 
             public Attr Attributes
             {
-                get { return canvas.buffer[y, x].Attributes; }
+                get => canvas.buffer[y, x].Attributes;
                 set
                 {
                     CHAR_INFO charInfo = canvas.buffer[y, x];
@@ -162,7 +162,7 @@ public class PhysicalCanvas
     {
         get
         {
-            if (index < 0 || index >= size.width)
+            if (index < 0 || index >= _size.width)
             {
                 throw new IndexOutOfRangeException("index exceeds specified buffer width.");
             }
@@ -183,7 +183,7 @@ public class PhysicalCanvas
     /// </summary>
     public void Flush()
     {
-        Flush(new Rect(new Point(0, 0), size));
+        Flush(new Rect(new Point(0, 0), _size));
     }
 
     /// <summary>
@@ -191,27 +191,26 @@ public class PhysicalCanvas
     /// </summary>
     public virtual void Flush(Rect affectedRect)
     {
-        if (stdOutputHandle != IntPtr.Zero)
+        if (_stdOutputHandle != IntPtr.Zero)
         {
             // we are in windows environment
-            SMALL_RECT rect = new SMALL_RECT((short)affectedRect.x, (short)affectedRect.y,
-                (short)(affectedRect.width + affectedRect.x), (short)(affectedRect.height + affectedRect.y));
-            if (!Win32.WriteConsoleOutputCore(stdOutputHandle, buffer, new COORD((short)size.Width, (short)size.Height),
-                    new COORD((short)affectedRect.x, (short)affectedRect.y), ref rect))
+            SMALL_RECT rect = new SMALL_RECT((short)affectedRect.X, (short)affectedRect.Y,
+                (short)(affectedRect.Width + affectedRect.X), (short)(affectedRect.Height + affectedRect.Y));
+            if (!Win32.WriteConsoleOutputCore(_stdOutputHandle, buffer, new COORD((short)_size.Width, (short)_size.Height),
+                    new COORD((short)affectedRect.X, (short)affectedRect.Y), ref rect))
             {
-                throw new InvalidOperationException(string.Format("Cannot write to console : {0}",
-                    Win32.GetLastErrorMessage()));
+                throw new InvalidOperationException($"Cannot write to console : {Win32.GetLastErrorMessage()}");
             }
         }
         else
         {
             // we are in linux
-            for (int i = 0; i < affectedRect.width; i++)
+            for (int i = 0; i < affectedRect.Width; i++)
             {
-                int x = i + affectedRect.x;
-                for (int j = 0; j < affectedRect.height; j++)
+                int x = i + affectedRect.X;
+                for (int j = 0; j < affectedRect.Height; j++)
                 {
-                    int y = j + affectedRect.y;
+                    int y = j + affectedRect.Y;
                     // todo : convert attributes and optimize rendering
                     bool fgIntensity;
                     short index = NCurses.winAttrsToNCursesAttrs(buffer[y, x].Attributes,
