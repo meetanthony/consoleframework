@@ -11,14 +11,13 @@ public class KeyboardFocusChangedEventArgs : RoutedEventArgs
     }
 
     public KeyboardFocusChangedEventArgs(object source, RoutedEvent routedEvent,
-        Control oldFocus, Control newFocus) : base(source, routedEvent)
+        Control? oldFocus, Control? newFocus) : base(source, routedEvent)
     {
-        //
         OldFocus = oldFocus;
         NewFocus = newFocus;
     }
 
-    public Control OldFocus { get; private set; }
+    public Control? OldFocus { get; private set; }
 
-    public Control NewFocus { get; private set; }
+    public Control? NewFocus { get; private set; }
 }

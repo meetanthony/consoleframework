@@ -14,13 +14,11 @@ namespace ConsoleFramework.Events;
 /// </summary>
 public sealed class FocusManager
 {
-    private readonly EventManager eventManager;
+    private readonly EventManager _eventManager;
 
     public FocusManager(EventManager eventManager)
     {
-        if (null == eventManager)
-            throw new ArgumentNullException("eventManager");
-        this.eventManager = eventManager;
+        _eventManager = eventManager;
     }
 
     /// <summary>
@@ -33,11 +31,11 @@ public sealed class FocusManager
     /// </summary>
     internal void RefreshMouseCursor()
     {
-        if (null != focusedElement && focusedElement.CursorVisible &&
-            focusedElement.IsPointVisible(focusedElement.CursorPosition))
+        if (null != _focusedElement && _focusedElement.CursorVisible &&
+            _focusedElement.IsPointVisible(_focusedElement.CursorPosition))
         {
-            ConsoleApplication.Instance.SetCursorPosition(Control.TranslatePoint(focusedElement,
-                focusedElement.CursorPosition, null));
+            ConsoleApplication.Instance.SetCursorPosition(Control.TranslatePoint(_focusedElement,
+                _focusedElement.CursorPosition, null));
             if (!ConsoleApplication.Instance.CursorIsVisible)
             {
                 ConsoleApplication.Instance.ShowCursor();
@@ -52,19 +50,19 @@ public sealed class FocusManager
         }
     }
 
-    private Control focusedElement;
+    private Control? _focusedElement;
 
     /// <summary>
     /// Control that has a keyboard focus now.
     /// </summary>
-    public Control FocusedElement
+    public Control? FocusedElement
     {
-        get { return focusedElement; }
+        get => _focusedElement;
         private set
         {
-            if (focusedElement != value)
+            if (_focusedElement != value)
             {
-                focusedElement = value;
+                _focusedElement = value;
                 RefreshMouseCursor();
             }
         }
@@ -78,7 +76,7 @@ public sealed class FocusManager
     /// <param name="focusedControl"></param>
     /// <param name="ignorePreviewHandled"></param>
     /// <returns></returns>
-    private bool tryChangeFocusedElementTo(Control focusedControl, bool ignorePreviewHandled = false)
+    private bool TryChangeFocusedElementTo(Control? focusedControl, bool ignorePreviewHandled = false)
     {
         if (focusedControl == FocusedElement)
         {
@@ -86,7 +84,7 @@ public sealed class FocusManager
         }
 
         //
-        Control oldFocus = FocusedElement;
+        Control? oldFocus = FocusedElement;
         // генерируем Preview-события
         // если Handled = true хотя бы для одного из Preview-событий, то метод возвращает false
         // и фокус не меняется, а состояние Focused для измененных элементов визуального дерева
@@ -95,7 +93,7 @@ public sealed class FocusManager
         {
             KeyboardFocusChangedEventArgs previewLostArgs = new KeyboardFocusChangedEventArgs(oldFocus,
                 Control.PreviewLostKeyboardFocusEvent, oldFocus, focusedControl);
-            if (eventManager.ProcessRoutedEvent(previewLostArgs.RoutedEvent, previewLostArgs) && !ignorePreviewHandled)
+            if (_eventManager.ProcessRoutedEvent(previewLostArgs.RoutedEvent, previewLostArgs) && !ignorePreviewHandled)
             {
                 return false;
             }
@@ -105,7 +103,7 @@ public sealed class FocusManager
         {
             KeyboardFocusChangedEventArgs previewGotArgs = new KeyboardFocusChangedEventArgs(focusedControl,
                 Control.PreviewGotKeyboardFocusEvent, oldFocus, focusedControl);
-            if (eventManager.ProcessRoutedEvent(previewGotArgs.RoutedEvent, previewGotArgs) && !ignorePreviewHandled)
+            if (_eventManager.ProcessRoutedEvent(previewGotArgs.RoutedEvent, previewGotArgs) && !ignorePreviewHandled)
             {
                 return false;
             }
@@ -118,29 +116,26 @@ public sealed class FocusManager
         {
             KeyboardFocusChangedEventArgs lostArgs = new KeyboardFocusChangedEventArgs(oldFocus,
                 Control.LostKeyboardFocusEvent, oldFocus, focusedControl);
-            eventManager.ProcessRoutedEvent(lostArgs.RoutedEvent, lostArgs);
+            _eventManager.ProcessRoutedEvent(lostArgs.RoutedEvent, lostArgs);
         }
 
         if (null != focusedControl)
         {
             KeyboardFocusChangedEventArgs args = new KeyboardFocusChangedEventArgs(focusedControl,
                 Control.GotKeyboardFocusEvent, oldFocus, focusedControl);
-            eventManager.ProcessRoutedEvent(args.RoutedEvent, args);
+            _eventManager.ProcessRoutedEvent(args.RoutedEvent, args);
         }
 
         //
         return true;
     }
 
-    private Control currentScope;
+    private Control? _currentScope;
 
     /// <summary>
     /// Текущая область фокуса
     /// </summary>
-    public Control CurrentScope
-    {
-        get { return currentScope; }
-    }
+    public Control? CurrentScope => _currentScope;
 
     /// <summary>
     /// Устанавливает текущую область фокуса. Область фокуса задаётся родительским элементом scope.
@@ -162,16 +157,16 @@ public sealed class FocusManager
     /// (не будут генерироваться маршрутизируемые события, назначаемые текущему фокусному элементу).
     /// </summary>
     /// <param name="control"></param>
-    public void SetFocus(Control control)
+    public void SetFocus(Control? control)
     {
         if (null == control)
         {
-            this.currentScope = null;
-            tryChangeFocusedElementTo(null);
+            _currentScope = null;
+            TryChangeFocusedElementTo(null);
             return;
         }
 
-        Control closestFocusScope = findClosestScope(control);
+        Control? closestFocusScope = FindClosestScope(control);
         if (null == closestFocusScope)
             throw new InvalidOperationException(
                 "Cannot set focus to control because no focus scope found up to visual tree");
@@ -183,10 +178,10 @@ public sealed class FocusManager
     /// Находит ближайший вверх по иерархии контролов элемент управления со значением IsFocusScope = True.
     /// Возвращает null, если такого элемента управления нет.
     /// </summary>
-    private Control findClosestScope(Control control)
+    private Control? FindClosestScope(Control control)
     {
         Debug.Assert(null != control);
-        Control currentParent = control.Parent;
+        Control? currentParent = control.Parent;
         while (currentParent != null)
         {
             if (currentParent.IsFocusScope)
@@ -206,25 +201,25 @@ public sealed class FocusManager
     public void SetFocus(Control scope, Control? control)
     {
         if (scope == null)
-            throw new ArgumentNullException("scope");
+            throw new ArgumentNullException(nameof(scope));
         if (!scope.IsFocusScope)
-            throw new ArgumentException("IsFocusScope property should be true", "scope");
+            throw new ArgumentException("IsFocusScope property should be true", nameof(scope));
 
-        List<Control> children = getControlsInScope(scope);
+        List<Control> children = GetControlsInScope(scope);
         if (children.Count == 0)
         {
-            if (tryChangeFocusedElementTo(null))
-                currentScope = scope;
+            if (TryChangeFocusedElementTo(null))
+                _currentScope = scope;
             return;
         }
 
-        Control tofocus;
+        Control? toFocus;
         if (null != control)
         {
             if (!children.Contains(control))
                 throw new ArgumentException(
                     "Specified control is not a child of scope or is not visible or is not focusable");
-            tofocus = control;
+            toFocus = control;
         }
         else
         {
@@ -251,24 +246,19 @@ public sealed class FocusManager
                 reinitFocus = true;
             }
 
-            if (reinitFocus)
-                tofocus = children[0];
-            else
-            {
-                tofocus = scope.StoredFocus;
-            }
+            toFocus = reinitFocus ? children[0] : scope.StoredFocus;
         }
 
-        if (tryChangeFocusedElementTo(tofocus))
+        if (TryChangeFocusedElementTo(toFocus))
         {
-            currentScope = scope;
+            _currentScope = scope;
         }
     }
 
     /// <summary>
     /// returns visible and focusable childs of scope ordered by z-index
     /// </summary>
-    private List<Control> getControlsInScope(Control scope)
+    private List<Control> GetControlsInScope(Control scope)
     {
         List<Control> children;
         List<Control> processed = new List<Control>();
@@ -320,15 +310,15 @@ public sealed class FocusManager
 
     public void MoveFocusNext()
     {
-        if (null == currentScope)
+        if (null == _currentScope)
             throw new InvalidOperationException("Focus scope isn't set");
         if (null == FocusedElement)
         {
-            SetFocus(currentScope, null);
+            SetFocus(_currentScope, null);
             return;
         }
 
-        List<Control> children = getControlsInScope(currentScope);
+        List<Control> children = GetControlsInScope(_currentScope);
         if (children.Count == 0)
         {
             return;
@@ -337,27 +327,25 @@ public sealed class FocusManager
         int focusedIndex = children.FindIndex(c => c == FocusedElement);
         if (focusedIndex == -1)
         {
-            SetFocus(currentScope, null);
+            SetFocus(_currentScope, null);
             return;
         }
-        else
-        {
-            Control child = children[(focusedIndex + 1) % children.Count];
-            tryChangeFocusedElementTo(child);
-        }
+
+        Control child = children[(focusedIndex + 1) % children.Count];
+        TryChangeFocusedElementTo(child);
     }
 
     public void MoveFocusPrev()
     {
-        if (null == currentScope)
+        if (null == _currentScope)
             throw new InvalidOperationException("Focus scope isn't set");
         if (null == FocusedElement)
         {
-            SetFocus(currentScope, null);
+            SetFocus(_currentScope, null);
             return;
         }
 
-        List<Control> children = getControlsInScope(currentScope);
+        List<Control> children = GetControlsInScope(_currentScope);
         if (children.Count == 0)
         {
             return;
@@ -366,13 +354,13 @@ public sealed class FocusManager
         int focusedIndex = children.FindIndex(c => c == FocusedElement);
         if (focusedIndex == -1)
         {
-            SetFocus(currentScope, null);
+            SetFocus(_currentScope, null);
             return;
         }
 
         int index = focusedIndex > 0 ? focusedIndex - 1 : children.Count - 1;
         Control child = children[index];
-        tryChangeFocusedElementTo(child);
+        TryChangeFocusedElementTo(child);
     }
 
     /// <summary>
@@ -385,9 +373,9 @@ public sealed class FocusManager
     {
         if (null == control)
             throw new ArgumentNullException("control");
-        if (null != FocusedElement && isFocusedElementInSubtree(control))
+        if (null != FocusedElement && IsFocusedElementInSubtree(control))
         {
-            tryChangeFocusedElementTo(null, true);
+            TryChangeFocusedElementTo(null, true);
         }
     }
 
@@ -395,9 +383,9 @@ public sealed class FocusManager
     /// Определяет, содержит ли поддерево визуальных элементов, начинающееся с control,
     /// текущий элемент, удерживающий в данных момент клавиатурный фокус - FocusedElement.
     /// </summary>
-    private bool isFocusedElementInSubtree(Control control)
+    private bool IsFocusedElementInSubtree(Control control)
     {
-        Control current = FocusedElement;
+        Control? current = FocusedElement;
         while (null != current)
         {
             if (current == control)
