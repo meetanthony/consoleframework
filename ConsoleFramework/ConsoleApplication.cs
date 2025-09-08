@@ -20,21 +20,199 @@ namespace ConsoleFramework;
 /// </summary>
 public sealed class ConsoleApplication : IDisposable
 {
+    #region Private fields
+
+    private IntPtr _termKeyHandle = IntPtr.Zero;
+
     private bool _maximized;
     private Size _savedBufferSize;
     private Rect _savedWindowRect;
 
     private IntPtr _consoleWindowHwnd;
+    private Size _userCanvasSize;
+    private volatile bool _running;
 
-    private IntPtr GetConsoleWindowHwnd()
+    private PhysicalCanvas _canvas;
+    private Rect _userRootElementRect;
+    private IntPtr _stdInputHandle;
+    private IntPtr _stdOutputHandle;
+
+    private readonly EventWaitHandle? _exitWaitHandle;
+    private readonly EventWaitHandle _invokeWaitHandle;
+    private int? _mainThreadId;
+    private readonly List<ActionInfo> _actionsToBeInvoked = new List<ActionInfo>();
+    private readonly Object _actionsLocker = new object();
+
+    /// <summary>
+    /// File descriptors for self-pipe.
+    /// First descriptor is used to read from pipe, second - to write.
+    /// </summary>
+    private readonly int[] _pipeFds = new int[2];
+
+    private Control _mainControl;
+
+    private readonly Renderer _renderer = new Renderer();
+
+    private readonly object _timersLock = new object();
+
+    /// <summary>
+    /// This structure is required to avoid active timer to be collected by GC
+    /// before action execution.
+    /// </summary>
+    private readonly List<Timer> _activeTimers = new List<Timer>();
+
+    #endregion Private fields
+
+    #region Static fields
+
+    private static readonly bool UsingLinux;
+    private static readonly bool IsDarwin;
+
+    static ConsoleApplication()
     {
-        if (IntPtr.Zero == _consoleWindowHwnd)
+        UsingLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+    }
+
+    public static Control LoadFromXaml(string xamlResourceName, object dataContext)
+    {
+        var assembly = Assembly.GetEntryAssembly();
+        if (assembly == null)
+            throw new Exception();
+
+        using Stream? stream = assembly.GetManifestResourceStream(xamlResourceName);
+        if (null == stream)
         {
-            _consoleWindowHwnd = Win32.GetConsoleWindow();
+            throw new ArgumentException("Resource not found.", nameof(xamlResourceName));
         }
 
-        return _consoleWindowHwnd;
+        using StreamReader reader = new StreamReader(stream);
+        string result = reader.ReadToEnd();
+        Control control = XamlParser.CreateFromXaml<Control>(result, dataContext, new List<string>()
+        {
+            "clr-namespace:Xaml;assembly=ConsoleFramework",
+            "clr-namespace:ConsoleFramework.Xaml;assembly=ConsoleFramework",
+            "clr-namespace:ConsoleFramework.Controls;assembly=ConsoleFramework",
+        });
+        control.DataContext = dataContext;
+        control.Created();
+        return control;
     }
+
+    #endregion Static fields
+
+    #region Constructors/Destructor and Dispose
+
+    private ConsoleApplication()
+    {
+        EventManager = new EventManager();
+        FocusManager = new FocusManager(EventManager);
+
+        _exitWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+        _invokeWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
+    }
+
+    ~ConsoleApplication()
+    {
+        Dispose(false);
+    }
+
+    private void Dispose(bool isDisposing)
+    {
+        if (isDisposing)
+        {
+            if (_exitWaitHandle != null)
+            {
+                _exitWaitHandle.Dispose();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    #endregion Constructors/Destructor and Dispose
+
+    #region Public properties
+
+    /// <summary>
+    /// Instance of Application object.
+    /// </summary>
+    public static ConsoleApplication Instance { get; } = new ConsoleApplication();
+
+    /// <summary>
+    /// Gets or sets a size of canvas. Whet set, old canvas image will be
+    /// copied to new one.
+    /// </summary>
+    public Size CanvasSize
+    {
+        get
+        {
+            if (_running && _userCanvasSize.IsEmpty)
+                return _canvas.Size;
+            return _userCanvasSize;
+        }
+        set
+        {
+            if (_running && value != _canvas.Size)
+            {
+                _canvas.Size = value;
+            }
+
+            _userCanvasSize = value;
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the root element rect.
+    /// When set, root element will be added to invalidation queue automatically.
+    /// </summary>
+    public Rect RootElementRect
+    {
+        get
+        {
+            if (_running && _userRootElementRect.IsEmpty)
+            {
+                return _renderer.RootElementRect;
+            }
+
+            return _userRootElementRect;
+        }
+        set
+        {
+            if (_running && value != _renderer.RootElementRect)
+            {
+                _renderer.RootElementRect = value;
+            }
+
+            _userRootElementRect = value;
+        }
+    }
+
+    public Renderer Renderer => _renderer;
+
+    /// <summary>
+    /// Returns the root control of the application.
+    /// </summary>
+    public Control RootControl => _mainControl;
+
+    public FocusManager FocusManager { get; }
+
+    public EventManager EventManager { get; }
+
+    /// <summary>
+    /// Состояние курсора консоли для избежания повторных вызовов Show и Hide.
+    /// Консистентность этого свойства может быть нарушена, если пользоваться в приложении
+    /// нативными функциями для работы с курсором напрямую.
+    /// </summary>
+    internal bool CursorIsVisible { get; private set; }
+
+    #endregion Public properties
+
+    #region Public methods
 
     /// <summary>
     /// Maximizes the terminal window size and terminal buffer size.
@@ -105,152 +283,6 @@ public sealed class ConsoleApplication : IDisposable
     }
 
     /// <summary>
-    /// Fires when console buffer size is changed.
-    /// </summary>
-    public event TerminalSizeChangedHandler? TerminalSizeChanged;
-
-    /// <summary>
-    /// Default TerminalSizeChanged event handler. Invoked when
-    /// initial CanvasSize and RootElementRect are empty and no another
-    /// TerminalSizeChanged handler is attached.
-    /// </summary>
-    public void OnTerminalSizeChangedDefault(object sender, TerminalSizeChangedEventArgs args)
-    {
-        if (!_userCanvasSize.IsEmpty) throw new InvalidOperationException("Assertion failed.");
-        if (!_userRootElementRect.IsEmpty) throw new InvalidOperationException("Assertion failed.");
-        if (TerminalSizeChanged != null) throw new InvalidOperationException("Assertion failed.");
-
-        _canvas.Size = new Size(args.Width, args.Height);
-        _renderer.RootElementRect = new Rect(_canvas.Size);
-        _renderer.UpdateLayout();
-    }
-
-    private Size _userCanvasSize;
-
-    /// <summary>
-    /// Gets or sets a size of canvas. Whet set, old canvas image will be
-    /// copied to new one.
-    /// </summary>
-    public Size CanvasSize
-    {
-        get
-        {
-            if (_running && _userCanvasSize.IsEmpty)
-                return _canvas.Size;
-            return _userCanvasSize;
-        }
-        set
-        {
-            if (_running && value != _canvas.Size)
-            {
-                _canvas.Size = value;
-            }
-
-            _userCanvasSize = value;
-        }
-    }
-
-    private Rect _userRootElementRect;
-
-    /// <summary>
-    /// Gets or sets the root element rect.
-    /// When set, root element will be added to invalidation queue automatically.
-    /// </summary>
-    public Rect RootElementRect
-    {
-        get
-        {
-            if (_running && _userRootElementRect.IsEmpty)
-            {
-                return _renderer.RootElementRect;
-            }
-
-            return _userRootElementRect;
-        }
-        set
-        {
-            if (_running && value != _renderer.RootElementRect)
-            {
-                _renderer.RootElementRect = value;
-            }
-
-            _userRootElementRect = value;
-        }
-    }
-
-    private volatile bool _running;
-    private PhysicalCanvas _canvas;
-
-    public static Control LoadFromXaml(string xamlResourceName, object dataContext)
-    {
-        var assembly = Assembly.GetEntryAssembly();
-        if (assembly == null)
-            throw new Exception();
-
-        using Stream? stream = assembly.GetManifestResourceStream(xamlResourceName);
-        if (null == stream)
-        {
-            throw new ArgumentException("Resource not found.", nameof(xamlResourceName));
-        }
-
-        using StreamReader reader = new StreamReader(stream);
-        string result = reader.ReadToEnd();
-        Control control = XamlParser.CreateFromXaml<Control>(result, dataContext, new List<string>()
-        {
-            "clr-namespace:Xaml;assembly=ConsoleFramework",
-            "clr-namespace:ConsoleFramework.Xaml;assembly=ConsoleFramework",
-            "clr-namespace:ConsoleFramework.Controls;assembly=ConsoleFramework",
-        });
-        control.DataContext = dataContext;
-        control.Created();
-        return control;
-    }
-
-    private static readonly bool UsingLinux;
-    private static readonly bool IsDarwin;
-
-    static ConsoleApplication()
-    {
-        UsingLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
-        IsDarwin = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-    }
-
-    private ConsoleApplication()
-    {
-        EventManager = new EventManager();
-        FocusManager = new FocusManager(EventManager);
-
-        _exitWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-        _invokeWaitHandle = new EventWaitHandle(false, EventResetMode.AutoReset);
-    }
-
-    /// <summary>
-    /// Instance of Application object.
-    /// </summary>
-    public static readonly ConsoleApplication Instance = new ConsoleApplication();
-
-    private IntPtr _stdInputHandle;
-    private IntPtr _stdOutputHandle;
-    private readonly EventWaitHandle? _exitWaitHandle;
-    private readonly EventWaitHandle _invokeWaitHandle;
-    private int? _mainThreadId;
-
-    private struct ActionInfo
-    {
-        public readonly Action Action;
-        public readonly EventWaitHandle? WaitHandle;
-
-        public ActionInfo(Action action, EventWaitHandle? waitHandle)
-        {
-            Action = action;
-            WaitHandle = waitHandle;
-        }
-    }
-
-    private readonly List<ActionInfo> _actionsToBeInvoked = new List<ActionInfo>();
-    private readonly Object _actionsLocker = new object();
-
-    /// <summary>
     /// Signals the message loop to be finished.
     /// Application shutdowns after that.
     /// </summary>
@@ -267,20 +299,164 @@ public sealed class ConsoleApplication : IDisposable
         }
     }
 
-    private readonly Renderer _renderer = new Renderer();
+    /// <summary>
+    /// Runs application using specified control as root control.
+    /// Application will run until method <see cref="Exit"/> is called.
+    /// </summary>
+    /// <param name="control"></param>
+    public void Run(Control control)
+    {
+        try
+        {
+            if (UsingLinux)
+            {
+                RunLinux(control);
+            }
+            else
+            {
+                RunWindows(control);
+            }
+        }
+        finally
+        {
+            _running = false;
+            _mainThreadId = null;
+        }
+    }
 
-    public Renderer Renderer => _renderer;
+    public void Run(Control control, Size canvasSize, Rect rectToUse)
+    {
+        _userCanvasSize = canvasSize;
+        _userRootElementRect = rectToUse;
+        Run(control);
+    }
 
     /// <summary>
-    /// Returns the root control of the application.
+    /// Checks if current thread is same thread from which Run() method
+    /// was called.
     /// </summary>
-    public Control RootControl => _mainControl;
+    /// <returns></returns>
+    public bool IsUiThread()
+    {
+        return Thread.CurrentThread.ManagedThreadId == _mainThreadId;
+    }
 
-    private Control _mainControl;
+    /// <summary>
+    /// Invokes action in UI thread synchronously.
+    /// If run loop was not started yet, nothing will be done.
+    /// </summary>
+    /// <param name="action"></param>
+    public void RunOnUiThread(Action action)
+    {
+        // If run loop is not started, do nothing
+        if (!_running)
+        {
+            return;
+        }
 
-    public FocusManager FocusManager { get; }
+        // If current thread is UI thread, invoke action directly
+        if (IsUiThread())
+        {
+            action.Invoke();
+            return;
+        }
 
-    public EventManager EventManager { get; }
+        using (EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset))
+        {
+            lock (_actionsLocker)
+            {
+                _actionsToBeInvoked.Add(new ActionInfo(action, waitHandle));
+            }
+
+            if (UsingLinux)
+            {
+                Libc.writeInt64(_pipeFds[1], 3);
+            }
+            else
+            {
+                _invokeWaitHandle.Set();
+            }
+
+            waitHandle.WaitOne();
+        }
+    }
+
+    /// <summary>
+    /// Invokes action in main loop thread asynchronously.
+    /// If run loop was not started yet, nothing will be done.
+    /// </summary>
+    public void Post(Action action)
+    {
+        // If run loop is not started, nothing to do
+        if (!_running)
+        {
+            return;
+        }
+
+        lock (_actionsLocker)
+        {
+            _actionsToBeInvoked.Add(new ActionInfo(action, null));
+        }
+
+        if (!IsUiThread())
+        {
+            if (UsingLinux)
+            {
+                Libc.writeInt64(_pipeFds[1], 3);
+            }
+            else
+            {
+                _invokeWaitHandle.Set();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Invokes action in main loop thread (UI thread) asynchronously and after delay.
+    /// If run loop will not start to delayed time, nothing will be done.
+    /// </summary>
+    public void Post(Action action, TimeSpan delay)
+    {
+        lock (_timersLock)
+        {
+            Timer[] array = new Timer[1];
+            Timer timer = new Timer(state =>
+            {
+                Post(action);
+                lock (_timersLock)
+                {
+                    _activeTimers.Remove(array[0]);
+                }
+            }, null, delay, TimeSpan.FromMilliseconds(-1));
+            array[0] = timer;
+            _activeTimers.Add(timer);
+        }
+    }
+
+    /// <summary>
+    /// Начинает захват мыши и маршрутизируемых событий
+    /// указанным элементом управления. После этого контрол принимает все события от мыши
+    /// в качестве источника события (вне зависимости от позиции курсора мыши), а все маршрутизируемые
+    /// события передаются только в этот контрол и к его потомкам.
+    /// Используется, например, при обработке клика на кнопке - после нажатия ввод захватывается, и
+    /// события приходят только в кнопку. Когда пользователь отпускает кнопку мыши, захват прекращается.
+    /// </summary>
+    public void BeginCaptureInput(Control control)
+    {
+        EventManager.BeginCaptureInput(control);
+    }
+
+    /// <summary>
+    /// Завершает захват мыши и маршрутизируемых событий.
+    /// </summary>
+    public void EndCaptureInput(Control control)
+    {
+        EventManager.EndCaptureInput(control);
+    }
+
+    #endregion Public methods
+
+    #region Internal methods
 
     internal void SetCursorPosition(Point position)
     {
@@ -294,13 +470,6 @@ public sealed class ConsoleApplication : IDisposable
             NCurses.refresh();
         }
     }
-
-    /// <summary>
-    /// Состояние курсора консоли для избежания повторных вызовов Show и Hide.
-    /// Консистентность этого свойства может быть нарушена, если пользоваться в приложении
-    /// нативными функциями для работы с курсором напрямую.
-    /// </summary>
-    internal bool CursorIsVisible { get; private set; }
 
     /// <summary>
     /// Делает курсор консоли видимым и устанавливает значение CursorIsVisible в true.
@@ -347,45 +516,38 @@ public sealed class ConsoleApplication : IDisposable
         CursorIsVisible = false;
     }
 
-    /// <summary>
-    /// Runs application using specified control as root control.
-    /// Application will run until method <see cref="Exit"/> is called.
-    /// </summary>
-    /// <param name="control"></param>
-    public void Run(Control control)
-    {
-        try
-        {
-            if (UsingLinux)
-            {
-                RunLinux(control);
-            }
-            else
-            {
-                RunWindows(control);
-            }
-        }
-        finally
-        {
-            _running = false;
-            _mainThreadId = null;
-        }
-    }
+    #endregion Internal methods
 
-    public void Run(Control control, Size canvasSize, Rect rectToUse)
+    private IntPtr GetConsoleWindowHwnd()
     {
-        _userCanvasSize = canvasSize;
-        _userRootElementRect = rectToUse;
-        Run(control);
+        if (IntPtr.Zero == _consoleWindowHwnd)
+        {
+            _consoleWindowHwnd = Win32.GetConsoleWindow();
+        }
+
+        return _consoleWindowHwnd;
     }
 
     /// <summary>
-    /// File descriptors for self-pipe.
-    /// First descriptor is used to read from pipe, second - to write.
+    /// Fires when console buffer size is changed.
     /// </summary>
-    private readonly int[] _pipeFds = new int[2];
+    public event TerminalSizeChangedHandler? TerminalSizeChanged;
 
-    private IntPtr _termkeyHandle = IntPtr.Zero;
+    /// <summary>
+    /// Default TerminalSizeChanged event handler. Invoked when
+    /// initial CanvasSize and RootElementRect are empty and no another
+    /// TerminalSizeChanged handler is attached.
+    /// </summary>
+    private void OnTerminalSizeChangedDefault(object sender, TerminalSizeChangedEventArgs args)
+    {
+        if (!_userCanvasSize.IsEmpty) throw new InvalidOperationException("Assertion failed.");
+        if (!_userRootElementRect.IsEmpty) throw new InvalidOperationException("Assertion failed.");
+        if (TerminalSizeChanged != null) throw new InvalidOperationException("Assertion failed.");
+
+        _canvas.Size = new Size(args.Width, args.Height);
+        _renderer.RootElementRect = new Rect(_canvas.Size);
+        _renderer.UpdateLayout();
+    }
 
     private void RunLinux(Control control)
     {
@@ -411,7 +573,7 @@ public sealed class ConsoleApplication : IDisposable
         _mainControl.Invalidate();
 
         // Terminal initialization sequence
-        
+
         // Because .NET Core runtime changes locale to something wrong on startup,
         // we have to change it to default system locale
         // See https://stackoverflow.com/a/6249265
@@ -440,7 +602,7 @@ public sealed class ConsoleApplication : IDisposable
             _renderer.UpdateLayout();
             _renderer.FinallyApplyChangesToCanvas();
 
-            _termkeyHandle = LibTermKey.termkey_new(Libc.STDIN_FILENO, TermKeyFlag.TERMKEY_FLAG_SPACESYMBOL);
+            _termKeyHandle = LibTermKey.termkey_new(Libc.STDIN_FILENO, TermKeyFlag.TERMKEY_FLAG_SPACESYMBOL);
 
             // Setup the input mode
             Console.Write("\x1B[?1002h");
@@ -477,7 +639,7 @@ public sealed class ConsoleApplication : IDisposable
                     {
                         if (nextwait == -1)
                             throw new InvalidOperationException("Assertion failed.");
-                        if (TermKeyResult.TERMKEY_RES_KEY == LibTermKey.termkey_getkey_force(_termkeyHandle, ref key))
+                        if (TermKeyResult.TERMKEY_RES_KEY == LibTermKey.termkey_getkey_force(_termKeyHandle, ref key))
                         {
                             ProcessLinuxInput(key);
                         }
@@ -526,19 +688,19 @@ public sealed class ConsoleApplication : IDisposable
                         (fds[0].revents & POLL_EVENTS.POLLHUP) == POLL_EVENTS.POLLHUP ||
                         (fds[0].revents & POLL_EVENTS.POLLERR) == POLL_EVENTS.POLLERR)
                     {
-                        LibTermKey.termkey_advisereadable(_termkeyHandle);
+                        LibTermKey.termkey_advisereadable(_termKeyHandle);
                     }
 
-                    TermKeyResult result = (LibTermKey.termkey_getkey(_termkeyHandle, ref key));
+                    TermKeyResult result = (LibTermKey.termkey_getkey(_termKeyHandle, ref key));
                     while (result == TermKeyResult.TERMKEY_RES_KEY)
                     {
                         ProcessLinuxInput(key);
-                        result = (LibTermKey.termkey_getkey(_termkeyHandle, ref key));
+                        result = (LibTermKey.termkey_getkey(_termKeyHandle, ref key));
                     }
 
                     if (result == TermKeyResult.TERMKEY_RES_AGAIN)
                     {
-                        nextwait = LibTermKey.termkey_get_waittime(_termkeyHandle);
+                        nextwait = LibTermKey.termkey_get_waittime(_termKeyHandle);
                     }
                     else
                     {
@@ -564,7 +726,7 @@ public sealed class ConsoleApplication : IDisposable
             }
             finally
             {
-                LibTermKey.termkey_destroy(_termkeyHandle);
+                LibTermKey.termkey_destroy(_termKeyHandle);
                 Libc.close(_pipeFds[0]);
                 Libc.close(_pipeFds[1]);
                 Console.Write("\x1B[?1002l");
@@ -607,6 +769,7 @@ public sealed class ConsoleApplication : IDisposable
                 case TermKeySym.TERMKEY_SYM_TAB:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Tab;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_ENTER:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Return;
                     break;
@@ -616,43 +779,56 @@ public sealed class ConsoleApplication : IDisposable
                 case TermKeySym.TERMKEY_SYM_BACKSPACE:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Back;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_DELETE:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Delete;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_HOME:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Home;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_END:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.End;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_PAGEUP:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Prior;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_PAGEDOWN:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Next;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_SPACE:
                     inputRecord.KeyEvent.UnicodeChar = ' ';
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Space;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_ESCAPE:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Escape;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_INSERT:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Insert;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_UP:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Up;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_DOWN:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Down;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_LEFT:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Left;
                     break;
+
                 case TermKeySym.TERMKEY_SYM_RIGHT:
                     inputRecord.KeyEvent.wVirtualKeyCode = VirtualKeys.Right;
                     break;
+
                 default:
                     throw new NotSupportedException("Not supported keyboard code detected: " + key.code.sym);
             }
@@ -732,7 +908,7 @@ public sealed class ConsoleApplication : IDisposable
             TermKeyMouseEvent ev;
             int button;
             int line, col;
-            LibTermKey.termkey_interpret_mouse(_termkeyHandle, ref key, out ev, out button, out line, out col);
+            LibTermKey.termkey_interpret_mouse(_termKeyHandle, ref key, out ev, out button, out line, out col);
             //
             INPUT_RECORD inputRecord = new INPUT_RECORD();
             inputRecord.EventType = EventType.MOUSE_EVENT;
@@ -818,7 +994,6 @@ public sealed class ConsoleApplication : IDisposable
 
         // Initially hide the console cursor
         HideCursor();
-
 
         _running = true;
         _mainThreadId = Thread.CurrentThread.ManagedThreadId;
@@ -910,7 +1085,7 @@ public sealed class ConsoleApplication : IDisposable
 
     private void ProcessInvokeActions()
     {
-        for (;;)
+        for (; ; )
         {
             ActionInfo top;
             lock (_actionsLocker)
@@ -989,156 +1164,19 @@ public sealed class ConsoleApplication : IDisposable
         EventManager.ParseInputEvent(inputRecord, _mainControl);
     }
 
-    /// <summary>
-    /// Checks if current thread is same thread from which Run() method
-    /// was called.
-    /// </summary>
-    /// <returns></returns>
-    public bool IsUiThread()
+    #region Structs
+
+    private struct ActionInfo
     {
-        return Thread.CurrentThread.ManagedThreadId == _mainThreadId;
-    }
+        public readonly Action Action;
+        public readonly EventWaitHandle? WaitHandle;
 
-    /// <summary>
-    /// Invokes action in UI thread synchronously.
-    /// If run loop was not started yet, nothing will be done.
-    /// </summary>
-    /// <param name="action"></param>
-    public void RunOnUiThread(Action action)
-    {
-        // If run loop is not started, do nothing
-        if (!_running)
+        public ActionInfo(Action action, EventWaitHandle? waitHandle)
         {
-            return;
-        }
-
-        // If current thread is UI thread, invoke action directly
-        if (IsUiThread())
-        {
-            action.Invoke();
-            return;
-        }
-
-        using (EventWaitHandle waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset))
-        {
-            lock (_actionsLocker)
-            {
-                _actionsToBeInvoked.Add(new ActionInfo(action, waitHandle));
-            }
-
-            if (UsingLinux)
-            {
-                Libc.writeInt64(_pipeFds[1], 3);
-            }
-            else
-            {
-                _invokeWaitHandle.Set();
-            }
-
-            waitHandle.WaitOne();
+            Action = action;
+            WaitHandle = waitHandle;
         }
     }
 
-    /// <summary>
-    /// Invokes action in main loop thread asynchronously.
-    /// If run loop was not started yet, nothing will be done.
-    /// </summary>
-    public void Post(Action action)
-    {
-        // If run loop is not started, nothing to do
-        if (!_running)
-        {
-            return;
-        }
-
-        lock (_actionsLocker)
-        {
-            _actionsToBeInvoked.Add(new ActionInfo(action, null));
-        }
-
-        if (!IsUiThread())
-        {
-            if (UsingLinux)
-            {
-                Libc.writeInt64(_pipeFds[1], 3);
-            }
-            else
-            {
-                _invokeWaitHandle.Set();
-            }
-        }
-    }
-
-    private readonly object _timersLock = new object();
-
-    /// <summary>
-    /// This structure is required to avoid active timer to be collected by GC
-    /// before action execution.
-    /// </summary>
-    private readonly List<Timer> _activeTimers = new List<Timer>();
-
-    /// <summary>
-    /// Invokes action in main loop thread (UI thread) asynchronously and after delay.
-    /// If run loop will not start to delayed time, nothing will be done.
-    /// </summary>
-    public void Post(Action action, TimeSpan delay)
-    {
-        lock (_timersLock)
-        {
-            Timer[] array = new Timer[1];
-            Timer timer = new Timer(state =>
-            {
-                Post(action);
-                lock (_timersLock)
-                {
-                    _activeTimers.Remove(array[0]);
-                }
-            }, null, delay, TimeSpan.FromMilliseconds(-1));
-            array[0] = timer;
-            _activeTimers.Add(timer);
-        }
-    }
-
-    /// <summary>
-    /// Начинает захват мыши и маршрутизируемых событий
-    /// указанным элементом управления. После этого контрол принимает все события от мыши
-    /// в качестве источника события (вне зависимости от позиции курсора мыши), а все маршрутизируемые
-    /// события передаются только в этот контрол и к его потомкам.
-    /// Используется, например, при обработке клика на кнопке - после нажатия ввод захватывается, и
-    /// события приходят только в кнопку. Когда пользователь отпускает кнопку мыши, захват прекращается.
-    /// </summary>
-    public void BeginCaptureInput(Control control)
-    {
-        EventManager.BeginCaptureInput(control);
-    }
-
-    /// <summary>
-    /// Завершает захват мыши и маршрутизируемых событий.
-    /// </summary>
-    public void EndCaptureInput(Control control)
-    {
-        EventManager.EndCaptureInput(control);
-    }
-
-    private void Dispose(bool isDisposing)
-    {
-        if (isDisposing)
-        {
-            if (_exitWaitHandle != null)
-            {
-                _exitWaitHandle.Dispose();
-            }
-        }
-    }
-
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
-    ~ConsoleApplication()
-    {
-        Dispose(false);
-    }
+    #endregion Structs
 }
