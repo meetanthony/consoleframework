@@ -303,7 +303,7 @@ public class ListBox : Control
                 {
                     SelectedItemIndex--;
                 }
-            } while (_disabledItemsIndexes.Contains(SelectedItemIndex.Value));
+            } while (SelectedItemIndex != null && _disabledItemsIndexes.Contains(SelectedItemIndex.Value));
 
             CurrentItemShouldBeVisibleAtTop();
         }
