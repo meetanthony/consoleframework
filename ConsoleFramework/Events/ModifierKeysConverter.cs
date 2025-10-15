@@ -14,7 +14,7 @@ public enum ModifierKeys
 
 public class ModifierKeysConverter : ITypeConverter
 {
-    private const char Modifier_Delimiter = '+';
+    private const char ModifierDelimiter = '+';
 
     public bool CanConvertFrom(Type sourceType)
     {
@@ -35,7 +35,7 @@ public class ModifierKeysConverter : ITypeConverter
 
     public object ConvertTo(object value, Type destinationType)
     {
-        if (destinationType == null) throw new ArgumentNullException("destinationType");
+        if (destinationType == null) throw new ArgumentNullException(nameof(destinationType));
         if (destinationType != typeof(string)) throw new NotSupportedException("value should be string");
 
         ModifierKeys modifierKeys = (ModifierKeys)value;
@@ -49,7 +49,7 @@ public class ModifierKeysConverter : ITypeConverter
         {
             if (str.Length > 0)
             {
-                str = str + Modifier_Delimiter;
+                str = str + ModifierDelimiter;
             }
 
             str = str + MatchModifiers(ModifierKeys.Alt);
@@ -62,7 +62,7 @@ public class ModifierKeysConverter : ITypeConverter
 
         if (str.Length > 0)
         {
-            str = str + Modifier_Delimiter;
+            str = str + ModifierDelimiter;
         }
 
         return (str + MatchModifiers(ModifierKeys.Shift));
@@ -73,11 +73,11 @@ public class ModifierKeysConverter : ITypeConverter
         ModifierKeys none = ModifierKeys.None;
         if (modifiersToken.Length != 0)
         {
-            int length = 0;
+            int length;
             do
             {
-                length = modifiersToken.IndexOf(Modifier_Delimiter);
-                string str = (length < 0) ? modifiersToken : modifiersToken.Substring(0, length);
+                length = modifiersToken.IndexOf(ModifierDelimiter);
+                string str = length < 0 ? modifiersToken : modifiersToken.Substring(0, length);
                 str = str.Trim().ToUpper();
                 switch (str)
                 {
