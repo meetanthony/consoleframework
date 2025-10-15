@@ -10,7 +10,7 @@ namespace ConsoleFramework.Events;
 /// </summary>
 public class KeyGestureConverter : ITypeConverter
 {
-    internal const char DISPLAYSTRING_SEPARATOR = ',';
+    private const char DisplaystringSeparator = ',';
     private static readonly KeyConverter KeyConverter = new KeyConverter();
     private static readonly ModifierKeysConverter ModifierKeysConverter = new ModifierKeysConverter();
     private const char MODIFIERS_DELIMITER = '+';
@@ -36,7 +36,7 @@ public class KeyGestureConverter : ITypeConverter
         string beforePlus;
         string afterComma;
 
-        int index = str.IndexOf(DISPLAYSTRING_SEPARATOR);
+        int index = str.IndexOf(DisplaystringSeparator);
         if (index >= 0)
         {
             afterComma = str.Substring(index + 1).Trim();
