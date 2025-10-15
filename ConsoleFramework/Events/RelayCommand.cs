@@ -4,37 +4,35 @@ namespace ConsoleFramework.Events;
 
 /// <summary>
 /// Command constructed from delegates.
-/// CanExecute = True by default if no canExecute functor provided.
+/// CanExecute = True by default if no _canExecute functor provided.
 /// </summary>
 public class RelayCommand : ICommand
 {
-    private readonly Action<object> action;
-    private readonly Func<object, bool> canExecute;
+    private readonly Action<object?> _action;
+    private readonly Func<object?, bool>? _canExecute;
 
-    public RelayCommand(Action<object> action)
+    public RelayCommand(Action<object?>? action)
     {
-        if (null == action) throw new ArgumentNullException("action");
-        this.action = action;
+        _action = action ?? throw new ArgumentNullException(nameof(action));
     }
 
-    public RelayCommand(Action<object> action, Func<object, bool> canExecute)
+    public RelayCommand(Action<object?> action, Func<object?, bool>? canExecute)
         : this(action)
     {
-        if (null == canExecute) throw new ArgumentNullException("canExecute");
-        this.canExecute = canExecute;
+        _canExecute = canExecute ?? throw new ArgumentNullException(nameof(canExecute));
     }
 
-    public event EventHandler CanExecuteChanged;
+    public event EventHandler? CanExecuteChanged;
 
-    public bool CanExecute(object parameter)
+    public bool CanExecute(object? parameter)
     {
-        return canExecute == null || canExecute.Invoke(parameter);
+        return _canExecute == null || _canExecute.Invoke(parameter);
     }
 
-    public void Execute(object parameter)
+    public void Execute(object? parameter)
     {
         if (CanExecute(parameter))
-            action.Invoke(parameter);
+            _action.Invoke(parameter);
     }
 
     public void RaiseCanExecuteChanged()
