@@ -64,7 +64,7 @@ public class WindowsHost : Control
         if (windowsStartIndex < Children.Count)
         {
             Window topWindow = (Window)Children[Children.Count - 1];
-            Window sourceWindow = VisualTreeHelper.FindClosestParent<Window>((Control)args.Source);
+            Window? sourceWindow = VisualTreeHelper.FindClosestParent<Window>(args.Source as Control);
             if (topWindow != sourceWindow)
             {
                 args.Handled = true;
@@ -229,7 +229,7 @@ public class WindowsHost : Control
         if (IsTopWindowModal())
         {
             Window modalWindow = (Window)Children[Children.Count - 1];
-            Window windowClicked = VisualTreeHelper.FindClosestParent<Window>((Control)args.Source);
+            Window? windowClicked = VisualTreeHelper.FindClosestParent<Window>(args.Source as Control);
             if (windowClicked != modalWindow)
             {
                 if (_windowInfos[modalWindow].OutsideClickClosesWindow
@@ -282,7 +282,7 @@ public class WindowsHost : Control
     {
         Assert(_mainMenu != null);
         if (ConsoleApplication.Instance.FocusManager.CurrentScope != _mainMenu)
-            ConsoleApplication.Instance.FocusManager.SetFocusScope(_mainMenu);
+            ConsoleApplication.Instance.FocusManager.SetFocusScope(_mainMenu!);
     }
 
     private void initializeFocusOnActivatedWindow(Window window)
