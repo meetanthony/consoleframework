@@ -20,7 +20,7 @@ public class KeyConverter : ITypeConverter
     {
         if (!(source is string)) throw new NotSupportedException();
         string keyToken = ((string)source).Trim();
-        object key = this.parseKey(keyToken);
+        object key = ParseKey(keyToken);
         if (key == null)
         {
             throw new NotSupportedException("Unsupported key " + keyToken);
@@ -52,7 +52,7 @@ public class KeyConverter : ITypeConverter
         throw new NotSupportedException("todo :");
     }
 
-    private VirtualKeys parseKey(string keyToken)
+    private static VirtualKeys ParseKey(string keyToken)
     {
         if (keyToken == string.Empty)
         {
@@ -75,7 +75,7 @@ public class KeyConverter : ITypeConverter
             return (VirtualKeys)(((int)VirtualKeys.A) + (keyToken[0] - 0x41));
         }
 
-        VirtualKeys escape = 0;
+        VirtualKeys escape;
         switch (keyToken)
         {
             case "ENTER":
