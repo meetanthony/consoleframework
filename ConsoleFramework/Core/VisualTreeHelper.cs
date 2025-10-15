@@ -9,9 +9,9 @@ public class VisualTreeHelper
     public static List<Control> FindAllChilds(Control control, Func<Control, bool> predicate)
     {
         if (null == control)
-            throw new ArgumentNullException("control");
+            throw new ArgumentNullException(nameof(control));
         if (null == predicate)
-            throw new ArgumentNullException("predicate");
+            throw new ArgumentNullException(nameof(predicate));
 
         List<Control> queue = new List<Control>();
         FindAllChildsRecoursively(queue, control, predicate);
@@ -40,9 +40,9 @@ public class VisualTreeHelper
     public static Control? FindChildByName(Control control, string childName)
     {
         if (null == control)
-            throw new ArgumentNullException("control");
+            throw new ArgumentNullException(nameof(control));
         if (string.IsNullOrEmpty(childName))
-            throw new ArgumentException("String is null or empty", "childName");
+            throw new ArgumentException("String is null or empty", nameof(childName));
         //
         return FindChildByNameRecoursively(control, childName);
     }
@@ -71,7 +71,7 @@ public class VisualTreeHelper
     {
         if (null == control)
         {
-            throw new ArgumentNullException("control");
+            throw new ArgumentNullException(nameof(control));
         }
 
         Control root = ConsoleApplication.Instance.RootControl;
@@ -116,7 +116,7 @@ public class VisualTreeHelper
     /// если все контролы были прозрачны для событий мыши</returns>
     public static Control? FindTopControlUnderMouse(Control control, Point localPoint)
     {
-        if (null == control) throw new ArgumentNullException("control");
+        if (null == control) throw new ArgumentNullException(nameof(control));
 
         Point rawPoint = Control.TranslatePoint(control, localPoint, null);
 
