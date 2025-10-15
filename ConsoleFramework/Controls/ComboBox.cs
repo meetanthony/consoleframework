@@ -64,7 +64,7 @@ public class ComboBox : Control
             Content = _scrollViewer;
 
             // If click on the transparent header, close the popup
-            AddHandler(MouseDownEvent, new MouseButtonEventHandler((sender, args) =>
+            AddHandler(MouseDownEvent, new MouseButtonEventHandler((_, args) =>
             {
                 if (!_scrollViewer.RenderSlotRect.Contains(args.GetPosition(this)))
                 {
@@ -74,12 +74,12 @@ public class ComboBox : Control
             }));
 
             // If listbox item has been selected
-            EventManager.AddHandler(_listbox, MouseUpEvent, new MouseButtonEventHandler((sender, args) =>
+            EventManager.AddHandler(_listbox, MouseUpEvent, new MouseButtonEventHandler((_, _) =>
             {
                 IndexSelected = _listbox.SelectedItemIndex;
                 Close();
             }), true);
-            EventManager.AddHandler(_listbox, KeyDownEvent, new KeyEventHandler((sender, args) =>
+            EventManager.AddHandler(_listbox, KeyDownEvent, new KeyEventHandler((_, args) =>
             {
                 if (args.wVirtualKeyCode == VirtualKeys.Return)
                 {

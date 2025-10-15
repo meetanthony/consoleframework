@@ -420,7 +420,7 @@ public sealed class ConsoleApplication : IDisposable
         lock (_timersLock)
         {
             Timer[] array = new Timer[1];
-            Timer timer = new Timer(state =>
+            Timer timer = new Timer(_ =>
             {
                 Post(action);
                 lock (_timersLock)
@@ -624,7 +624,7 @@ public sealed class ConsoleApplication : IDisposable
 
             try
             {
-                Libc.signal(28, arg => { Libc.writeInt64(_pipeFds[1], 2); });
+                Libc.signal(28, _ => { Libc.writeInt64(_pipeFds[1], 2); });
 
                 TermKeyKey key = new TermKeyKey();
                 //

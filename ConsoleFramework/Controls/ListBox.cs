@@ -54,7 +54,7 @@ public class ListBox : Control
         AddHandler(MouseDownEvent, new MouseButtonEventHandler(OnMouseDown));
         AddHandler(MouseMoveEvent, new MouseEventHandler(OnMouseMove));
         AddHandler(MouseWheelEvent, new MouseWheelEventHandler(OnMouseWheel));
-        _items.ListChanged += (sender, args) =>
+        _items.ListChanged += (_, args) =>
         {
             // Shift indexes of disabled items
             switch (args.Type)

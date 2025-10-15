@@ -65,14 +65,14 @@ public class ContextMenu
         // в WindowsHost, но не в Menu. А нам нужно повесить обработчик, который закроет
         // все показанные попапы.
         EventManager.AddHandler(windowsHost, MenuItem.ClickEvent,
-            _windowsHostClick = (sender, args) =>
+            _windowsHostClick = (_, _) =>
             {
                 CloseAllSubmenus();
                 _popup?.Close();
             }, true);
 
         EventManager.AddHandler(windowsHost, MenuItem.Popup.ControlKeyPressedEvent,
-            _windowsHostControlKeyPressed = (sender, args) =>
+            _windowsHostControlKeyPressed = (_, args) =>
             {
                 CloseAllSubmenus();
                 //

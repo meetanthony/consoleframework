@@ -136,7 +136,7 @@ public class TreeView : Control
         AddChild(_listBox);
         _items.ListChanged += ItemsOnListChanged;
 
-        _listBox.AddHandler(MouseDownEvent, new MouseEventHandler((sender, args) =>
+        _listBox.AddHandler(MouseDownEvent, new MouseEventHandler((_, args) =>
         {
             if (!args.Handled)
             {
@@ -145,7 +145,7 @@ public class TreeView : Control
             }
         }), true);
 
-        _listBox.SelectedItemIndexChanged += (sender, args) => { RaisePropertyChanged("SelectedItem"); };
+        _listBox.SelectedItemIndexChanged += (_, _) => { RaisePropertyChanged("SelectedItem"); };
     }
 
     private void SubscribeToItem(TreeItem item, ListChangedHandler handler)

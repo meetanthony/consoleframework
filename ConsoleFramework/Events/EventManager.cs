@@ -230,7 +230,7 @@ public sealed class EventManager
     private void startAutoRepeatTimer(MouseButtonEventArgs eventArgs)
     {
         lastMousePressEventArgs = eventArgs;
-        timer = new Timer(state =>
+        timer = new Timer(_ =>
         {
             ConsoleApplication.Instance.RunOnUiThread(() =>
             {
