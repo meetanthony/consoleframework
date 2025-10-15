@@ -11,8 +11,8 @@ namespace ConsoleFramework.Events;
 public class KeyGestureConverter : ITypeConverter
 {
     internal const char DISPLAYSTRING_SEPARATOR = ',';
-    private static readonly KeyConverter keyConverter = new KeyConverter();
-    private static readonly ModifierKeysConverter modifierKeysConverter = new ModifierKeysConverter();
+    private static readonly KeyConverter KeyConverter = new KeyConverter();
+    private static readonly ModifierKeysConverter ModifierKeysConverter = new ModifierKeysConverter();
     private const char MODIFIERS_DELIMITER = '+';
 
     public bool CanConvertFrom(Type sourceType)
@@ -27,8 +27,8 @@ public class KeyGestureConverter : ITypeConverter
 
     public object ConvertFrom(object source)
     {
-        if (source == null) throw new ArgumentNullException("source");
-        if (!(source is string)) throw new ArgumentException("source must be string", "source");
+        if (source == null) throw new ArgumentNullException(nameof(source));
+        if (!(source is string)) throw new ArgumentException("source must be string", nameof(source));
         string str = ((string)source).Trim();
         if (str == string.Empty) throw new ArgumentException("source is empty");
 
@@ -59,36 +59,32 @@ public class KeyGestureConverter : ITypeConverter
             afterPlus = str;
         }
 
-        ModifierKeys none = ModifierKeys.None;
-        object keyObj = keyConverter.ConvertFrom(afterPlus);
+        object keyObj = KeyConverter.ConvertFrom(afterPlus);
         if (keyObj == null) throw new InvalidOperationException("Key is not recognised");
-        object modifierObj = modifierKeysConverter.ConvertFrom(beforePlus);
-        if (modifierObj != null)
-        {
-            none = (ModifierKeys)modifierObj;
-        }
+        object modifierObj = ModifierKeysConverter.ConvertFrom(beforePlus);
+        var none = (ModifierKeys)modifierObj;
 
         return new KeyGesture((VirtualKeys)keyObj, none, afterComma);
     }
 
-    public object ConvertTo(object value, Type destinationType)
+    public object ConvertTo(object? value, Type destinationType)
     {
         if (destinationType == null)
         {
-            throw new ArgumentNullException("destinationType");
+            throw new ArgumentNullException(nameof(destinationType));
         }
 
         if (destinationType != typeof(string))
             throw new NotSupportedException("destinationType should be string");
 
         if (value == null) return string.Empty;
-        KeyGesture gesture = value as KeyGesture;
+        KeyGesture? gesture = value as KeyGesture;
         if (gesture == null) throw new InvalidOperationException("Cannot convert null value");
         string str = "";
-        string str2 = (string)keyConverter.ConvertTo(gesture.Key, destinationType);
+        string str2 = (string)KeyConverter.ConvertTo(gesture.Key, destinationType);
         if (str2 != string.Empty)
         {
-            str = str + (modifierKeysConverter.ConvertTo(gesture.Modifiers, destinationType) as string);
+            str = str + (ModifierKeysConverter.ConvertTo(gesture.Modifiers, destinationType) as string);
             if (str != string.Empty)
             {
                 str = str + '+';
