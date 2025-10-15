@@ -164,8 +164,8 @@ public class Grid : Control
     private readonly List<ColumnDefinition> _columnDefinitions = new List<ColumnDefinition>();
     private readonly List<RowDefinition> _rowDefinitions = new List<RowDefinition>();
     private readonly UiElementCollection _children;
-    private int[] _columnsWidths = [];
-    private int[] _rowsHeights = [];
+    private int[] _columnsWidths = Array.Empty<int>();
+    private int[] _rowsHeights = Array.Empty<int>();
 
     public List<ColumnDefinition> ColumnDefinitions => _columnDefinitions;
 
