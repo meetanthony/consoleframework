@@ -29,7 +29,8 @@ public class ThicknessConverter : ITypeConverter
             {
                 return new Thickness(int.Parse((string)value));
             }
-            else if (parts.Length == 2)
+
+            if (parts.Length == 2)
             {
                 return new Thickness(
                     int.Parse(parts[0]),
@@ -38,7 +39,8 @@ public class ThicknessConverter : ITypeConverter
                     int.Parse(parts[1])
                 );
             }
-            else if (parts.Length == 4)
+
+            if (parts.Length == 4)
             {
                 return new Thickness(
                     int.Parse(parts[0]),
