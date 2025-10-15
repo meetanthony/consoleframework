@@ -372,7 +372,7 @@ public sealed class FocusManager
     internal void BeforeRemoveElementFromTree(Control control)
     {
         if (null == control)
-            throw new ArgumentNullException("control");
+            throw new ArgumentNullException(nameof(control));
         if (null != FocusedElement && IsFocusedElementInSubtree(control))
         {
             TryChangeFocusedElementTo(null, true);
