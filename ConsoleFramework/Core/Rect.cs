@@ -4,10 +4,10 @@ namespace ConsoleFramework.Core;
 
 public struct Rect : IFormattable
 {
-    private int x;
-    private int y;
-    private int width;
-    private int height;
+    private int _x;
+    private int _y;
+    private int _width;
+    private int _height;
     private static readonly Rect SEmpty;
 
     public static bool operator ==(Rect rect1, Rect rect2)
@@ -75,7 +75,7 @@ public struct Rect : IFormattable
         return ConvertToString(format, provider);
     }
 
-    internal string ConvertToString(string? format, IFormatProvider? provider)
+    private string ConvertToString(string? format, IFormatProvider? provider)
     {
         if (IsEmpty)
         {
@@ -84,16 +84,20 @@ public struct Rect : IFormattable
 
         const char numericListSeparator = ',';
         return string.Format(provider,
-            "{1:" + format + "}{0}{2:" + format + "}{0}{3:" + format + "}{0}{4:" + format + "}",
-            numericListSeparator, x, y, width, height);
+            "{1}{0}{2}{0}{3}{0}{4}",
+            numericListSeparator,
+            _x.ToString(format),
+            _y.ToString(format),
+            _width.ToString(format),
+            _height.ToString(format));
     }
 
     public Rect(Rect copy)
     {
-        x = copy.x;
-        y = copy.y;
-        width = copy.width;
-        height = copy.height;
+        _x = copy._x;
+        _y = copy._y;
+        _width = copy._width;
+        _height = copy._height;
     }
 
     public Rect(Point location, Size size)
@@ -104,10 +108,10 @@ public struct Rect : IFormattable
         }
         else
         {
-            x = location.X;
-            y = location.Y;
-            width = size.width;
-            height = size.height;
+            _x = location.X;
+            _y = location.Y;
+            _width = size.width;
+            _height = size.height;
         }
     }
 
@@ -118,18 +122,18 @@ public struct Rect : IFormattable
             throw new ArgumentException("Size_WidthAndHeightCannotBeNegative");
         }
 
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+        _x = x;
+        _y = y;
+        _width = width;
+        _height = height;
     }
 
     public Rect(Point point1, Point point2)
     {
-        x = Math.Min(point1.X, point2.X);
-        y = Math.Min(point1.Y, point2.Y);
-        width = Math.Max(Math.Max(point1.X, point2.X) - x, 0);
-        height = Math.Max(Math.Max(point1.Y, point2.Y) - y, 0);
+        _x = Math.Min(point1.X, point2.X);
+        _y = Math.Min(point1.Y, point2.Y);
+        _width = Math.Max(Math.Max(point1.X, point2.X) - _x, 0);
+        _height = Math.Max(Math.Max(point1.Y, point2.Y) - _y, 0);
     }
 
     public Rect(Point point, Vector vector) : this(point, point + vector)
@@ -144,19 +148,19 @@ public struct Rect : IFormattable
         }
         else
         {
-            x = y = 0;
-            width = size.Width;
-            height = size.Height;
+            _x = _y = 0;
+            _width = size.Width;
+            _height = size.Height;
         }
     }
 
     public static Rect Empty => SEmpty;
 
-    public bool IsEmpty => width == 0 || height == 0;
+    public bool IsEmpty => _width == 0 || _height == 0;
 
     public Point Location
     {
-        get => new(x, y);
+        get => new(_x, _y);
         set
         {
             if (IsEmpty)
@@ -164,8 +168,8 @@ public struct Rect : IFormattable
                 throw new InvalidOperationException("Rect_CannotModifyEmptyRect");
             }
 
-            x = value.X;
-            y = value.Y;
+            _x = value.X;
+            _y = value.Y;
         }
     }
 
@@ -178,7 +182,7 @@ public struct Rect : IFormattable
                 return Size.Empty;
             }
 
-            return new Size(width, height);
+            return new Size(_width, _height);
         }
         set
         {
@@ -193,15 +197,15 @@ public struct Rect : IFormattable
                     throw new InvalidOperationException("Rect_CannotModifyEmptyRect");
                 }
 
-                width = value.width;
-                height = value.height;
+                _width = value.width;
+                _height = value.height;
             }
         }
     }
 
     public int X
     {
-        get => x;
+        get => _x;
         set
         {
             if (IsEmpty)
@@ -209,13 +213,13 @@ public struct Rect : IFormattable
                 throw new InvalidOperationException("Rect_CannotModifyEmptyRect");
             }
 
-            x = value;
+            _x = value;
         }
     }
 
     public int Y
     {
-        get => y;
+        get => _y;
         set
         {
             if (IsEmpty)
@@ -223,13 +227,13 @@ public struct Rect : IFormattable
                 throw new InvalidOperationException("Rect_CannotModifyEmptyRect");
             }
 
-            y = value;
+            _y = value;
         }
     }
 
     public int Width
     {
-        get => width;
+        get => _width;
         set
         {
             if (IsEmpty)
@@ -242,13 +246,13 @@ public struct Rect : IFormattable
                 throw new ArgumentException("Size_WidthCannotBeNegative");
             }
 
-            width = value;
+            _width = value;
         }
     }
 
     public int Height
     {
-        get => height;
+        get => _height;
         set
         {
             if (IsEmpty)
@@ -261,13 +265,13 @@ public struct Rect : IFormattable
                 throw new ArgumentException("Size_HeightCannotBeNegative");
             }
 
-            height = value;
+            _height = value;
         }
     }
 
-    public int Left => x;
+    public int Left => _x;
 
-    public int Top => y;
+    public int Top => _y;
 
     public int Right
     {
@@ -278,7 +282,7 @@ public struct Rect : IFormattable
                 return 0;
             }
 
-            return x + width;
+            return _x + _width;
         }
     }
 
@@ -291,7 +295,7 @@ public struct Rect : IFormattable
                 return 0;
             }
 
-            return y + height;
+            return _y + _height;
         }
     }
 
@@ -308,14 +312,14 @@ public struct Rect : IFormattable
         return Contains(point.X, point.Y);
     }
 
-    public bool Contains(int _x, int _y)
+    public bool Contains(int x, int y)
     {
         if (IsEmpty)
         {
             return false;
         }
 
-        return ContainsInternal(_x, _y);
+        return ContainsInternal(x, y);
     }
 
     public bool Contains(Rect rect)
@@ -325,8 +329,8 @@ public struct Rect : IFormattable
             return false;
         }
 
-        return x <= rect.x && y <= rect.y && x + width >= rect.x + rect.width &&
-               y + height >= rect.y + rect.height;
+        return _x <= rect._x && _y <= rect._y && _x + _width >= rect._x + rect._width &&
+               _y + _height >= rect._y + rect._height;
     }
 
     public bool IntersectsWith(Rect rect)
@@ -350,10 +354,10 @@ public struct Rect : IFormattable
         {
             int num = Math.Max(Left, rect.Left);
             int num2 = Math.Max(Top, rect.Top);
-            width = Math.Max(Math.Min(Right, rect.Right) - num, 0);
-            height = Math.Max(Math.Min(Bottom, rect.Bottom) - num2, 0);
-            x = num;
-            y = num2;
+            _width = Math.Max(Math.Min(Right, rect.Right) - num, 0);
+            _height = Math.Max(Math.Min(Bottom, rect.Bottom) - num2, 0);
+            _x = num;
+            _y = num2;
         }
     }
 
@@ -375,26 +379,26 @@ public struct Rect : IFormattable
             int num2 = Math.Min(Top, rect.Top);
             if (rect.Width == int.MaxValue || Width == int.MaxValue)
             {
-                width = int.MaxValue;
+                _width = int.MaxValue;
             }
             else
             {
                 int num3 = Math.Max(Right, rect.Right);
-                width = Math.Max(num3 - num, 0);
+                _width = Math.Max(num3 - num, 0);
             }
 
             if (rect.Height == int.MaxValue || Height == int.MaxValue)
             {
-                height = int.MaxValue;
+                _height = int.MaxValue;
             }
             else
             {
                 int num4 = Math.Max(Bottom, rect.Bottom);
-                height = Math.Max(num4 - num2, 0);
+                _height = Math.Max(num4 - num2, 0);
             }
 
-            x = num;
-            y = num2;
+            _x = num;
+            _y = num2;
         }
     }
 
@@ -422,8 +426,8 @@ public struct Rect : IFormattable
             throw new InvalidOperationException("Rect_CannotCallMethod");
         }
 
-        x += offsetVector.X;
-        y += offsetVector.Y;
+        _x += offsetVector.X;
+        _y += offsetVector.Y;
     }
 
     public void Offset(int offsetX, int offsetY)
@@ -433,8 +437,8 @@ public struct Rect : IFormattable
             throw new InvalidOperationException("Rect_CannotCallMethod");
         }
 
-        x += offsetX;
-        y += offsetY;
+        _x += offsetX;
+        _y += offsetY;
     }
 
     public static Rect Offset(Rect rect, Vector offsetVector)
@@ -454,20 +458,20 @@ public struct Rect : IFormattable
         Inflate(size.width, size.height);
     }
 
-    public void Inflate(int _width, int _height)
+    public void Inflate(int width, int height)
     {
         if (IsEmpty)
         {
             throw new InvalidOperationException("Rect_CannotCallMethod");
         }
 
-        x -= _width;
-        y -= _height;
-        width += _width;
-        width += _width;
-        height += _height;
-        height += _height;
-        if (width < 0 || height < 0)
+        _x -= width;
+        _y -= height;
+        _width += width;
+        _width += width;
+        _height += height;
+        _height += height;
+        if (_width < 0 || _height < 0)
         {
             this = SEmpty;
         }
@@ -486,22 +490,22 @@ public struct Rect : IFormattable
     }
 
 
-    private bool ContainsInternal(int _x, int _y)
+    private bool ContainsInternal(int x, int y)
     {
         // исправлено нестрогое условие на строгое
         // чтобы в rect(1;1;1;1) попадал только 1 пиксель (1;1) а не 4 пикселя (1;1)-(2;2)
-        return _x >= x && _x - width < x && _y >= y && _y - height < y;
-        //return ((((_x >= this.x) && ((_x - this.width) <= this.x)) && (_y >= this.y)) && ((_y - this.height) <= this.y));
+        return x >= _x && x - _width < _x && y >= _y && y - _height < _y;
+        //return ((((x >= this._x) && ((x - this._width) <= this._x)) && (y >= this._y)) && ((y - this._height) <= this._y));
     }
 
     private static Rect CreateEmptyRect()
     {
         Rect rect = new Rect
         {
-            x = 0,
-            y = 0,
-            width = 0,
-            height = 0
+            _x = 0,
+            _y = 0,
+            _width = 0,
+            _height = 0
         };
         return rect;
     }
