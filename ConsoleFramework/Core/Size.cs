@@ -4,12 +4,12 @@ namespace ConsoleFramework.Core;
 
 public struct Size
 {
-    internal int width;
-    internal int height;
+    private int _width;
+    private int _height;
 
     public static bool operator ==(Size size1, Size size2)
     {
-        return ((size1.Width == size2.Width) && (size1.Height == size2.Height));
+        return (size1.Width == size2.Width) && (size1.Height == size2.Height);
     }
 
     public static bool operator !=(Size size1, Size size2)
@@ -27,7 +27,7 @@ public struct Size
         return (size1.Width.Equals(size2.Width) && size1.Height.Equals(size2.Height));
     }
 
-    public override bool Equals(object o)
+    public override bool Equals(object? o)
     {
         if ((o == null) || !(o is Size))
         {
@@ -60,19 +60,19 @@ public struct Size
             throw new ArgumentException("Width and height cannot be negative");
         }
 
-        this.width = width;
-        this.height = height;
+        _width = width;
+        _height = height;
     }
 
     public static Size MaxSize { get; } = new Size(int.MaxValue, int.MaxValue);
 
     public static Size Empty => CreateEmptySize();
 
-    public bool IsEmpty => width <= 0;
+    public bool IsEmpty => _width <= 0;
 
     public int Width
     {
-        get => width;
+        get => _width;
         set
         {
             //if (this.IsEmpty) {
@@ -83,13 +83,13 @@ public struct Size
                 throw new ArgumentException("Width cannot be negative");
             }
 
-            width = value;
+            _width = value;
         }
     }
 
     public int Height
     {
-        get => this.height;
+        get => _height;
         set
         {
             //if (this.IsEmpty) {
@@ -100,26 +100,26 @@ public struct Size
                 throw new ArgumentException("Height cannot be negative");
             }
 
-            this.height = value;
+            _height = value;
         }
     }
 
     public static explicit operator Vector(Size size)
     {
-        return new Vector(size.width, size.height);
+        return new Vector(size._width, size._height);
     }
 
     public static explicit operator Point(Size size)
     {
-        return new Point(size.width, size.height);
+        return new Point(size._width, size._height);
     }
 
     private static Size CreateEmptySize()
     {
         return new Size
         {
-            width = 0,
-            height = 0
+            _width = 0,
+            _height = 0
         };
     }
 

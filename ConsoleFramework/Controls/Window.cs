@@ -161,8 +161,8 @@ public class Window : Control
         if (Content != null)
         {
             Content.Arrange(new Rect(1, 1,
-                Math.Max(4, finalSize.width) - 4,
-                Math.Max(3, finalSize.height) - 3));
+                Math.Max(4, finalSize.Width) - 4,
+                Math.Max(3, finalSize.Height) - 3));
         }
 
         return finalSize;

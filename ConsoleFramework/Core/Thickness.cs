@@ -9,61 +9,40 @@ namespace ConsoleFramework.Core;
 [TypeConverter(typeof(ThicknessConverter))]
 public struct Thickness : IEquatable<Thickness>
 {
-    private int left;
-    private int top;
-    private int right;
-    private int bottom;
+    public int Left { get; set; }
 
-    public int Left
-    {
-        get { return left; }
-        set { left = value; }
-    }
+    public int Top { get; set; }
 
-    public int Top
-    {
-        get { return top; }
-        set { top = value; }
-    }
+    public int Right { get; set; }
 
-    public int Right
-    {
-        get { return right; }
-        set { right = value; }
-    }
-
-    public int Bottom
-    {
-        get { return bottom; }
-        set { bottom = value; }
-    }
+    public int Bottom { get; set; }
 
     public Thickness(int uniformLength)
     {
-        left = top = right = bottom = uniformLength;
+        Left = Top = Right = Bottom = uniformLength;
     }
 
     public Thickness(int left, int top, int right, int bottom)
     {
-        this.left = left;
-        this.top = top;
-        this.right = right;
-        this.bottom = bottom;
+        Left = left;
+        Top = top;
+        Right = right;
+        Bottom = bottom;
     }
 
     internal bool IsZero()
     {
-        return left == 0 && right == 0 && top == 0 && bottom == 0;
+        return Left == 0 && Right == 0 && Top == 0 && Bottom == 0;
     }
 
     internal bool IsUniform()
     {
-        return left == top && left == right && left == bottom;
+        return Left == Top && Left == Right && Left == Bottom;
     }
 
     public static bool operator ==(Thickness t1, Thickness t2)
     {
-        return t1.left == t2.left && t1.top == t2.top && t1.right == t2.right && t1.bottom == t2.bottom;
+        return t1.Left == t2.Left && t1.Top == t2.Top && t1.Right == t2.Right && t1.Bottom == t2.Bottom;
     }
 
     public static bool operator !=(Thickness t1, Thickness t2)
@@ -73,10 +52,10 @@ public struct Thickness : IEquatable<Thickness>
 
     public bool Equals(Thickness other)
     {
-        return other.left == left && other.top == top && other.right == right && other.bottom == bottom;
+        return other.Left == Left && other.Top == Top && other.Right == Right && other.Bottom == Bottom;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         if (obj.GetType() != typeof(Thickness)) return false;
@@ -87,16 +66,16 @@ public struct Thickness : IEquatable<Thickness>
     {
         unchecked
         {
-            int result = left;
-            result = (result * 397) ^ top;
-            result = (result * 397) ^ right;
-            result = (result * 397) ^ bottom;
+            int result = Left;
+            result = (result * 397) ^ Top;
+            result = (result * 397) ^ Right;
+            result = (result * 397) ^ Bottom;
             return result;
         }
     }
 
     public override string ToString()
     {
-        return string.Format("{0},{1},{2},{3}", left, top, right, bottom);
+        return string.Format("{0},{1},{2},{3}", Left, Top, Right, Bottom);
     }
 }

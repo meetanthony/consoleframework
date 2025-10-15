@@ -110,8 +110,8 @@ public struct Rect : IFormattable
         {
             _x = location.X;
             _y = location.Y;
-            _width = size.width;
-            _height = size.height;
+            _width = size.Width;
+            _height = size.Height;
         }
     }
 
@@ -197,8 +197,8 @@ public struct Rect : IFormattable
                     throw new InvalidOperationException("Rect_CannotModifyEmptyRect");
                 }
 
-                _width = value.width;
-                _height = value.height;
+                _width = value.Width;
+                _height = value.Height;
             }
         }
     }
@@ -455,7 +455,7 @@ public struct Rect : IFormattable
 
     public void Inflate(Size size)
     {
-        Inflate(size.width, size.height);
+        Inflate(size.Width, size.Height);
     }
 
     public void Inflate(int width, int height)
@@ -479,7 +479,7 @@ public struct Rect : IFormattable
 
     public static Rect Inflate(Rect rect, Size size)
     {
-        rect.Inflate(size.width, size.height);
+        rect.Inflate(size.Width, size.Height);
         return rect;
     }
 

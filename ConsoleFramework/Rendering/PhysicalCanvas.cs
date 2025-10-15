@@ -162,7 +162,7 @@ public class PhysicalCanvas
     {
         get
         {
-            if (index < 0 || index >= _size.width)
+            if (index < 0 || index >= _size.Width)
             {
                 throw new IndexOutOfRangeException("index exceeds specified buffer width.");
             }
