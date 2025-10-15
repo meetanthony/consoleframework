@@ -18,62 +18,60 @@ public sealed class EventManager
 
     private class DelegateInfo
     {
-        public readonly Delegate @delegate;
-        public readonly bool handledEventsToo;
+        public readonly Delegate Delegate;
+        public readonly bool HandledEventsToo;
 
         public DelegateInfo(Delegate @delegate, bool handledEventsToo)
         {
-            this.@delegate = @delegate;
-            this.handledEventsToo = handledEventsToo;
+            Delegate = @delegate;
+            HandledEventsToo = handledEventsToo;
         }
     }
 
     private class RoutedEventTargetInfo
     {
-        public readonly object target;
-        public List<DelegateInfo> handlersList;
+        public readonly object Target;
+        public List<DelegateInfo>? HandlersList;
 
-        public RoutedEventTargetInfo(object target)
+        public RoutedEventTargetInfo(object? target)
         {
-            if (null == target)
-                throw new ArgumentNullException("target");
-            this.target = target;
+            Target = target ?? throw new ArgumentNullException(nameof(target));
         }
     }
 
     private class RoutedEventInfo
     {
-        public List<RoutedEventTargetInfo> targetsList;
+        public List<RoutedEventTargetInfo>? TargetsList;
 
         public RoutedEventInfo(RoutedEvent routedEvent)
         {
             if (null == routedEvent)
-                throw new ArgumentNullException("routedEvent");
+                throw new ArgumentNullException(nameof(routedEvent));
         }
     }
 
-    private static readonly Dictionary<RoutedEventKey, RoutedEventInfo> routedEvents =
+    private static readonly Dictionary<RoutedEventKey, RoutedEventInfo> RoutedEvents =
         new Dictionary<RoutedEventKey, RoutedEventInfo>();
 
     public static RoutedEvent RegisterRoutedEvent(string name, RoutingStrategy routingStrategy, Type handlerType,
         Type ownerType)
     {
         if (string.IsNullOrEmpty(name))
-            throw new ArgumentException("name");
+            throw new ArgumentException(nameof(name));
         if (null == handlerType)
-            throw new ArgumentNullException("handlerType");
+            throw new ArgumentNullException(nameof(handlerType));
         if (null == ownerType)
-            throw new ArgumentNullException("ownerType");
+            throw new ArgumentNullException(nameof(ownerType));
         //
         RoutedEventKey key = new RoutedEventKey(name, ownerType);
-        if (routedEvents.ContainsKey(key))
+        if (RoutedEvents.ContainsKey(key))
         {
             throw new InvalidOperationException("This routed event is already registered.");
         }
 
         RoutedEvent routedEvent = new RoutedEvent(handlerType, name, ownerType, routingStrategy);
         RoutedEventInfo routedEventInfo = new RoutedEventInfo(routedEvent);
-        routedEvents.Add(key, routedEventInfo);
+        RoutedEvents.Add(key, routedEventInfo);
         return routedEvent;
     }
 
@@ -85,26 +83,26 @@ public sealed class EventManager
     public static void AddHandler(object target, RoutedEvent routedEvent, Delegate handler, bool handledEventsToo)
     {
         if (null == target)
-            throw new ArgumentNullException("target");
+            throw new ArgumentNullException(nameof(target));
         if (null == routedEvent)
-            throw new ArgumentNullException("routedEvent");
+            throw new ArgumentNullException(nameof(routedEvent));
         if (null == handler)
-            throw new ArgumentNullException("handler");
+            throw new ArgumentNullException(nameof(handler));
         //
         RoutedEventKey key = routedEvent.Key;
-        if (!routedEvents.ContainsKey(key))
-            throw new ArgumentException("Specified routed event is not registered.", "routedEvent");
-        RoutedEventInfo routedEventInfo = routedEvents[key];
+        if (!RoutedEvents.ContainsKey(key))
+            throw new ArgumentException("Specified routed event is not registered.", nameof(routedEvent));
+        RoutedEventInfo routedEventInfo = RoutedEvents[key];
         bool needAddTarget = true;
-        if (routedEventInfo.targetsList != null)
+        if (routedEventInfo.TargetsList != null)
         {
-            RoutedEventTargetInfo targetInfo =
-                routedEventInfo.targetsList.FirstOrDefault(info => info.target == target);
+            RoutedEventTargetInfo? targetInfo =
+                routedEventInfo.TargetsList.FirstOrDefault(info => info.Target == target);
             if (null != targetInfo)
             {
-                if (targetInfo.handlersList == null)
-                    targetInfo.handlersList = new List<DelegateInfo>();
-                targetInfo.handlersList.Add(new DelegateInfo(handler, handledEventsToo));
+                if (targetInfo.HandlersList == null)
+                    targetInfo.HandlersList = new List<DelegateInfo>();
+                targetInfo.HandlersList.Add(new DelegateInfo(handler, handledEventsToo));
                 needAddTarget = false;
             }
         }
@@ -112,59 +110,59 @@ public sealed class EventManager
         if (needAddTarget)
         {
             RoutedEventTargetInfo targetInfo = new RoutedEventTargetInfo(target);
-            targetInfo.handlersList = new List<DelegateInfo>();
-            targetInfo.handlersList.Add(new DelegateInfo(handler, handledEventsToo));
-            if (routedEventInfo.targetsList == null)
-                routedEventInfo.targetsList = new List<RoutedEventTargetInfo>();
-            routedEventInfo.targetsList.Add(targetInfo);
+            targetInfo.HandlersList = new List<DelegateInfo>();
+            targetInfo.HandlersList.Add(new DelegateInfo(handler, handledEventsToo));
+            if (routedEventInfo.TargetsList == null)
+                routedEventInfo.TargetsList = new List<RoutedEventTargetInfo>();
+            routedEventInfo.TargetsList.Add(targetInfo);
         }
     }
 
     public static void RemoveHandler(object target, RoutedEvent routedEvent, Delegate handler)
     {
         if (null == target)
-            throw new ArgumentNullException("target");
+            throw new ArgumentNullException(nameof(target));
         if (null == routedEvent)
-            throw new ArgumentNullException("routedEvent");
+            throw new ArgumentNullException(nameof(routedEvent));
         if (null == handler)
-            throw new ArgumentNullException("handler");
+            throw new ArgumentNullException(nameof(handler));
         //
         RoutedEventKey key = routedEvent.Key;
-        if (!routedEvents.ContainsKey(key))
-            throw new ArgumentException("Specified routed event is not registered.", "routedEvent");
-        RoutedEventInfo routedEventInfo = routedEvents[key];
-        if (routedEventInfo.targetsList == null)
+        if (!RoutedEvents.ContainsKey(key))
+            throw new ArgumentException("Specified routed event is not registered.", nameof(routedEvent));
+        RoutedEventInfo routedEventInfo = RoutedEvents[key];
+        if (routedEventInfo.TargetsList == null)
             throw new InvalidOperationException("Targets list is empty.");
-        RoutedEventTargetInfo targetInfo = routedEventInfo.targetsList.FirstOrDefault(info => info.target == target);
+        RoutedEventTargetInfo? targetInfo = routedEventInfo.TargetsList.FirstOrDefault(info => info.Target == target);
         if (null == targetInfo)
-            throw new ArgumentException("Target not found in targets list of specified routed event.", "target");
-        if (null == targetInfo.handlersList)
+            throw new ArgumentException("Target not found in targets list of specified routed event.", nameof(target));
+        if (null == targetInfo.HandlersList)
             throw new InvalidOperationException("Handlers list is empty.");
-        int findIndex = targetInfo.handlersList.FindIndex(info => info.@delegate == handler);
+        int findIndex = targetInfo.HandlersList.FindIndex(info => info.Delegate == handler);
         if (-1 == findIndex)
-            throw new ArgumentException("Specified handler not found.", "handler");
-        targetInfo.handlersList.RemoveAt(findIndex);
+            throw new ArgumentException("Specified handler not found.", nameof(handler));
+        targetInfo.HandlersList.RemoveAt(findIndex);
     }
 
     /// <summary>
     /// Возвращает список таргетов, подписанных на указанное RoutedEvent.
     /// </summary>
-    private static List<RoutedEventTargetInfo> getTargetsSubscribedTo(RoutedEvent routedEvent)
+    private static List<RoutedEventTargetInfo>? GetTargetsSubscribedTo(RoutedEvent routedEvent)
     {
         if (null == routedEvent)
-            throw new ArgumentNullException("routedEvent");
+            throw new ArgumentNullException(nameof(routedEvent));
         RoutedEventKey key = routedEvent.Key;
-        if (!routedEvents.ContainsKey(key))
-            throw new ArgumentException("Specified routed event is not registered.", "routedEvent");
-        RoutedEventInfo routedEventInfo = routedEvents[key];
-        return routedEventInfo.targetsList;
+        if (!RoutedEvents.ContainsKey(key))
+            throw new ArgumentException("Specified routed event is not registered.", nameof(routedEvent));
+        RoutedEventInfo routedEventInfo = RoutedEvents[key];
+        return routedEventInfo.TargetsList;
     }
 
     public void BeginCaptureInput(Control control)
     {
         if (null == control)
         {
-            throw new ArgumentNullException("control");
+            throw new ArgumentNullException(nameof(control));
         }
 
         //
@@ -175,7 +173,7 @@ public sealed class EventManager
     {
         if (null == control)
         {
-            throw new ArgumentNullException("control");
+            throw new ArgumentNullException(nameof(control));
         }
 
         //
@@ -190,7 +188,7 @@ public sealed class EventManager
 
     private readonly Queue<RoutedEventArgs> eventsQueue = new Queue<RoutedEventArgs>();
 
-    private MouseButtonState getLeftButtonState(MOUSE_BUTTON_STATE rawState)
+    private static MouseButtonState GetLeftButtonState(MOUSE_BUTTON_STATE rawState)
     {
         return (rawState & MOUSE_BUTTON_STATE.FROM_LEFT_1ST_BUTTON_PRESSED) ==
                MOUSE_BUTTON_STATE.FROM_LEFT_1ST_BUTTON_PRESSED
@@ -198,7 +196,7 @@ public sealed class EventManager
             : MouseButtonState.Released;
     }
 
-    private MouseButtonState getMiddleButtonState(MOUSE_BUTTON_STATE rawState)
+    private static MouseButtonState GetMiddleButtonState(MOUSE_BUTTON_STATE rawState)
     {
         return (rawState & MOUSE_BUTTON_STATE.FROM_LEFT_2ND_BUTTON_PRESSED) ==
                MOUSE_BUTTON_STATE.FROM_LEFT_2ND_BUTTON_PRESSED
@@ -206,7 +204,7 @@ public sealed class EventManager
             : MouseButtonState.Released;
     }
 
-    private MouseButtonState getRightButtonState(MOUSE_BUTTON_STATE rawState)
+    private static MouseButtonState GetRightButtonState(MOUSE_BUTTON_STATE rawState)
     {
         return (rawState & MOUSE_BUTTON_STATE.RIGHTMOST_BUTTON_PRESSED) ==
                MOUSE_BUTTON_STATE.RIGHTMOST_BUTTON_PRESSED
@@ -223,11 +221,11 @@ public sealed class EventManager
     private Point lastMousePosition;
 
     // Auto-repeating mouse left click when holding pressed button
-    private bool autoRepeatTimerRunning = false;
-    private Timer timer;
-    private MouseButtonEventArgs lastMousePressEventArgs;
+    private bool autoRepeatTimerRunning;
+    private Timer? timer;
+    private MouseButtonEventArgs? lastMousePressEventArgs;
 
-    private void startAutoRepeatTimer(MouseButtonEventArgs eventArgs)
+    private void StartAutoRepeatTimer(MouseButtonEventArgs eventArgs)
     {
         lastMousePressEventArgs = eventArgs;
         timer = new Timer(_ =>
@@ -254,9 +252,9 @@ public sealed class EventManager
         autoRepeatTimerRunning = true;
     }
 
-    private void stopAutoRepeatTimer()
+    private void StopAutoRepeatTimer()
     {
-        timer.Dispose();
+        timer?.Dispose();
         timer = null;
         autoRepeatTimerRunning = false;
         lastMousePressEventArgs = null;
@@ -293,23 +291,23 @@ public sealed class EventManager
                 rawPosition = lastMousePosition;
             }
 
-            Control topMost = VisualTreeHelper.FindTopControlUnderMouse(rootElement,
+            Control? topMost = VisualTreeHelper.FindTopControlUnderMouse(rootElement,
                 Control.TranslatePoint(null, rawPosition, rootElement));
 
             // если мышь захвачена контролом, то события перемещения мыши доставляются только ему,
             // события, связанные с нажатием мыши - тоже доставляются только ему, вместо того
             // контрола, над которым событие было зарегистрировано. Такой механизм необходим,
             // например, для корректной обработки перемещений окон (вверх или в стороны)
-            Control source = (inputCaptureStack.Count != 0) ? inputCaptureStack.Peek() : topMost;
+            Control? source = inputCaptureStack.Count != 0 ? inputCaptureStack.Peek() : topMost;
 
             // No sense to further process event with no source control
             if (source == null) return;
 
             if (mouseEvent.dwEventFlags == MouseEventFlags.MOUSE_MOVED)
             {
-                MouseButtonState leftMouseButtonState = getLeftButtonState(mouseEvent.dwButtonState);
-                MouseButtonState middleMouseButtonState = getMiddleButtonState(mouseEvent.dwButtonState);
-                MouseButtonState rightMouseButtonState = getRightButtonState(mouseEvent.dwButtonState);
+                MouseButtonState leftMouseButtonState = GetLeftButtonState(mouseEvent.dwButtonState);
+                MouseButtonState middleMouseButtonState = GetMiddleButtonState(mouseEvent.dwButtonState);
+                MouseButtonState rightMouseButtonState = GetRightButtonState(mouseEvent.dwButtonState);
                 //
                 MouseEventArgs mouseEventArgs = new MouseEventArgs(source, Control.PreviewMouseMoveEvent,
                     rawPosition,
@@ -327,7 +325,7 @@ public sealed class EventManager
 
                 // path to source from root element down
                 List<Control> mouseOverStack = new List<Control>();
-                Control current = topMost;
+                Control? current = topMost;
                 while (null != current)
                 {
                     mouseOverStack.Insert(0, current);
@@ -373,11 +371,11 @@ public sealed class EventManager
             if (mouseEvent.dwEventFlags == MouseEventFlags.PRESSED_OR_RELEASED)
             {
                 //
-                MouseButtonState leftMouseButtonState = getLeftButtonState(mouseEvent.dwButtonState);
-                MouseButtonState middleMouseButtonState = getMiddleButtonState(mouseEvent.dwButtonState);
-                MouseButtonState rightMouseButtonState = getRightButtonState(mouseEvent.dwButtonState);
+                MouseButtonState leftMouseButtonState = GetLeftButtonState(mouseEvent.dwButtonState);
+                MouseButtonState middleMouseButtonState = GetMiddleButtonState(mouseEvent.dwButtonState);
+                MouseButtonState rightMouseButtonState = GetRightButtonState(mouseEvent.dwButtonState);
                 //
-                MouseButtonEventArgs eventArgs = null;
+                MouseButtonEventArgs? eventArgs = null;
                 if (leftMouseButtonState != lastLeftMouseButtonState)
                 {
                     eventArgs = new MouseButtonEventArgs(source,
@@ -430,14 +428,14 @@ public sealed class EventManager
                 {
                     if (eventArgs != null && !autoRepeatTimerRunning)
                     {
-                        startAutoRepeatTimer(eventArgs);
+                        StartAutoRepeatTimer(eventArgs);
                     }
                 }
                 else
                 {
                     if (eventArgs != null && autoRepeatTimerRunning)
                     {
-                        stopAutoRepeatTimer();
+                        StopAutoRepeatTimer();
                     }
                 }
             }
@@ -480,7 +478,7 @@ public sealed class EventManager
         while (eventsQueue.Count != 0)
         {
             RoutedEventArgs routedEventArgs = eventsQueue.Dequeue();
-            processRoutedEvent(routedEventArgs.RoutedEvent, routedEventArgs);
+            ProcessRoutedEventImpl(routedEventArgs.RoutedEvent, routedEventArgs);
         }
     }
 
@@ -493,16 +491,16 @@ public sealed class EventManager
     internal bool ProcessRoutedEvent(RoutedEvent routedEvent, RoutedEventArgs args)
     {
         if (null == routedEvent)
-            throw new ArgumentNullException("routedEvent");
+            throw new ArgumentNullException(nameof(routedEvent));
         if (null == args)
-            throw new ArgumentNullException("args");
+            throw new ArgumentNullException(nameof(args));
         //
-        return processRoutedEvent(routedEvent, args);
+        return ProcessRoutedEventImpl(routedEvent, args);
     }
 
-    private static bool isControlAllowedToReceiveEvents(Control control, Control capturingControl)
+    private static bool IsControlAllowedToReceiveEvents(Control? control, Control capturingControl)
     {
-        Control c = control;
+        Control? c = control;
         while (true)
         {
             if (c == capturingControl) return true;
@@ -511,20 +509,20 @@ public sealed class EventManager
         }
     }
 
-    private bool processRoutedEvent(RoutedEvent routedEvent, RoutedEventArgs args)
+    private bool ProcessRoutedEventImpl(RoutedEvent routedEvent, RoutedEventArgs args)
     {
         //
-        List<RoutedEventTargetInfo> subscribedTargets = getTargetsSubscribedTo(routedEvent);
+        List<RoutedEventTargetInfo>? subscribedTargets = GetTargetsSubscribedTo(routedEvent);
 
-        Control capturingControl = inputCaptureStack.Count != 0 ? inputCaptureStack.Peek() : null;
+        Control? capturingControl = inputCaptureStack.Count != 0 ? inputCaptureStack.Peek() : null;
         //
         if (routedEvent.RoutingStrategy == RoutingStrategy.Direct)
         {
             if (null == subscribedTargets)
                 return false;
             //
-            RoutedEventTargetInfo targetInfo =
-                subscribedTargets.FirstOrDefault(info => info.target == args.Source);
+            RoutedEventTargetInfo? targetInfo =
+                subscribedTargets.FirstOrDefault(info => info.Target == args.Source);
             if (null == targetInfo)
                 return false;
 
@@ -533,37 +531,40 @@ public sealed class EventManager
             if (capturingControl != null)
             {
                 if (!(args.Source is Control)) return false;
-                if (!isControlAllowedToReceiveEvents((Control)args.Source, capturingControl))
+                if (!IsControlAllowedToReceiveEvents((Control)args.Source, capturingControl))
                     return false;
             }
 
             // copy handlersList to local list to avoid modifications when enumerating
-            foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.handlersList))
+            if (targetInfo.HandlersList != null)
             {
-                if (!args.Handled || delegateInfo.handledEventsToo)
+                foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.HandlersList))
                 {
-                    if (delegateInfo.@delegate is RoutedEventHandler)
+                    if (!args.Handled || delegateInfo.HandledEventsToo)
                     {
-                        ((RoutedEventHandler)delegateInfo.@delegate).Invoke(targetInfo.target, args);
-                    }
-                    else
-                    {
-                        delegateInfo.@delegate.DynamicInvoke(targetInfo.target, args);
+                        if (delegateInfo.Delegate is RoutedEventHandler)
+                        {
+                            ((RoutedEventHandler)delegateInfo.Delegate).Invoke(targetInfo.Target, args);
+                        }
+                        else
+                        {
+                            delegateInfo.Delegate.DynamicInvoke(targetInfo.Target, args);
+                        }
                     }
                 }
             }
         }
 
-        Control source = (Control)args.Source;
+        Control? source = args.Source as Control;
         // path to source from root element down to Source
         List<Control> path = new List<Control>();
-        Control current = source;
+        Control? current = source;
         while (null != current)
         {
             // та же логика с контролом, захватившим обработку сообщений
             // если имеется контрол, захватывающий события, события получает только он сам
             // и его дочерние контролы
-            if (capturingControl == null || isControlAllowedToReceiveEvents(current, capturingControl))
+            if (capturingControl == null || IsControlAllowedToReceiveEvents(current, capturingControl))
             {
                 path.Insert(0, current);
                 current = current.Parent;
@@ -581,21 +582,22 @@ public sealed class EventManager
                 foreach (Control potentialTarget in path)
                 {
                     Control target = potentialTarget;
-                    RoutedEventTargetInfo targetInfo =
-                        subscribedTargets.FirstOrDefault(info => info.target == target);
-                    if (null != targetInfo)
+                    RoutedEventTargetInfo? targetInfo =
+                        subscribedTargets.FirstOrDefault(info => info.Target == target);
+
+                    if (targetInfo is { HandlersList: not null })
                     {
-                        foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.handlersList))
+                        foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.HandlersList))
                         {
-                            if (!args.Handled || delegateInfo.handledEventsToo)
+                            if (!args.Handled || delegateInfo.HandledEventsToo)
                             {
-                                if (delegateInfo.@delegate is RoutedEventHandler)
+                                if (delegateInfo.Delegate is RoutedEventHandler)
                                 {
-                                    ((RoutedEventHandler)delegateInfo.@delegate).Invoke(target, args);
+                                    ((RoutedEventHandler)delegateInfo.Delegate).Invoke(target, args);
                                 }
                                 else
                                 {
-                                    delegateInfo.@delegate.DynamicInvoke(target, args);
+                                    delegateInfo.Delegate.DynamicInvoke(target, args);
                                 }
                             }
                         }
@@ -608,7 +610,7 @@ public sealed class EventManager
             // то и настоящее событие будет маршрутизировано с Handled=true)
             if (routedEvent == Control.PreviewMouseDownEvent)
             {
-                MouseButtonEventArgs mouseArgs = ((MouseButtonEventArgs)args);
+                MouseButtonEventArgs mouseArgs = (MouseButtonEventArgs)args;
                 MouseButtonEventArgs argsNew = new MouseButtonEventArgs(
                     args.Source, Control.MouseDownEvent, mouseArgs.RawPosition,
                     mouseArgs.LeftButton, mouseArgs.MiddleButton, mouseArgs.RightButton,
@@ -620,7 +622,7 @@ public sealed class EventManager
 
             if (routedEvent == Control.PreviewMouseUpEvent)
             {
-                MouseButtonEventArgs mouseArgs = ((MouseButtonEventArgs)args);
+                MouseButtonEventArgs mouseArgs = (MouseButtonEventArgs)args;
                 MouseButtonEventArgs argsNew = new MouseButtonEventArgs(
                     args.Source, Control.MouseUpEvent, mouseArgs.RawPosition,
                     mouseArgs.LeftButton, mouseArgs.MiddleButton, mouseArgs.RightButton,
@@ -632,7 +634,7 @@ public sealed class EventManager
 
             if (routedEvent == Control.PreviewMouseMoveEvent)
             {
-                MouseEventArgs mouseArgs = ((MouseEventArgs)args);
+                MouseEventArgs mouseArgs = (MouseEventArgs)args;
                 MouseEventArgs argsNew = new MouseEventArgs(
                     args.Source, Control.MouseMoveEvent, mouseArgs.RawPosition,
                     mouseArgs.LeftButton, mouseArgs.MiddleButton, mouseArgs.RightButton
@@ -643,7 +645,7 @@ public sealed class EventManager
 
             if (routedEvent == Control.PreviewMouseWheelEvent)
             {
-                MouseWheelEventArgs oldArgs = ((MouseWheelEventArgs)args);
+                MouseWheelEventArgs oldArgs = (MouseWheelEventArgs)args;
                 MouseEventArgs argsNew = new MouseWheelEventArgs(
                     args.Source, Control.MouseWheelEvent, oldArgs.RawPosition,
                     oldArgs.LeftButton, oldArgs.MiddleButton, oldArgs.RightButton,
@@ -656,7 +658,7 @@ public sealed class EventManager
             if (routedEvent == Control.PreviewKeyDownEvent)
             {
                 KeyEventArgs argsNew = new KeyEventArgs(args.Source, Control.KeyDownEvent);
-                KeyEventArgs keyEventArgs = ((KeyEventArgs)args);
+                KeyEventArgs keyEventArgs = (KeyEventArgs)args;
                 argsNew.UnicodeChar = keyEventArgs.UnicodeChar;
                 argsNew.bKeyDown = keyEventArgs.bKeyDown;
                 argsNew.dwControlKeyState = keyEventArgs.dwControlKeyState;
@@ -689,22 +691,21 @@ public sealed class EventManager
                 for (int i = path.Count - 1; i >= 0; i--)
                 {
                     Control target = path[i];
-                    RoutedEventTargetInfo targetInfo =
-                        subscribedTargets.FirstOrDefault(info => info.target == target);
-                    if (null != targetInfo)
+                    RoutedEventTargetInfo? targetInfo =
+                        subscribedTargets.FirstOrDefault(info => info.Target == target);
+                    if (targetInfo is { HandlersList: not null })
                     {
-                        //
-                        foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.handlersList))
+                        foreach (DelegateInfo delegateInfo in new List<DelegateInfo>(targetInfo.HandlersList))
                         {
-                            if (!args.Handled || delegateInfo.handledEventsToo)
+                            if (!args.Handled || delegateInfo.HandledEventsToo)
                             {
-                                if (delegateInfo.@delegate is RoutedEventHandler)
+                                if (delegateInfo.Delegate is RoutedEventHandler)
                                 {
-                                    ((RoutedEventHandler)delegateInfo.@delegate).Invoke(target, args);
+                                    ((RoutedEventHandler)delegateInfo.Delegate).Invoke(target, args);
                                 }
                                 else
                                 {
-                                    delegateInfo.@delegate.DynamicInvoke(target, args);
+                                    delegateInfo.Delegate.DynamicInvoke(target, args);
                                 }
                             }
                         }
@@ -722,7 +723,7 @@ public sealed class EventManager
     internal void QueueEvent(RoutedEvent routedEvent, RoutedEventArgs args)
     {
         if (routedEvent != args.RoutedEvent)
-            throw new ArgumentException("Routed event doesn't match to routedEvent passed.", "args");
-        this.eventsQueue.Enqueue(args);
+            throw new ArgumentException("Routed event doesn't match to routedEvent passed.", nameof(args));
+        eventsQueue.Enqueue(args);
     }
 }

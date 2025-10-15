@@ -18,7 +18,7 @@ public enum MouseButtonState
 
 public class MouseWheelEventArgs : MouseEventArgs
 {
-    public MouseWheelEventArgs(object source, RoutedEvent routedEvent, Point rawPosition,
+    public MouseWheelEventArgs(object? source, RoutedEvent routedEvent, Point rawPosition,
         MouseButtonState leftButton, MouseButtonState middleButton,
         MouseButtonState rightButton, int delta)
         : base(source, routedEvent, rawPosition, leftButton, middleButton, rightButton)
@@ -42,12 +42,12 @@ public class MouseButtonEventArgs : MouseEventArgs
     private readonly int _clickCount;
     private readonly bool _autoRepeat;
 
-    public MouseButtonEventArgs(object source, RoutedEvent routedEvent)
+    public MouseButtonEventArgs(object? source, RoutedEvent routedEvent)
         : base(source, routedEvent)
     {
     }
 
-    public MouseButtonEventArgs(object source, RoutedEvent routedEvent, Point rawPosition,
+    public MouseButtonEventArgs(object? source, RoutedEvent routedEvent, Point rawPosition,
         MouseButtonState leftButton, MouseButtonState middleButton,
         MouseButtonState rightButton,
         MouseButton button, int clickCount = 1,
@@ -90,11 +90,11 @@ public class MouseButtonEventArgs : MouseEventArgs
 
 public class MouseEventArgs : RoutedEventArgs
 {
-    public MouseEventArgs(object source, RoutedEvent routedEvent) : base(source, routedEvent)
+    public MouseEventArgs(object? source, RoutedEvent routedEvent) : base(source, routedEvent)
     {
     }
 
-    public MouseEventArgs(object source, RoutedEvent routedEvent, Point rawPosition,
+    public MouseEventArgs(object? source, RoutedEvent routedEvent, Point rawPosition,
         MouseButtonState leftButton, MouseButtonState middleButton, MouseButtonState rightButton)
         : base(source, routedEvent)
     {
