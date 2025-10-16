@@ -161,21 +161,18 @@ public class GridLengthTypeConverter : ITypeConverter
 [ContentProperty(nameof(Controls))]
 public class Grid : Control
 {
-    private readonly List<ColumnDefinition> _columnDefinitions = new List<ColumnDefinition>();
-    private readonly List<RowDefinition> _rowDefinitions = new List<RowDefinition>();
-    private readonly UiElementCollection _children;
     private int[] _columnsWidths = Array.Empty<int>();
     private int[] _rowsHeights = Array.Empty<int>();
 
-    public List<ColumnDefinition> ColumnDefinitions => _columnDefinitions;
+    public List<ColumnDefinition> ColumnDefinitions { get; } = new List<ColumnDefinition>();
 
-    public List<RowDefinition> RowDefinitions => _rowDefinitions;
+    public List<RowDefinition> RowDefinitions { get; } = new List<RowDefinition>();
 
-    public UiElementCollection Controls => _children;
+    public UiElementCollection Controls { get; }
 
     public Grid()
     {
-        _children = new UiElementCollection(this);
+        Controls = new UiElementCollection(this);
     }
 
     protected override Size MeasureOverride(Size availableSize)
