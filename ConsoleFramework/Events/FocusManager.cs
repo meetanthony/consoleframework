@@ -303,8 +303,8 @@ public sealed class FocusManager
             processed.Add(child);
         }
 
-        List<Control> focusableAndVisible = processed.Where(c => c.Visibility == Visibility.Visible && c.Focusable
-        ).ToList();
+        List<Control> focusableAndVisible = processed.Where(c => c.Visibility == Visibility.Visible && c.Focusable)
+            .ToList();
         return focusableAndVisible;
     }
 
