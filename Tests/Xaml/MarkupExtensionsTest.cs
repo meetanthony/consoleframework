@@ -10,32 +10,32 @@ public class MarkupExtensionsTest
     {
         public TestExtension()
         {
-            Property1 = String.Empty;
-            Property2 = String.Empty;
-            Property3 = String.Empty;
+            Property1 = string.Empty;
+            Property2 = string.Empty;
+            Property3 = string.Empty;
         }
 
-        public TestExtension(String param1)
+        public TestExtension(string param1)
         {
             Property1 = param1;
-            Property2 = String.Empty;
-            Property3 = String.Empty;
+            Property2 = string.Empty;
+            Property3 = string.Empty;
         }
 
-        public TestExtension(String param1, String param2)
+        public TestExtension(string param1, string param2)
         {
             Property1 = param1;
             Property2 = param2;
-            Property3 = String.Empty;
+            Property3 = string.Empty;
         }
 
-        public String Property1 { get; set; }
+        public string Property1 { get; set; }
 
-        public String Property2 { get; set; }
+        public string Property2 { get; set; }
 
-        public String Property3 { get; set; }
+        public string Property3 { get; set; }
 
-        public object ProvideValue(IMarkupExtensionContext context)
+        public object ProvideValue(IMarkupExtensionContext? context)
         {
             return Property1 + "_" + Property2 + "_" + Property3;
         }
@@ -63,7 +63,7 @@ public class MarkupExtensionsTest
     {
         MarkupExtensionsParser parser = new MarkupExtensionsParser(new TestResolver(),
             @"{xm:TestExtension Arg1, Arg2, Property3=\=\{\}\\sdf}");
-        String result = (String)parser.ProcessMarkupExtension(null);
+        string? result = parser.ProcessMarkupExtension(null) as string;
         Assert.Equal(result, @"Arg1_Arg2_={}\sdf");
     }
 
@@ -72,7 +72,7 @@ public class MarkupExtensionsTest
     {
         MarkupExtensionsParser parser = new MarkupExtensionsParser(new TestResolver(),
             @"{xm:TestExtension Arg1, {TestExtension Property1=1}, Property3=\=\{\}\\sdf}");
-        String result = (String)parser.ProcessMarkupExtension(null);
+        string? result = parser.ProcessMarkupExtension(null) as string;
         Assert.Equal(result, @"Arg1_1___={}\sdf");
     }
 
@@ -81,7 +81,7 @@ public class MarkupExtensionsTest
     {
         MarkupExtensionsParser parser = new MarkupExtensionsParser(new TestResolver(),
             @"{xm:TestExtension Arg1, Property3=\=\{\}\\sdf, Property2={TestExtension Property1=1}}");
-        String result = (String)parser.ProcessMarkupExtension(null);
+        string? result = parser.ProcessMarkupExtension(null) as string;
         Assert.Equal(result, @"Arg1_1___={}\sdf");
     }
 
