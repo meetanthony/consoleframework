@@ -2,6 +2,7 @@
 using ConsoleFramework.Controls;
 using ConsoleFramework.Core;
 using System.Diagnostics;
+using ConsoleFramework.Binding.Validators;
 
 namespace ManyControls;
 
@@ -11,176 +12,193 @@ public class ProgramFromCode : IProgram
     {
         using ConsoleApplication application = ConsoleApplication.Instance;
 
-        Panel panel = new Panel();
-        panel.Name = "panel1";
-        panel.HorizontalAlignment = HorizontalAlignment.Center;
-        panel.VerticalAlignment = VerticalAlignment.Stretch;
-        panel.Children.Add(new TextBlock()
-        {
-            Name = "label1",
-            Text = "Label1",
-            Margin = new Thickness(1, 2, 1, 0)
-            //,Visibility = Visibility.Collapsed
-        });
-        panel.Children.Add(new TextBlock()
-        {
-            Name = "label2",
-            Text = "Label2_____",
-            HorizontalAlignment = HorizontalAlignment.Right
-        });
-        TextBox textBox = new TextBox()
-        {
-            MaxWidth = 10,
-            Margin = new Thickness(1),
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Size = 15
-        };
-        Button button = new Button()
-        {
-            Name = "button1",
-            Caption = "Button!",
-            Margin = new Thickness(1),
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
-        button.OnClick += (sender, eventArgs) =>
-        {
-            Debug.WriteLine("Click");
-            MessageBox.Show("Окно сообщения", "Внимание ! Тестовое сообщение",
-                delegate (MessageBoxResult result) { });
-            Control? label = panel.FindDirectChildByName("label1");
-            if (label == null)
-            {
-                Debug.WriteLine("Label not found");
-                return;
-            }
-            if (label.Visibility == Visibility.Visible)
-            {
-                label.Visibility = Visibility.Collapsed;
-            }
-            else if (label.Visibility == Visibility.Collapsed)
-            {
-                label.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                label.Visibility = Visibility.Visible;
-            }
-
-            label.Invalidate();
-        };
-        ComboBox comboBox = new ComboBox()
-        {
-            //                        Width = 14
-            //HorizontalAlignment = HorizontalAlignment.Stretch
-        };
-        comboBox.Items.Add("Сделать одно");
-        comboBox.Items.Add("Сделать второе");
-        comboBox.Items.Add("Ничего не делать");
-        ListBox listbox = new ListBox();
-        listbox.Items.Add("First item");
-        listbox.Items.Add("second item1!!!!!!1fff");
-        listbox.HorizontalAlignment = HorizontalAlignment.Stretch;
-        //listbox.Width = 10;
-
-        panel.Children.Add(comboBox);
-        panel.Children.Add(button);
-        panel.Children.Add(textBox);
-        panel.Children.Add(listbox);
-
-        //application.Run(panel);
         WindowsHost windowsHost = new WindowsHost()
         {
             Name = "WindowsHost"
         };
 
-        Window window1 = new Window
-        {
-            X = 5,
-            Y = 4,
-            //MinHeight = 100,
-            //MaxWidth = 30,
-            //Width = 10,
-            Height = 20,
-            Name = "Window1",
-            Title = "Window1",
-            Content = panel
-        };
+        var windowX = 1;
+        var windowY = 1;
 
-        GroupBox groupBox = new GroupBox();
-        groupBox.Title = "Группа";
-        ScrollViewer scrollViewer = new ScrollViewer();
-        ListBox listBox = new ListBox();
-        for (int i = 0; i < 30; i++)
+        void ShowWindow(Window window)
         {
-            listBox.Items.Add(string.Format("Длинный элемент {0}", i));
+            window.X = windowX;
+            windowX += window.Width ?? 5 + 1;
+
+            window.Y = windowY;
+
+            windowsHost.Show(window);
         }
 
-        //                listBox.Items.Add( "Длинный элемент" );
-        //                listBox.Items.Add("Длинный элемент 2");
-        //                listBox.Items.Add("Длинный элемент 3");
-        //                listBox.Items.Add("Длинный элемент 4");
-        //                listBox.Items.Add("Длинный элемент 5");
-        //                listBox.Items.Add("Длинный элемент 6");
-        //                listBox.Items.Add("Длинный элемент 700");
-        listBox.HorizontalAlignment = HorizontalAlignment.Stretch;
-        listBox.VerticalAlignment = VerticalAlignment.Stretch;
-        scrollViewer.Content = listBox;
-        //                scrollViewer.HorizontalAlignment = HorizontalAlignment.Stretch;
-        scrollViewer.VerticalAlignment = VerticalAlignment.Stretch;
-        scrollViewer.HorizontalScrollEnabled = true;
-
-        groupBox.Content = scrollViewer;
-
-        ComboBox combo = new ComboBox();
-        combo.ShownItemsCount = 10;
-        for (int i = 0; i < 30; i++)
-        {
-            combo.Items.Add(string.Format("Длинный элемент {0}", i));
-        }
-        //                groupBox.Content = combo;
-
-        groupBox.HorizontalAlignment = HorizontalAlignment.Stretch;
-
-        windowsHost.Show(new Window()
-        {
-            X = 30,
-            Y = 6,
-            //MinHeight = 10,
-            //MinWidth = 10,
-            Height = 14,
-            Name = "LongTitleWindow",
-            Title = "Очень длинное название окна",
-            Content = groupBox
-        });
-        windowsHost.Show(window1);
-
-        Window persistentWindow = new Window
-        {
-            X = 10,
-            Y = 10,
-            Title = "Persistent Window",
-            Height = 14,
-            Width = 50,
-            Content = new Panel
-            {
-                Children =
-                {
-                    new Button
-                    {
-                        Caption = "OK",
-                        Width = 30,
-                        Height = 8,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center
-                    }
-                }
-            }
-        };
-
-        persistentWindow.Closing += (sender, e) => { e.Cancel = true; };
-
-        windowsHost.Show(persistentWindow);
+        Window helloWorldWindow = CreateHelloWorldWindow();
+        ShowWindow(helloWorldWindow);
+        
+        Window windowWithPanelAndControls = CreateWindowWithPanelAndControls();
+        ShowWindow(windowWithPanelAndControls);
 
         application.Run(windowsHost);
+    }
+
+    private Window CreateHelloWorldWindow()
+    {
+        Window window = new Window
+        {
+            Height = 10,
+            Width = 30,
+            Name = "HelloWorldWindow",
+            Title = "HelloWorldWindow"
+        };
+
+        TextBlock textBlock = new TextBlock
+        {
+            Text = "Hello, World!",
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        window.Content = textBlock;
+
+        return window;
+    }
+
+    private Window CreateWindowWithPanelAndControls()
+    {
+        const bool comboBoxExample = true;
+        const bool listBoxExample = true;
+        const bool groupBoxExample = true;
+
+        var window = new Window
+        {
+            Height = 10,
+            Width = 50,
+            Name = "WindowWithPanelAndControls",
+            Title = "WindowWithPanelAndControls"
+        };
+
+        var rootPanel = new Panel
+        {
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            Orientation = Orientation.Vertical
+        };
+
+        if (comboBoxExample)
+        {
+            var panel = new Panel
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Orientation = Orientation.Horizontal
+            };
+
+            // TextBlock
+            var text = "ComboBox:";
+            var textBlock = new TextBlock
+            {
+                Text = text,
+                Width = text.Length,
+                Margin = new Thickness(1)
+            };
+            panel.Children.Add(textBlock);
+
+            // ComboBox with Items
+            var comboBox = new ComboBox()
+            {
+                Margin = new Thickness(1)
+            };
+            for (int i = 0; i < 5; i++)
+            {
+                comboBox.Items.Add($"ComboBox item #{i}");
+            }
+
+            panel.Children.Add(comboBox);
+
+            rootPanel.Children.Add(panel);
+        }
+
+        if (listBoxExample)
+        {
+            var panel = new Panel
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Orientation = Orientation.Horizontal
+            };
+
+            // TextBlock
+            var text = "ListBox:";
+            var textBlock = new TextBlock
+            {
+                Text = text,
+                Width = text.Length,
+                Margin = new Thickness(1)
+            };
+            panel.Children.Add(textBlock);
+
+            // ListBox with Items
+            var listBox = new ListBox();
+            for (int i = 0; i < 50; i++)
+            {
+                listBox.Items.Add($"ListBox item #{i}");
+            }
+
+            ScrollViewer scrollViewer = new ScrollViewer()
+            {
+                Margin = new Thickness(1),
+                MaxHeight = 4
+            };
+            scrollViewer.Content = listBox;
+
+            panel.Children.Add(scrollViewer);
+
+            rootPanel.Children.Add(panel);
+        }
+
+        if (listBoxExample)
+        {
+            var groupBox = new GroupBox()
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+
+            var panel = new Panel
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Orientation = Orientation.Horizontal
+            };
+            groupBox.Content = panel;
+
+            // TextBlock
+            var text = "Buttons in GroupBox:";
+            var textBlock = new TextBlock
+            {
+                Text = text,
+                Width = text.Length,
+                Margin = new Thickness(1)
+            };
+            panel.Children.Add(textBlock);
+
+            // Buttons
+            for (int i = 0; i < 5; i++)
+            {
+                var button = new Button()
+                {
+                    Caption = $"Button #{i}",
+                    Margin = new Thickness(1)
+                };
+
+                button.OnClick += (sender, _) => { ((Button)sender).Caption = "Clicked";};
+
+                panel.Children.Add(button);
+            }
+
+            rootPanel.Children.Add(groupBox);
+        }
+
+        window.Content = rootPanel;
+
+        return window;
     }
 }
