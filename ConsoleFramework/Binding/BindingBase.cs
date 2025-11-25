@@ -23,17 +23,11 @@ public delegate void OnBindingHandler(BindingResult result);
 /// </summary>
 public class BindingBase
 {
-    protected Object Target;
-    private readonly String _targetProperty;
-    protected INotifyPropertyChanged Source;
-    private readonly String _sourceProperty;
+    private readonly string _targetProperty;
+    private readonly string _sourceProperty;
     private bool _bound;
     private readonly BindingMode _mode;
-    protected BindingMode RealMode;
     private readonly BindingSettingsBase _settings;
-
-    // This may be initialized using true in inherited classes for specialized binding
-    protected bool NeedAdapterAnyway = false;
 
     private IBindingAdapter? _adapter;
     private PropertyInfo? _targetPropertyInfo;
@@ -41,13 +35,6 @@ public class BindingBase
 
     // Converts target to source and back
     private IBindingConverter? _converter;
-
-    // Used instead targetListener if target does not implement INotifyPropertyChanged
-    protected Object? TargetListenerWrapper;
-
-    // Flags used to avoid infinite recursive loop
-    private bool _ignoreSourceListener;
-    protected bool IgnoreTargetListener;
 
     // Collections synchronization support
     private bool _sourceIsObservable;
@@ -57,6 +44,19 @@ public class BindingBase
     private IList? _sourceList;
 
     private IBindingValidator? _validator;
+
+    protected object Target;
+    protected INotifyPropertyChanged Source;
+    protected BindingMode RealMode;
+    // This may be initialized using true in inherited classes for specialized binding
+    protected bool NeedAdapterAnyway = false;
+    
+    // Used instead targetListener if target does not implement INotifyPropertyChanged
+    protected object? TargetListenerWrapper;
+
+    // Flags used to avoid infinite recursive loop
+    private bool _ignoreSourceListener;
+    protected bool IgnoreTargetListener;
 
     /// <summary>
     /// If target value conversion or validation fails, the source property will be set to null
@@ -110,24 +110,24 @@ public class BindingBase
         }
     }
 
-    public BindingBase(Object target, String targetProperty, INotifyPropertyChanged source, String sourceProperty) :
+    public BindingBase(object target, string targetProperty, INotifyPropertyChanged source, string sourceProperty) :
         this(target, targetProperty, source, sourceProperty, BindingMode.Default)
     {
     }
 
-    public BindingBase(Object target, String targetProperty, INotifyPropertyChanged source,
-        String sourceProperty, BindingMode mode) :
+    public BindingBase(object target, string targetProperty, INotifyPropertyChanged source,
+        string sourceProperty, BindingMode mode) :
         this(target, targetProperty, source, sourceProperty, mode, BindingSettingsBase.DefaultSettings)
     {
     }
 
-    public BindingBase(Object target, String targetProperty, INotifyPropertyChanged source,
-        String sourceProperty, BindingMode mode, BindingSettingsBase settings)
+    public BindingBase(object target, string targetProperty, INotifyPropertyChanged source,
+        string sourceProperty, BindingMode mode, BindingSettingsBase settings)
     {
-        if (null == target) throw new ArgumentNullException("target");
-        if (string.IsNullOrEmpty(targetProperty)) throw new ArgumentException("targetProperty is null or empty");
-        if (null == source) throw new ArgumentNullException("source");
-        if (string.IsNullOrEmpty(sourceProperty)) throw new ArgumentException("sourceProperty is null or empty");
+        if (string.IsNullOrEmpty(targetProperty))
+            throw new ArgumentException($"{nameof(targetProperty)} is null or empty");
+        if (string.IsNullOrEmpty(sourceProperty))
+            throw new ArgumentException($"{nameof(sourceProperty)} is null or empty");
         //
         Target = target;
         _targetProperty = targetProperty;
@@ -144,11 +144,11 @@ public class BindingBase
     public void UpdateTarget()
     {
         if (RealMode != BindingMode.OneTime && RealMode != BindingMode.OneWay && RealMode != BindingMode.TwoWay)
-            throw new Exception(String.Format("Cannot update target in {0} binding mode.", RealMode));
+            throw new Exception($"Cannot update target in {RealMode} binding mode.");
         IgnoreTargetListener = true;
         try
         {
-            Object? sourceValue = _sourcePropertyInfo?.GetGetMethod()?.Invoke(Source, null);
+            object? sourceValue = _sourcePropertyInfo?.GetGetMethod()?.Invoke(Source, null);
             if (_sourceIsObservable)
             {
                 // work with observable list
@@ -173,7 +173,7 @@ public class BindingBase
                     if (null != targetListNow)
                     {
                         targetListNow.Clear();
-                        foreach (Object x in ((IEnumerable)sourceValue))
+                        foreach (object x in ((IEnumerable)sourceValue))
                         {
                             targetListNow.Add(x);
                         }
@@ -197,7 +197,7 @@ public class BindingBase
             else
             {
                 // Work with usual property
-                Object? converted = sourceValue;
+                object? converted = sourceValue;
                 // Convert back if need
                 if (null != _converter && sourceValue != null)
                 {
@@ -298,11 +298,11 @@ public class BindingBase
     public void UpdateSource()
     {
         if (RealMode != BindingMode.OneWayToSource && RealMode != BindingMode.TwoWay)
-            throw new Exception(String.Format("Cannot update source in {0} binding mode.", RealMode));
+            throw new Exception(string.Format("Cannot update source in {0} binding mode.", RealMode));
         _ignoreSourceListener = true;
         try
         {
-            Object? targetValue;
+            object? targetValue;
             if (null == _adapter)
                 targetValue = _targetPropertyInfo?.GetGetMethod()?.Invoke(Target, null);
             else
@@ -348,7 +348,7 @@ public class BindingBase
             else
             {
                 // Work with usual property
-                Object? convertedValue = targetValue;
+                object? convertedValue = targetValue;
                 // Convert if need
                 if (null != _converter)
                 {
@@ -364,7 +364,7 @@ public class BindingBase
                         if (UpdateSourceIfBindingFails)
                         {
                             // Will update source using null or default(T) if T is primitive
-                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, new Object?[] { null });
+                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, new object?[] { null });
                         }
 
                         return;
@@ -385,7 +385,7 @@ public class BindingBase
                         if (UpdateSourceIfBindingFails)
                         {
                             // Will update source using null or default(T) if T is primitive
-                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, new Object?[]{null});
+                            _sourcePropertyInfo?.GetSetMethod()?.Invoke(Source, new object?[]{null});
                         }
 
                         return;
@@ -499,7 +499,7 @@ public class BindingBase
                 }
 
                 if (_converter == null)
-                    throw new Exception(String.Format("Converter for {0} -> {1} classes not found.",
+                    throw new Exception(string.Format("Converter for {0} -> {1} classes not found.",
                         targetPropertyClass?.Name, _sourcePropertyInfo?.PropertyType.Name));
             }
         }
@@ -679,7 +679,7 @@ public class BindingBase
     /// the <see cref="Unbind"/> and <see cref="Bind"/> methods will be called automatically.
     /// @param target New Target object
     /// </summary>
-    public void SetTarget(Object target)
+    public void SetTarget(object target)
     {
         if (null == target) throw new ArgumentNullException(nameof(target));
         if (_bound)
