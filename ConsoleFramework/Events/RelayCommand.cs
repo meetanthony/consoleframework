@@ -11,9 +11,9 @@ public class RelayCommand : ICommand
     private readonly Action<object?> _action;
     private readonly Func<object?, bool>? _canExecute;
 
-    public RelayCommand(Action<object?>? action)
+    public RelayCommand(Action<object?> action)
     {
-        _action = action ?? throw new ArgumentNullException(nameof(action));
+        _action = action;// ?? throw new ArgumentNullException(nameof(action));
     }
 
     public RelayCommand(Action<object?> action, Func<object?, bool>? canExecute)
