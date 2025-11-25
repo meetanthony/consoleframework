@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace ManyControls;
 
-public class ProgramfromCode : IProgram
+public class ProgramFromCode1 : IProgram
 {
     public void Main(string[] args)
     {
@@ -153,15 +153,6 @@ public class ProgramfromCode : IProgram
             Content = groupBox
         });
         windowsHost.Show(window1);
-        if (createdFromXaml != null)
-            windowsHost.Show(createdFromXaml);
-        //textBox.SetFocus(); todo : научиться задавать фокусный элемент до добавления в визуальное дерево
-        //application.TerminalSizeChanged += ( sender, eventArgs ) => {
-        //    application.CanvasSize = new Size(eventArgs.Width, eventArgs.Height);
-        //   application.RootElementRect = new Rect(new Size(eventArgs.Width, eventArgs.Height));
-        // };
-        //windowsHost.Width = 80;
-        //windowsHost.Height = 20;
 
         Window persistentWindow = new Window
         {

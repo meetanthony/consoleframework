@@ -5,7 +5,7 @@ public class Program
     public static void Main(string[] args)
     {
         var useXaml = true;
-        IProgram program = useXaml ? new ProgramFromXaml() : new ProgramfromCode();
+        IProgram program = useXaml ? new ProgramFromXaml() : new ProgramFromCode1();
         program.Main(args);
     }
 }
