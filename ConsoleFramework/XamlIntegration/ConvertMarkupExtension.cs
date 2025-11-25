@@ -14,20 +14,29 @@ public class ConvertMarkupExtension : IMarkupExtension
     /// <summary>
     /// Converter to be used.
     /// </summary>
-    public IBindingConverter Converter { get; set; }
+    public IBindingConverter? Converter { get; set; }
 
     /// <summary>
     /// Value to convert. String or any object (if created using nested markup extension).
     /// </summary>
-    public object Value { get; set; }
+    public object? Value { get; set; }
 
-    public object ProvideValue(IMarkupExtensionContext context)
+    public object? ProvideValue(IMarkupExtensionContext? context)
     {
         if (null == Converter)
             throw new InvalidOperationException("Converter is null");
+
         if (null == Value)
             return null;
-        PropertyInfo propertyInfo = context.Object.GetType().GetProperty(context.PropertyName);
+
+        if (null == context)
+            throw new InvalidOperationException("Markup extension context is null");
+
+        PropertyInfo? propertyInfo = context.Object.GetType().GetProperty(context.PropertyName);
+        if (null == propertyInfo)
+            throw new InvalidOperationException(
+                $"Cannot find property {context.PropertyName} on type {context.Object.GetType().Name}");
+
         Type propertyType = propertyInfo.PropertyType;
         Type valueType = Value.GetType();
         Type firstType = Converter.FirstType;
@@ -37,24 +46,21 @@ public class ConvertMarkupExtension : IMarkupExtension
         {
             ConversionResult conversionResult = Converter.ConvertBack(Value);
             if (!conversionResult.Success)
-                throw new InvalidOperationException(string.Format(
-                    "Cannot convert value : {0}", conversionResult.FailReason));
+                throw new InvalidOperationException($"Cannot convert value : {conversionResult.FailReason}");
             return conversionResult.Value;
         }
-        else if (firstType.IsAssignableFrom(valueType)
-                 && secondType.IsAssignableFrom(propertyType))
+
+        if (firstType.IsAssignableFrom(valueType)
+            && secondType.IsAssignableFrom(propertyType))
         {
             ConversionResult conversionResult = Converter.Convert(Value);
             if (!conversionResult.Success)
-                throw new InvalidOperationException(string.Format(
-                    "Cannot convert value : {0}", conversionResult.FailReason));
+                throw new InvalidOperationException($"Cannot convert value : {conversionResult.FailReason}");
             return conversionResult.Value;
         }
-        else
-        {
-            throw new InvalidOperationException(
-                string.Format("Cannot use specified converter to convert {0} to {1}",
-                    valueType.Name, propertyType.Name));
-        }
+
+        throw new InvalidOperationException(
+            string.Format("Cannot use specified converter to convert {0} to {1}",
+                valueType.Name, propertyType.Name));
     }
 }

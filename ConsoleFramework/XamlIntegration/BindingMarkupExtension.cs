@@ -19,20 +19,23 @@ class BindingMarkupExtension : IMarkupExtension
         Path = path;
     }
 
-    public String Path { get; set; }
+    public string? Path { get; set; }
 
-    public String Mode { get; set; }
+    public string? Mode { get; set; }
 
-    public Object Source { get; set; }
+    public object? Source { get; set; }
 
     /// <summary>
     /// Converter to be used.
     /// </summary>
-    public IBindingConverter Converter { get; set; }
+    public IBindingConverter? Converter { get; set; }
 
-    public object ProvideValue(IMarkupExtensionContext context)
+    public object? ProvideValue(IMarkupExtensionContext? context)
     {
-        Object realSource = Source ?? context.DataContext;
+        if (context == null)
+            return null;
+
+        object realSource = Source ?? context.DataContext;
         if (null != realSource && !(realSource is INotifyPropertyChanged))
         {
             throw new ArgumentException("Source must be INotifyPropertyChanged to use bindings");
@@ -49,7 +52,9 @@ class BindingMarkupExtension : IMarkupExtension
                 {
                     if (enumNames[i] == Mode)
                     {
-                        mode = (BindingMode)Enum.ToObject(enumType, enumType.GetTypeInfo().GetEnumValues().GetValue(i));
+                        var enumValue = enumType.GetTypeInfo().GetEnumValues().GetValue(i);
+                        if (enumValue != null)
+                            mode = (BindingMode)Enum.ToObject(enumType, enumValue);
                         break;
                     }
                 }
