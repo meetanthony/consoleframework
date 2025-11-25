@@ -16,38 +16,22 @@ public sealed class EventManager
 {
     private readonly Stack<Control> inputCaptureStack = new Stack<Control>();
 
-    private class DelegateInfo
+    private class DelegateInfo(Delegate @delegate, bool handledEventsToo)
     {
-        public readonly Delegate Delegate;
-        public readonly bool HandledEventsToo;
-
-        public DelegateInfo(Delegate @delegate, bool handledEventsToo)
-        {
-            Delegate = @delegate;
-            HandledEventsToo = handledEventsToo;
-        }
+        public readonly Delegate Delegate = @delegate;
+        public readonly bool HandledEventsToo = handledEventsToo;
     }
 
-    private class RoutedEventTargetInfo
+    private class RoutedEventTargetInfo(object target)
     {
-        public readonly object Target;
+        public readonly object Target = target;
         public List<DelegateInfo>? HandlersList;
-
-        public RoutedEventTargetInfo(object? target)
-        {
-            Target = target ?? throw new ArgumentNullException(nameof(target));
-        }
     }
 
-    private class RoutedEventInfo
+    private class RoutedEventInfo(RoutedEvent routedEvent)
     {
+        public readonly RoutedEvent RoutedEvent = routedEvent;
         public List<RoutedEventTargetInfo>? TargetsList;
-
-        public RoutedEventInfo(RoutedEvent routedEvent)
-        {
-            if (null == routedEvent)
-                throw new ArgumentNullException(nameof(routedEvent));
-        }
     }
 
     private static readonly Dictionary<RoutedEventKey, RoutedEventInfo> RoutedEvents =
@@ -82,13 +66,6 @@ public sealed class EventManager
 
     public static void AddHandler(object target, RoutedEvent routedEvent, Delegate handler, bool handledEventsToo)
     {
-        if (null == target)
-            throw new ArgumentNullException(nameof(target));
-        if (null == routedEvent)
-            throw new ArgumentNullException(nameof(routedEvent));
-        if (null == handler)
-            throw new ArgumentNullException(nameof(handler));
-        //
         RoutedEventKey key = routedEvent.Key;
         if (!RoutedEvents.ContainsKey(key))
             throw new ArgumentException("Specified routed event is not registered.", nameof(routedEvent));
@@ -120,13 +97,6 @@ public sealed class EventManager
 
     public static void RemoveHandler(object target, RoutedEvent routedEvent, Delegate handler)
     {
-        if (null == target)
-            throw new ArgumentNullException(nameof(target));
-        if (null == routedEvent)
-            throw new ArgumentNullException(nameof(routedEvent));
-        if (null == handler)
-            throw new ArgumentNullException(nameof(handler));
-        //
         RoutedEventKey key = routedEvent.Key;
         if (!RoutedEvents.ContainsKey(key))
             throw new ArgumentException("Specified routed event is not registered.", nameof(routedEvent));
@@ -149,8 +119,6 @@ public sealed class EventManager
     /// </summary>
     private static List<RoutedEventTargetInfo>? GetTargetsSubscribedTo(RoutedEvent routedEvent)
     {
-        if (null == routedEvent)
-            throw new ArgumentNullException(nameof(routedEvent));
         RoutedEventKey key = routedEvent.Key;
         if (!RoutedEvents.ContainsKey(key))
             throw new ArgumentException("Specified routed event is not registered.", nameof(routedEvent));
