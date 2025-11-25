@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace ManyControls;
 
-public class ProgramFromCode1 : IProgram
+public class ProgramFromCode : IProgram
 {
     public void Main(string[] args)
     {
