@@ -18,10 +18,13 @@ class TypeMarkupExtension : IMarkupExtension
         Name = name;
     }
 
-    public String Name { get; set; }
+    public string? Name { get; set; }
 
-    public object ProvideValue(IMarkupExtensionContext context)
+    public object? ProvideValue(IMarkupExtensionContext? context)
     {
+        if (Name == null)
+            return null;
+
         return Type.GetType(Name);
     }
 }

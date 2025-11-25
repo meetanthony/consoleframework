@@ -22,24 +22,25 @@ class RefMarkupExtension : IMarkupExtension
     /// <summary>
     /// String reference to ID of object to be used.
     /// </summary>
-    public String Ref { get; set; }
+    public string? Ref { get; set; }
 
-    public object ProvideValue(IMarkupExtensionContext context)
+    public object? ProvideValue(IMarkupExtensionContext? context)
     {
         if (string.IsNullOrEmpty(Ref))
             throw new InvalidOperationException("Ref is null or empty string.");
 
-        object obj = context.GetObjectById(Ref);
+        if (context == null)
+            return null;
+
+        object? obj = context.GetObjectById(Ref);
         if (null == obj)
         {
             if (context.IsFixupTokenAvailable)
             {
                 return context.GetFixupToken(new string[] { Ref });
             }
-            else
-            {
-                throw new InvalidOperationException(string.Format("Object with Id={0} not found.", Ref));
-            }
+
+            throw new InvalidOperationException($"Object with Id={Ref} not found.");
         }
 
         return obj;
