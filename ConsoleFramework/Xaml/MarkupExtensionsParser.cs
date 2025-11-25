@@ -6,115 +6,49 @@ using System.Text;
 
 namespace ConsoleFramework.Xaml;
 
-/// <summary>
-/// Marker of fixup token - object can be returned from
-/// markup extension context. Token allows to resolve forward references in XAML.
-/// </summary>
-public interface IFixupToken
-{
-}
-
-/// <summary>
-/// Контекст, доступный расширению разметки.
-/// </summary>
-public interface IMarkupExtensionContext
-{
-    /// <summary>
-    /// Имя свойства, которое определяется при помощи расширения разметки.
-    /// </summary>
-    String PropertyName { get; }
-
-    /// <summary>
-    /// Ссылка на конфигурируемый объект.
-    /// </summary>
-    Object Object { get; }
-
-    /// <summary>
-    /// Возвращает активный для конфигурируемого объекта DataContext.
-    /// Если у текущего конфигурируемого объекта нет собственного DataContext'a,
-    /// будет взят контекст объекта выше по иерархии контролов, и так до главного элемента
-    /// дерева контролов.
-    /// </summary>
-    Object DataContext { get; }
-
-    /// <summary>
-    /// Returns already created object with specified x:Id attribute value or null if object with
-    /// this x:Id is not constructed yet. To resolve forward references use fixup tokens mechanism.
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    Object GetObjectById(String id);
-
-    /// <summary>
-    /// Gets a value that determines whether calling GetFixupToken is available
-    /// in order to resolve a name into a token for forward resolution.
-    /// </summary>
-    bool IsFixupTokenAvailable { get; }
-
-    /// <summary>
-    /// Returns an object that can correct for certain markup patterns that produce forward references.
-    /// </summary>
-    /// <param name="ids">A collection of ids that are possible forward references.</param>
-    /// <returns>An object that provides a token for lookup behavior to be evaluated later.</returns>
-    IFixupToken GetFixupToken(IEnumerable<String> ids);
-}
-
-/// <summary>
-/// todo : comment
-/// </summary>
-public interface IMarkupExtension
-{
-    /// <summary>
-    /// If ProvideValue returns null, it will not be assigned to object property.
-    /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    Object ProvideValue(IMarkupExtensionContext context);
-}
-
 public interface IMarkupExtensionsResolver
 {
-    Type Resolve(String name);
+    Type Resolve(string name);
 }
 
 public class MarkupExtensionsParser
 {
-    private readonly IMarkupExtensionsResolver resolver;
+    private readonly IMarkupExtensionsResolver _resolver;
 
-    public MarkupExtensionsParser(IMarkupExtensionsResolver resolver, String text)
+    public MarkupExtensionsParser(IMarkupExtensionsResolver resolver, string text)
     {
-        this.resolver = resolver;
-        this.text = text;
+        _resolver = resolver;
+        _text = text;
     }
 
-    private String text;
-    private int index;
+    private readonly string _text;
+    private int _index;
 
-    private bool hasNextChar()
+    private bool HasNextChar()
     {
-        return index < text.Length;
+        return _index < _text.Length;
     }
 
-    private char consumeChar()
+    private char ConsumeChar()
     {
-        return text[index++];
+        return _text[_index++];
     }
 
-    private char peekNextChar()
+    private char PeekNextChar()
     {
-        return text[index];
+        return _text[_index];
     }
 
-    public Object ProcessMarkupExtension(IMarkupExtensionContext context)
+    public object? ProcessMarkupExtension(IMarkupExtensionContext? context)
     {
         // interpret as markup extension expression
-        object result = processMarkupExtensionCore(context);
+        object? result = ProcessMarkupExtensionCore(context);
         if (result is IFixupToken) return result;
 
-        if (hasNextChar())
+        if (HasNextChar())
         {
             throw new InvalidOperationException(
-                String.Format("Syntax error: unexpected characters at {0}", index));
+                $"Syntax error: unexpected characters at {_index}");
         }
 
         return result;
@@ -124,17 +58,17 @@ public class MarkupExtensionsParser
     /// Consumes all whitespace characters. If necessary is true, at least one
     /// whitespace character should be consumed.
     /// </summary>
-    private void processWhitespace(bool necessary = true)
+    private void ProcessWhitespace(bool necessary = true)
     {
         if (necessary)
         {
             // at least one whitespace should be
-            if (peekNextChar() != ' ')
+            if (PeekNextChar() != ' ')
                 throw new InvalidOperationException(
-                    String.Format("Syntax error: whitespace expected at {0}.", index));
+                    $"Syntax error: whitespace expected at {_index}.");
         }
 
-        while (peekNextChar() == ' ') consumeChar();
+        while (PeekNextChar() == ' ') ConsumeChar();
     }
 
     /// <summary>
@@ -143,24 +77,24 @@ public class MarkupExtensionsParser
     /// constructs and initializes it, and returns ProvideValue method result.
     /// </summary>
     /// <param name="context">Context object passed to ProvideValue method.</param>
-    private Object processMarkupExtensionCore(IMarkupExtensionContext context)
+    private object? ProcessMarkupExtensionCore(IMarkupExtensionContext? context)
     {
-        if (consumeChar() != '{')
+        if (ConsumeChar() != '{')
             throw new InvalidOperationException("Syntax error: '{{' token expected at 0.");
-        processWhitespace(false);
-        String markupExtensionName = processQualifiedName();
+        ProcessWhitespace(false);
+        string markupExtensionName = ProcessQualifiedName();
         if (markupExtensionName.Length == 0)
             throw new InvalidOperationException("Syntax error: markup extension name is empty.");
-        processWhitespace();
+        ProcessWhitespace();
 
-        Type type = resolver.Resolve(markupExtensionName);
+        Type type = _resolver.Resolve(markupExtensionName);
 
-        Object obj = null;
-        List<Object> ctorArgs = new List<object>();
+        object? obj = null;
+        List<object?> ctorArgs = new List<object?>();
 
         for (;;)
         {
-            if (peekNextChar() == '{')
+            if (PeekNextChar() == '{')
             {
                 // inner markup extension processing
 
@@ -169,65 +103,63 @@ public class MarkupExtensionsParser
                     throw new InvalidOperationException("Syntax error: constructor argument" +
                                                         " cannot be after property assignment.");
 
-                Object value = processMarkupExtensionCore(context);
+                object? value = ProcessMarkupExtensionCore(context);
                 if (value is IFixupToken)
                     return value;
                 ctorArgs.Add(value);
             }
             else
             {
-                String membernameOrString = processString();
+                string memberNameOrString = ProcessString();
 
-                if (membernameOrString.Length == 0)
+                if (memberNameOrString.Length == 0)
                     throw new InvalidOperationException(
-                        String.Format("Syntax error: member name or string expected at {0}",
-                            index));
+                        $"Syntax error: member name or string expected at {_index}");
 
-                if (peekNextChar() == '=')
+                if (PeekNextChar() == '=')
                 {
-                    consumeChar();
-                    object value = peekNextChar() == '{'
-                        ? processMarkupExtensionCore(context)
-                        : processString();
+                    ConsumeChar();
+                    object? value = PeekNextChar() == '{'
+                        ? ProcessMarkupExtensionCore(context)
+                        : ProcessString();
 
                     if (value is IFixupToken) return value;
 
                     // construct object if not constructed yet
-                    if (obj == null) obj = construct(type, ctorArgs);
+                    if (obj == null) obj = Construct(type, ctorArgs);
 
                     // assign value to specified member
-                    assignProperty(type, obj, membernameOrString, value);
+                    AssignProperty(type, obj, memberNameOrString, value);
                 }
-                else if (peekNextChar() == ',' || peekNextChar() == '}')
+                else if (PeekNextChar() == ',' || PeekNextChar() == '}')
                 {
                     // syntax error if ctor arg defined after any property
                     if (obj != null)
                         throw new InvalidOperationException("Syntax error: constructor argument" +
                                                             " cannot be after property assignment.");
 
-                    // store membernameOrString as string argument of ctor
-                    ctorArgs.Add(membernameOrString);
+                    // store memberNameOrString as string argument of ctor
+                    ctorArgs.Add(memberNameOrString);
                 }
                 else
                 {
                     // it is '{' token, throw syntax error
                     throw new InvalidOperationException(
-                        String.Format("Syntax error : unexpected '{{' token at {0}.",
-                            index));
+                        $"Syntax error : unexpected '{{' token at {_index}.");
                 }
             }
 
             // after ctor arg or property assignment should be , or }
-            if (peekNextChar() == ',')
+            if (PeekNextChar() == ',')
             {
-                consumeChar();
+                ConsumeChar();
             }
-            else if (peekNextChar() == '}')
+            else if (PeekNextChar() == '}')
             {
-                consumeChar();
+                ConsumeChar();
 
                 // construct object
-                if (obj == null) obj = construct(type, ctorArgs);
+                if (obj == null) obj = Construct(type, ctorArgs);
 
                 // markup extension is finished
                 break;
@@ -236,26 +168,25 @@ public class MarkupExtensionsParser
             {
                 // it is '{' token (without whitespace), throw syntax error
                 throw new InvalidOperationException(
-                    String.Format("Syntax error : unexpected '{{' token at {0}.",
-                        index));
+                    $"Syntax error : unexpected '{{' token at {_index}.");
             }
 
-            processWhitespace(false);
+            ProcessWhitespace(false);
         }
 
         return ((IMarkupExtension)obj).ProvideValue(context);
     }
 
-    private void assignProperty(Type type, Object obj, string propertyName, object value)
+    private void AssignProperty(Type type, object obj, string propertyName, object? value)
     {
-        PropertyInfo property = type.GetProperty(propertyName);
-        property.SetValue(obj, value, null);
+        PropertyInfo? property = type.GetProperty(propertyName);
+        property?.SetValue(obj, value, null);
     }
 
     /// <summary>
     /// Constructs object of specified type using specified ctor arguments list.
     /// </summary>
-    private Object construct(Type type, List<Object> ctorArgs)
+    private object Construct(Type type, List<object?> ctorArgs)
     {
         ConstructorInfo[] constructors = type.GetConstructors();
         List<ConstructorInfo> constructorInfos =
@@ -272,7 +203,7 @@ public class MarkupExtensionsParser
 
         ConstructorInfo ctor = constructorInfos[0];
         ParameterInfo[] parameters = ctor.GetParameters();
-        Object[] convertedArgs = new object[ctorArgs.Count];
+        object?[] convertedArgs = new object[ctorArgs.Count];
         for (int i = 0; i < parameters.Length; i++)
         {
             convertedArgs[i] = ctorArgs[i];
@@ -286,23 +217,23 @@ public class MarkupExtensionsParser
     /// Как только встречается один из этих символов без экранирования обратным слешем,
     /// парсинг прекращается.
     /// </summary>
-    private string processString()
+    private string ProcessString()
     {
         StringBuilder sb = new StringBuilder();
         bool escaping = false;
         for (;;)
         {
-            if (!hasNextChar())
+            if (!HasNextChar())
             {
                 if (escaping) throw new InvalidOperationException("Invalid syntax.");
                 break;
             }
 
-            char c = peekNextChar();
+            char c = PeekNextChar();
             if (escaping)
             {
                 sb.Append(c);
-                consumeChar();
+                ConsumeChar();
                 escaping = false;
             }
             else
@@ -310,7 +241,7 @@ public class MarkupExtensionsParser
                 if (c == '\\')
                 {
                     escaping = true;
-                    consumeChar();
+                    ConsumeChar();
                 }
                 else
                 {
@@ -322,7 +253,7 @@ public class MarkupExtensionsParser
                     else
                     {
                         sb.Append(c);
-                        consumeChar();
+                        ConsumeChar();
                     }
                 }
             }
@@ -331,18 +262,18 @@ public class MarkupExtensionsParser
         return sb.ToString();
     }
 
-    private string processQualifiedName()
+    private string ProcessQualifiedName()
     {
         StringBuilder sb = new StringBuilder();
         for (;;)
         {
-            char c = peekNextChar();
-            if (c != ':' && !Char.IsLetterOrDigit(c))
+            char c = PeekNextChar();
+            if (c != ':' && !char.IsLetterOrDigit(c))
             {
                 break;
             }
 
-            consumeChar();
+            ConsumeChar();
             sb.Append(c);
         }
 
