@@ -2,11 +2,7 @@
 
 public delegate void CancelEventHandler(object sender, CancelEventArgs e);
 
-public class CancelEventArgs : RoutedEventArgs
+public class CancelEventArgs(object source, RoutedEvent routedEvent) : RoutedEventArgs(source, routedEvent)
 {
-    public CancelEventArgs(object source, RoutedEvent routedEvent) : base(source, routedEvent)
-    {
-    }
-
     public bool Cancel { get; set; }
 }
