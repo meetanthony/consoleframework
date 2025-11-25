@@ -29,23 +29,14 @@ public enum RoutingStrategy
 /// </summary>
 public sealed class RoutedEventKey : IEquatable<RoutedEventKey>
 {
-    private readonly string name;
-    private readonly Type ownerType;
+    public string? Name { get; }
 
-    public string Name
-    {
-        get { return name; }
-    }
-
-    public Type OwnerType
-    {
-        get { return ownerType; }
-    }
+    public Type? OwnerType { get; }
 
     public RoutedEventKey(string name, Type ownerType)
     {
-        this.name = name;
-        this.ownerType = ownerType;
+        this.Name = name;
+        this.OwnerType = ownerType;
     }
 
     /// <summary>
@@ -55,11 +46,11 @@ public sealed class RoutedEventKey : IEquatable<RoutedEventKey>
     /// true if the current object is equal to the <paramref name="other"/> parameter; otherwise, false.
     /// </returns>
     /// <param name="other">An object to compare with this object.</param>
-    public bool Equals(RoutedEventKey other)
+    public bool Equals(RoutedEventKey? other)
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return Equals(other.name, name) && Equals(other.ownerType, ownerType);
+        return Equals(other.Name, Name) && Equals(other.OwnerType, OwnerType);
     }
 
     /// <summary>
@@ -69,7 +60,7 @@ public sealed class RoutedEventKey : IEquatable<RoutedEventKey>
     /// true if the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>; otherwise, false.
     /// </returns>
     /// <param name="obj">The <see cref="T:System.Object"/> to compare with the current <see cref="T:System.Object"/>. </param><filterpriority>2</filterpriority>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj)) return false;
         if (ReferenceEquals(this, obj)) return true;
@@ -88,7 +79,7 @@ public sealed class RoutedEventKey : IEquatable<RoutedEventKey>
     {
         unchecked
         {
-            return ((name != null ? name.GetHashCode() : 0) * 397) ^ (ownerType != null ? ownerType.GetHashCode() : 0);
+            return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (OwnerType != null ? OwnerType.GetHashCode() : 0);
         }
     }
 
@@ -108,57 +99,35 @@ public sealed class RoutedEventKey : IEquatable<RoutedEventKey>
 /// </summary>
 public sealed class RoutedEvent
 {
-    private readonly Type handlerType;
-    private readonly string name;
-    private readonly Type ownerType;
-    private readonly RoutingStrategy routingStrategy;
-
     public RoutedEvent(Type handlerType, string name, Type ownerType, RoutingStrategy routingStrategy)
     {
-        this.handlerType = handlerType;
-        this.name = name;
-        this.ownerType = ownerType;
-        this.routingStrategy = routingStrategy;
+        this.HandlerType = handlerType;
+        this.Name = name;
+        this.OwnerType = ownerType;
+        this.RoutingStrategy = routingStrategy;
     }
 
     /// <summary>
     /// Тип делегата - обработчика события.
     /// </summary>
-    public Type HandlerType
-    {
-        get { return handlerType; }
-    }
+    public Type HandlerType { get; }
 
     /// <summary>
     /// Имя события - должно быть уникальным в рамках указанного <see cref="OwnerType"/>.
     /// </summary>
-    public string Name
-    {
-        get { return name; }
-    }
+    public string Name { get; }
 
     /// <summary>
     /// Тип владельца события.
     /// </summary>
-    public Type OwnerType
-    {
-        get { return ownerType; }
-    }
+    public Type OwnerType { get; }
 
     /// <summary>
     /// Стратегия маршрутизации события.
     /// </summary>
-    public RoutingStrategy RoutingStrategy
-    {
-        get { return routingStrategy; }
-    }
+    public RoutingStrategy RoutingStrategy { get; }
 
-    public RoutedEventKey Key
-    {
-        get
-        {
-            // note : mb cache this
-            return new RoutedEventKey(name, ownerType);
-        }
-    }
+    public RoutedEventKey Key =>
+        // note : mb cache this
+        new(Name, OwnerType);
 }
