@@ -9,15 +9,17 @@ namespace ConsoleFramework.Native;
 /// </summary>
 public static class Libc
 {
+    private const string LibcDllFileName = "libc.so.6";
+
     public const int LC_ALL = 0;
 
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern string setlocale(int category, string locale);
 
     /// <summary>
     /// See the &lt;sys/poll.h&gt; and &lt;bits/poll.h&gt;
     /// </summary>
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern int poll([In, Out] pollfd[] fds, int fdsCount, int timeout);
 
     /// <summary>
@@ -25,20 +27,20 @@ public static class Libc
     /// fds[0] will store descriptor for reading
     /// fds[1] will store descriptor for writing
     /// </summary>
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern int pipe(int[] fds);
 
     /// <summary>
     /// Creates the eventfd kernel object. Returns file descriptor for
     /// created eventfd object.
     /// </summary>
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern int eventfd(uint initval, EVENTFD_FLAGS flags);
 
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     private static extern int read(int fd, out UInt64 buf, int count);
 
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     private static extern int write(int fd, ref UInt64 buf, int count);
 
     /// <summary>
@@ -66,7 +68,7 @@ public static class Libc
     /// <summary>
     /// Close the specified file descriptor.
     /// </summary>
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern int close(int fd);
 
     // Used in terminal size retrieving
@@ -82,7 +84,7 @@ public static class Libc
     /// <summary>
     /// Used in terminal size retrieving.
     /// </summary>
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern int ioctl(int fd, int cmd, out winsize ws);
 
     /// <summary>
@@ -105,13 +107,13 @@ public static class Libc
 
     public delegate void SignalHandler(int arg);
 
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern IntPtr signal(int signum, SignalHandler handler);
 
     /// <summary>
     /// Retrieves terminal parameters into termios structure.
     /// </summary>
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern int tcgetattr(int fd, [Out] out termios termios);
 
     /// <summary>
@@ -119,7 +121,7 @@ public static class Libc
     /// return a value of 0.  Otherwise, they return -1 and the global variable
     /// errno is set to indicate the error.
     /// </summary>
-    [DllImport("libc.so.6", SetLastError = true)]
+    [DllImport(LibcDllFileName, SetLastError = true)]
     public static extern int tcsetattr(int fd, int optional_actions, ref termios termios);
 
     /// <summary>
