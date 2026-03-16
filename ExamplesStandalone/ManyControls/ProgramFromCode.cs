@@ -1,4 +1,5 @@
-﻿using ConsoleFramework;
+﻿using System;
+using ConsoleFramework;
 using ConsoleFramework.Controls;
 using ConsoleFramework.Core;
 using System.Diagnostics;
@@ -69,8 +70,8 @@ public class ProgramFromCode : IProgram
 
         var window = new Window
         {
-            Height = 10,
-            Width = 50,
+            Height = 30,
+            Width = 70,
             Name = "WindowWithPanelAndControls",
             Title = "WindowWithPanelAndControls"
         };
@@ -154,12 +155,13 @@ public class ProgramFromCode : IProgram
             rootPanel.Children.Add(panel);
         }
 
-        if (listBoxExample)
+        if (groupBoxExample)
         {
             var groupBox = new GroupBox()
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Title = "Groupbox example"
             };
 
             var panel = new Panel

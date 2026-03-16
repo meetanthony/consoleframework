@@ -144,7 +144,7 @@ public sealed class ConsoleApplication : IDisposable
     public static ConsoleApplication Instance { get; } = new ConsoleApplication();
 
     /// <summary>
-    /// Gets or sets a size of canvas. Whet set, old canvas image will be
+    /// Gets or sets a size of canvas. When set, old canvas image will be
     /// copied to new one.
     /// </summary>
     public Size CanvasSize
@@ -1036,8 +1036,15 @@ public sealed class ConsoleApplication : IDisposable
 
                 if (!_maximized)
                 {
-                    _savedWindowRect = new Rect(new Point(Console.WindowLeft, Console.WindowTop),
-                        new Size(Console.WindowWidth, Console.WindowHeight));
+                    var location = new Point(Console.WindowLeft, Console.WindowTop);
+                    var size = new Size(Console.WindowWidth, Console.WindowHeight);
+
+                    _savedWindowRect = new Rect(location, size);
+
+                    // Apply new sizes to Canvas
+                    CanvasSize = size;
+                    _renderer.RootElementRect = new Rect(_canvas.Size);
+                    //_renderer.UpdateLayout();
                 }
             }
 
